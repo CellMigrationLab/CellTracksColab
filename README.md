@@ -1,4 +1,3 @@
-# 🌟 CellTracksColab 🌟
 
 <table>
 <tr>
