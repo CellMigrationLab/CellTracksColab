@@ -65,7 +65,7 @@ Created by [Guillaume Jacquemet](https://cellmig.org/).
 ---
 
 ## 🤝 **Contribute**
-We welcome your insights and improvements. Raise an [issue here](github_issue_link).
+We welcome your insights and improvements. Raise an [issue here](https://github.com/guijacquemet/CellTracksColab/issues).
 
 ---
 
