@@ -31,11 +31,70 @@
 ---
 
 ## 🖼️ **Screenshots**
-![Figure 1](path_to_figure1_image)  
-*Caption for Figure 1*
 
-![Figure 2](path_to_figure2_image)  
-*Caption for Figure 2*
+<table>
+<tr>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot1.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot1.png" alt="Screenshot 1" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 1: Caption for Screenshot 1</em>
+    </td>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot2.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot2.png" alt="Screenshot 2" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 2: Caption for Screenshot 2</em>
+    </td>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot3.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot3.png" alt="Screenshot 3" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 3: Caption for Screenshot 3</em>
+    </td>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot4.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot4.png" alt="Screenshot 4" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 4: Caption for Screenshot 4</em>
+    </td>
+</tr>
+<tr>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot5.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot5.png" alt="Screenshot 5" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 5: Caption for Screenshot 5</em>
+    </td>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot6.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot6.png" alt="Screenshot 6" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 6: Caption for Screenshot 6</em>
+    </td>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot7.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot7.png" alt="Screenshot 7" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 7: Caption for Screenshot 7</em>
+    </td>
+    <td align="center" valign="middle" style="transition: transform .2s;">
+        <a href="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot8.png">
+            <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot8.png" alt="Screenshot 8" width="300" style="border-radius: 5%; transition: transform .2s; :hover {transform: scale(1.1);}">
+        </a>
+        <br>
+        <em>Figure 8: Caption for Screenshot 8</em>
+    </td>
+</tr>
+</table>
+
 
 ---
 
