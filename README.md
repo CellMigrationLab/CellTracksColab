@@ -1,6 +1,6 @@
 # 🌟 CellTracksColab 🌟
 
-![CellTracksColab Logo](path_to_logo_image)
+![CellTracksColab Logo]([path_to_logo_image](https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/CellTracksColab_logo.png))
 
 > In life sciences, tracking objects from movies is pivotal in quantifying the behavior of single particles, organelles, bacteria, cells, and even whole animals. While numerous tools allow automated tracking from video, a significant challenge remains in compiling, analyzing, and exploring the vast datasets generated. **CellTracksColab** is here to bridge this gap.
 
