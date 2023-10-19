@@ -55,7 +55,7 @@
 ---
 
 ## 📚 **Documentation**
-Dive deeper. [Visit our comprehensive wiki](wiki_link).
+Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/CellTracksColab/wiki).
 
 ---
 
