@@ -22,32 +22,11 @@
 
 ---
 
-## ⚠️ Data Requirements
-**Note**: **CellTracksColab** does not support track splitting.
-
----
-
-## 📁 Data Structure
-Organize your data with our recommended two-tiered folder hierarchy.
-
-![Example Data Structure](path_to_data_structure_image)
-
----
-
-## 📊 Test Dataset
-Start with our test dataset. Get it [here](https://zenodo.org/record/8413510).
-
----
-
 ## 🚀 Quick Start
 1. For data from TrackMate and the TrackMate batcher:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
 2. For other software-generated data:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
-
----
-
-## 📚 [Visit our wiki for more details](wiki_link)
 
 ---
 
@@ -59,6 +38,41 @@ Start with our test dataset. Get it [here](https://zenodo.org/record/8413510).
 *Caption for Figure 2*
 
 ... [Add more figures as needed]
+
+---
+
+## 📊 Test Dataset
+Start with our test dataset. Get it [here](https://zenodo.org/record/8413510).
+
+---
+
+## 📁 Data Structure and Requirements
+**Note**: **CellTracksColab** does not support track splitting.
+
+Depending on the notebook you use, the data requirement is slightly different. Check our wiki or the notebook for details. In any case, organize your data with our recommended two-tiered folder hierarchy.
+
+- 📁 **Experiments** `[Folder_path]`
+  - 🌿 **Condition_1** `[‘condition’ is derived from this folder name]`
+    - 🔄 **R1** `[‘repeat’ is derived from this folder name]`
+      - 📄 `FOV1.csv`
+      - 📄 `FOV2.csv`
+    - 🔄 **R2**
+      - 📄 `FOV1.csv`
+      - 📄 `FOV2.csv`
+  - 🌿 **Condition_2**
+    - 🔄 **R1**
+    - 🔄 **R2**
+
+In this representation, different symbols are used to represent folders and files clearly:
+
+📁 represents the main folder or directory.
+🌿 represents the condition folders.
+🔄 represents the repeat folders.
+📄 represents the individual CSV files.
+
+---
+
+## 📚 [Visit our wiki for more details](wiki_link)
 
 ---
 
