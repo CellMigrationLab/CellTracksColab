@@ -30,57 +30,6 @@
 
 ---
 
-## 🖼️ **Screenshots**
-
-<table>
-<tr>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot1.png" alt="Screenshot 1" width="300"/>
-        <br>
-        <em>Figure 1: Caption for Screenshot 1</em>
-    </td>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot2.png" alt="Screenshot 2" width="300"/>
-        <br>
-        <em>Figure 2: Caption for Screenshot 2</em>
-    </td>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot3.png" alt="Screenshot 3" width="300"/>
-        <br>
-        <em>Figure 3: Caption for Screenshot 3</em>
-    </td>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot4.png" alt="Screenshot 4" width="300"/>
-        <br>
-        <em>Figure 4: Caption for Screenshot 4</em>
-    </td>
-</tr>
-<tr>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot5.png" alt="Screenshot 5" width="300"/>
-        <br>
-        <em>Figure 5: Caption for Screenshot 5</em>
-    </td>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot6.png" alt="Screenshot 6" width="300"/>
-        <br>
-        <em>Figure 6: Caption for Screenshot 6</em>
-    </td>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot7.png" alt="Screenshot 7" width="300"/>
-        <br>
-        <em>Figure 7: Caption for Screenshot 7</em>
-    </td>
-    <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot8.png" alt="Screenshot 8" width="300"/>
-        <br>
-        <em>Figure 8: Caption for Screenshot 8</em>
-    </td>
-</tr>
-</table>
-
----
-
 ## 🛠️ **Quick Start**
 1. **For TrackMate Data**:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
@@ -98,6 +47,70 @@
 
 ## 📚 **Documentation**
 Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/CellTracksColab/wiki).
+
+---
+
+## 🖼️ **Screenshots**
+
+<table>
+<tr>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot1.png" alt="Screenshot 1" width="400"/>
+        <br>
+        <em>Figure 1: Compile your data</em>
+    </td>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot2.png" alt="Screenshot 2" width="400"/>
+        <br>
+        <em>Figure 2: Visualise your tracks</em>
+    </td>
+</tr>
+<tr>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot3.png" alt="Screenshot 3" width="400"/>
+        <br>
+        <em>Figure 3: Compute additional metrics</em>
+    </td>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot4.png" alt="Screenshot 4" width="400"/>
+        <br>
+        <em>Figure 4: Plot track parameters</em>
+    </td>
+</tr>
+<tr>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot5.png" alt="Screenshot 5" width="400"/>
+        <br>
+        <em>Figure 5: Compute Similarity Metrics between Field of Views and between Conditions and Repeats</em>
+    </td>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot6.png" alt="Screenshot 6" width="400"/>
+        <br>
+        <em>Figure 6: Perform UMAP</em>
+    </td>
+</tr>
+<tr>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot7.png" alt="Screenshot 7" width="400"/>
+        <br>
+        <em>Figure 7: Identify clusters using HDBSCAN</em>
+    </td>
+    <td align="center" valign="middle">
+        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot8.png" alt="Screenshot 8" width="400"/>
+        <br>
+        <em>Figure 8: Understand your clusters using a heatmap</em>
+    </td>
+</tr>
+</table>
+
+
+---
+
+## 🛠️ **Quick Start**
+1. **For TrackMate Data**:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
+2. **For Other Data**:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
 
 ---
 
