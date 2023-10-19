@@ -105,14 +105,6 @@ Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/Cell
 
 ---
 
-## 🛠️ **Quick Start**
-1. **For TrackMate Data**:
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
-2. **For Other Data**:
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
-
----
-
 ## ✍️ **Acknowledgment**
 Created by [Guillaume Jacquemet](https://cellmig.org/).
 
