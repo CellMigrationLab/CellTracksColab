@@ -30,6 +30,10 @@
 ---
 
 ## 🛠️ **Quick Start**
+
+To begin your analysis journey, click the "Open In Colab" button below, corresponding to your data type. For a seamless experience, right-click the button and select "Open in a new tab."
+
+
 1. **For TrackMate Data**:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
 2. **For Other Data**:
