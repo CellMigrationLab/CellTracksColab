@@ -114,7 +114,7 @@ Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/Cell
 
 ---
 
-## ✍️ **Acknowledgment**
+## ✍️ **Contributor(s)**
 Created by [Guillaume Jacquemet](https://cellmig.org/).
 
 ---
