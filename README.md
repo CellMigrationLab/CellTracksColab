@@ -124,5 +124,21 @@ We welcome your insights and improvements. Raise an [issue here](https://github.
 
 ---
 
-## 📜 **License**
+## **License**
 Licensed under the MIT License. [Details here](https://opensource.org/licenses/MIT).
+
+---
+
+## 📜 **Citation**
+
+If you use CellTracksColab in your research, please cite the following paper:
+
+### Reference
+Guillaume Jacquemet. (2023). CellTracksColab—A platform for compiling, analyzing, and exploring tracking data. *bioRxiv*. [https://doi.org/10.1101/2023.10.20.563252](https://doi.org/10.1101/2023.10.20.563252)
+
+[Download PDF](https://www.biorxiv.org/content/early/2023/10/26/2023.10.20.563252.full.pdf)
+
+---
+
+
+
