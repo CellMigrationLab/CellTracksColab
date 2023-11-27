@@ -1,2 +1,3 @@
-TrackMate 0.7
-Viewer 0.7
+Notebook, Version
+TrackMate, 0.7
+Viewer, 0.7
