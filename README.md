@@ -39,6 +39,11 @@ To begin your analysis journey, click the "Open In Colab" button below, correspo
 2. **For Other Data**:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
 
+
+Do you want to just load a dataset already in the CellTracksColab format? or share a dataset with colleagues, check out our viewer notebook!
+
+**CellTracksColab - Viewer**: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
+
 ---
 
 ## ⭐️ **Acknowledgments**
