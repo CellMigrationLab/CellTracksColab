@@ -24,7 +24,7 @@
 - 🔍 **Visualization**: Track visualization and filtering.
 - 📊 **Analysis**: Deep-dive into track metrics and statistics.
 - 🧪 **Reliability**: Check experimental variability using hierarchical clustering.
-- 🔧 **Advanced Tools**: Harness the power of UMAP and HDBSCAN.
+- 🔧 **Advanced Tools**: Harness the power of UMAP, t-SNE and HDBSCAN.
 - 💼 **Flexibility**: Tailor and adapt to your needs.
 
 ---
@@ -33,17 +33,34 @@
 
 To begin your analysis journey, click the "Open In Colab" button below, corresponding to your data type. For a seamless experience, right-click the button and select "Open in a new tab."
 
-
 1. **For TrackMate Data**:
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab%20-%20TrackMate.ipynb)
-2. **For Other Data**:
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
+   - Delve into your TrackMate data with our specialized notebook.
+   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab%20-%20TrackMate.ipynb)
 
+2. **Analysis for Other Data Types**:
+   - Explore our general-purpose notebook for analyzing diverse tracking datasets.
+   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
 
-Do you want to just load a dataset already in the CellTracksColab format? or share a dataset with colleagues, check out our viewer notebook!
+---
 
-**CellTracksColab - Viewer**: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
+## 🔍 **Additional Notebooks**
 
+Maximize your analysis with our supplementary tools and modules.
+
+### 🌐 **Data Viewing and Sharing**
+
+- **CellTracksColab - Viewer**:
+  - Ideal for loading datasets in CellTracksColab format or sharing data with colleagues.
+  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
+
+### 📈 **Advanced Analysis Modules**
+
+- **CellTracksColab - Track Clustering Analysis**:
+  - Dive deeper into your dataset with our track clustering analysis module.
+  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Track_Clustering.ipynb)
+
+- More to come soon
+  
 ---
 
 ## ⭐️ **Acknowledgments**
@@ -54,7 +71,7 @@ CellTracksColab is inspired by several key projects in cell tracking and analysi
 ## 📦 **Resources**
 - **Test Dataset**: Start exploring with our [test dataset](https://zenodo.org/record/8413510).
 - **Data Structure**: Organize with our two-tiered folder hierarchy. [Details here](#).
-- **Data Requirements**: Note that **CellTracksColab** does not support track merging or splitting.
+- **Data Requirements**: Note that **CellTracksColab** does not yet support track merging or splitting.
 
 ---
 
