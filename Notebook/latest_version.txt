@@ -1,5 +1,6 @@
 Notebook,Version
 TrackMate,0.7
+TrackMate_Plate,0.8
 Viewer,0.7
 Main,0.7
 Track_Clustering,0.7
