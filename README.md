@@ -35,7 +35,7 @@ To begin your analysis journey, click the "Open In Colab" button below, correspo
 
 1. **For TrackMate Data**:
    - Delve into your TrackMate data with our specialized notebook.
-   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab%20-%20TrackMate.ipynb)
+   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
 
 2. **Analysis for Other Data Types**:
    - Explore our general-purpose notebook for analyzing diverse tracking datasets.
@@ -54,7 +54,7 @@ Maximize your analysis with our supplementary tools and modules.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
 
 ### 🔍 **Alternative data loading strategy**
-- **CellTracksColab - Viewer**:
+- **CellTracksColab - TrackMate - Plate**:
   - This notebook can handle TrackMate data structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate_Plate.ipynb)
 
