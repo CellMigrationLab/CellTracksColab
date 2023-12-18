@@ -64,7 +64,12 @@ Maximize your analysis with our supplementary tools and modules.
   - Dive deeper into your dataset with our track clustering analysis module.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Track_Clustering.ipynb)
 
+- **CellTracksColab - Distance to ROI**: 
+- This notebook is specifically designed to analyze movement tracks in relation to designated Regions of Interest (ROIs). Its primary aim is to compute and analyze the distances between moving objects (tracks) and ROIs, which may also be dynamic.
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb)
+
 - More to come soon
+
   
 ---
 
