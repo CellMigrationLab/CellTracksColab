@@ -1,7 +1,7 @@
 Notebook,Version
-TrackMate,0.8
-TrackMate_Plate,0.8
-Viewer,0.8
-Main,0.8
-Track_Clustering,0.8
-Distance_to_ROI,0.8
+TrackMate,0.9
+TrackMate_Plate,0.9
+Viewer,0.9
+Main,0.9
+Track_Clustering,0.9
+Distance_to_ROI,0.9
