@@ -1,0 +1,14 @@
+ipywidgets
+matplotlib
+scipy
+scikit-learn
+scikit-image
+tifffile
+tqdm
+hdbscan
+imageio
+numpy
+pandas
+plotly
+seaborn
+umap-learn
