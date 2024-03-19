@@ -1,0 +1,25 @@
+name: celltracks
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python==3.10.12
+  - hdbscan==0.8.33
+  - imageio==2.31.5
+  - matplotlib==3.7.1
+  - numpy==1.25.2
+  - pandas==1.5.3
+  - scikit-image==0.19.3
+  - scipy==1.11.4
+  - seaborn==0.13.1
+  - tifffile==2024.2.12
+  - plotly==5.15.0
+  - pillow=10.2.0
+  - scikit-learn==1.2.2
+  - tqdm==4.66.2
+  - ipywidgets==7.7.1
+  - jupyter
+  - umap-learn==0.5.5
+  - jupyter_core==5.7.2
+  - jupyterlab=4.1.5
+  - pip=24.0
