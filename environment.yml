@@ -17,9 +17,10 @@ dependencies:
   - pillow=10.2.0
   - scikit-learn==1.2.2
   - tqdm==4.66.2
-  - ipywidgets==7.7.1
+  - ipywidgets==8.1.2
   - jupyter
   - umap-learn==0.5.5
   - jupyter_core==5.7.2
   - jupyterlab=4.1.5
+  - jupyterlab_widgets=3.0.10
   - pip=24.0

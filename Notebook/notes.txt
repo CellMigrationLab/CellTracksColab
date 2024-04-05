@@ -1,0 +1,11 @@
+For a successful analysis using this notebook, ensure your data meets the following criteria:
+
+CSV Format: The dataset should be in CSV format -- CAN BE CHECKED. LIST OF ALL THE FORMATS WE WILL CONSUME
+Essential Columns:
+Track ID: A unique identifier for each track. Each track should have a distinct ID.
+X Coordinate: Represents the X position of the tracked object. DO WE ACCEPT FLOAT COORDINATES? FLOAT
+Y Coordinate: Represents the Y position of the tracked object. FLOAT
+Time Point: Indicates the time or frame at which the tracking data was recorded. FLOAT
+Optional Columns:
+Z Coordinate: If available, this represents the Z position of the tracked object.
+Note: The naming and the sequence of columns in your CSV file aren't critical. You'll have the flexibility to map them during the analysis process in this notebook.
