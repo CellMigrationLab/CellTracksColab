@@ -299,56 +299,18 @@ class TrackingData:
         # Download and extract the test data
         download_test_datasets(self.Folder_path, self.test_data_url, local_zip_file=local_zip_file)
 
-
     def __column_mapping__(self):
 
         # If 2D is selected and POSITION_Z exists, delete it
-        if self.data_dims == '2D' and 'POSITION_Z' in self.merged_spots_df.columns:
-            merged_spots_df = self.merged_spots_df.drop('POSITION_Z', axis=1)
+        if self.data_dims == '2D' and 'POSITION_Z' in self.spots_data.columns:
+            self.spots_data = self.spots_data.drop('POSITION_Z', axis=1)
             self.ref_cols.remove('POSITION_Z')
-
-        # column_mapping = {dropdown.value: col for col, dropdown in dropdowns.items()}
-        column_mapping = {dropdown: col for col, dropdown in self.dim_mapping.items()}
-        merged_spots_df = merged_spots_df.rename(columns=column_mapping)
+        column_mapping = {data_col: col for col, data_col in self.dim_mapping.items()}
+        self.spots_data = self.spots_data.rename(columns=column_mapping)
         print("Columns Renamed!")
-        merged_spots_df = sort_and_generate_repeat(merged_spots_df)
-        merged_spots_df['Unique_ID'] = merged_spots_df['File_name'] + "_" + merged_spots_df['TRACK_ID'].astype(str)
-
-        # TODO: This if 2D should not even exist
-        # If 2D was chosen, add back the POSITION_Z column filled with 0s at the end
-        if self.data_dims == '2D':
-            merged_spots_df['POSITION_Z'] = 0
-
-        # Extracting unique Unique_ID values from merged_spots_df
-        unique_ids = merged_spots_df['Unique_ID'].drop_duplicates().reset_index(drop=True)
-
-        # Creating merged_tracks_df with only the unique Unique_ID values
-        merged_tracks_df = pd.DataFrame(unique_ids, columns=['Unique_ID'])
-        print("Create a the merged_tracks_df to store track parameters")
-        # Specify the columns you want to merge
-        columns_to_merge = ['Unique_ID', 'File_name', 'Condition', 'experiment_nb', 'Repeat']
-
-        # Filter to only include the desired columns
-        filtered_df = merged_spots_df[columns_to_merge].drop_duplicates(subset='Unique_ID')
-
-        # Find the overlapping columns between the two DataFrames, excluding the merging key
-        overlapping_columns = merged_tracks_df.columns.intersection(filtered_df.columns).drop('Unique_ID')
-
-        # Drop the overlapping columns from the left DataFrame
-        merged_tracks_df.drop(columns=overlapping_columns, inplace=True)
-
-        # Merge the filtered df_directionality back into the original DataFrame
-        merged_tracks_df = pd.merge(merged_tracks_df, filtered_df, on='Unique_ID', how='left')
-
-        check_unique_id_match(merged_spots_df, merged_tracks_df)
-
-        # Save the DataFrame with the selected columns merged
-        save_dataframe_with_progress(merged_tracks_df, os.path.join(Results_Folder, 'merged_Tracks.csv'),
-                                     desc="Saving Tracks")
-        self.tracks_data = merged_tracks_df
-        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        self.spots_data = sort_and_generate_repeat(self.spots_data)
+        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
-        self.spots_data = merged_spots_df
 
     def __load_csv__(self):
         # Load Tracking data in memory
@@ -365,6 +327,34 @@ class TrackingData:
 
         self.dim_mapping = automatic_column_mapping(self.ref_cols, list(merged_spots_df.columns))
         print(f"Data columns automatically mapped as: {self.dim_mapping}.")
+
+    def __create_tracks_csv(self):
+        self.spots_data['Unique_ID'] = self.spots_data ['File_name'] + "_" + self.spots_data ['TRACK_ID'].astype(str)
+        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+                                     desc="Saving Spots")
+
+        # Extracting unique Unique_ID values from merged_spots_df
+        unique_ids = self.spots_data ['Unique_ID'].drop_duplicates().reset_index(drop=True)
+
+        # Creating merged_tracks_df with only the unique Unique_ID values
+        merged_tracks_df = pd.DataFrame(unique_ids, columns=['Unique_ID'])
+        print("Create the merged_tracks_df to store track parameters")
+        # Specify the columns you want to merge
+        columns_to_merge = ['Unique_ID', 'File_name', 'Condition', 'experiment_nb', 'Repeat']
+
+        # Filter to only include the desired columns
+        filtered_df = self.spots_data [columns_to_merge].drop_duplicates(subset='Unique_ID')
+
+        # Find the overlapping columns between the two DataFrames, excluding the merging key
+        overlapping_columns = merged_tracks_df.columns.intersection(filtered_df.columns).drop('Unique_ID')
+
+        # Drop the overlapping columns from the left DataFrame
+        merged_tracks_df.drop(columns=overlapping_columns, inplace=True)
+
+        # Merge the filtered df_directionality back into the original DataFrame
+        merged_tracks_df = pd.merge(merged_tracks_df, filtered_df, on='Unique_ID', how='left')
+
+        self.tracks_data = merged_tracks_df
 
     def __load_trackmate_xml__(self):
         # Load Tracking data in memory
@@ -426,7 +416,7 @@ class TrackingData:
             print("Error: Validation failed for loaded spots dataframe.")
         self.spots_data = merged_spots_df
 
-    def CompileTrackingData(self, data_dims):
+    def LoadTrackingData(self, data_dims):
 
         self.data_dims = data_dims  # One of the followings ["2D", "3D"]
         if data_dims=="2D":
@@ -454,9 +444,22 @@ class TrackingData:
 
             self.__load_trackmate_table()
 
-        # Now, call the check function
-        check_unique_id_match(self.spots_data, self.tracks_data)
-
         end_time = time.time()  # Record end time
         elapsed_time = end_time - start_time  # Calculate elapsed time
         print(f"Dataset processing completed in {elapsed_time:.2f} seconds.")
+
+    def CompileTrackingData(self):
+
+        # Only run this if dimensions were properly mapped in self.dim_mapping
+
+        if self.datatype == "Custom" and self.fileformat.__contains__("csv"):
+            self.__column_mapping__()
+            self.__create_tracks_csv()
+
+        check_unique_id_match(self.spots_data, self.tracks_data)
+        # Save the DataFrame with the selected columns merged
+        save_dataframe_with_progress(self.tracks_data, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+                                     desc="Saving Tracks")
+
+
+
