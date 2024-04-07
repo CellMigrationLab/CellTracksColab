@@ -312,6 +312,32 @@ class TrackingData:
         save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
 
+    def CalibrateUnits(self, x_cal=1., y_cal=1., z_cal=1., t_cal=1., spatial_calibration_unit="pixel", time_unit="second"):
+
+        # Update the calibratio values to get back to them
+        self.x_cal = x_cal
+        self.y_cal = y_cal
+        self.z_cal = z_cal
+        self.spatial_calibration_unit = spatial_calibration_unit
+        self.t_cal = t_cal
+        self.time_unit = time_unit
+
+        # Update the merged_spots_df columns with calibration values
+        self.spots_data['POSITION_X'] = self.spots_data['POSITION_X'] * x_cal
+        self.spots_data['POSITION_Y'] = self.spots_data['POSITION_Y'] * y_cal
+        if self.datatype == "3D":
+            self.spots_data['POSITION_Z'] = self.spots_data['POSITION_Z'] * z_cal
+
+        # Update the temporal column with calibration value
+        self.spots_data['POSITION_T'] = self.spots_data['POSITION_T'] * t_cal
+
+        save_dataframe_with_progress(self.spots_data,
+                                     os.path.join(self.Results_Folder, 'merged_Spots_calibrated.csv'), desc="Saving Spots")
+
+        print(
+            f"Spatial Calibration saved: X={x_cal}, Y={y_cal}, Z={z_cal} in {spatial_calibration_unit}")
+        print(f"Temporal Calibration saved: {t_cal} per frame in {time_unit}")
+
     def __load_csv__(self):
         # Load Tracking data in memory
         file_pattern = f'.*\.{self.fileformat}$'
