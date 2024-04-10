@@ -6,6 +6,7 @@ dependencies:
   - python==3.10.12
   - hdbscan==0.8.33
   - imageio==2.31.5
+  - lxml==5.1.0
   - matplotlib==3.7.1
   - numpy==1.25.2
   - pandas==1.5.3

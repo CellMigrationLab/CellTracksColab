@@ -7,7 +7,38 @@ import numpy as np
 import requests
 import zipfile
 import time
+import sys
 
+
+def install_trackmate_xml_loader():
+
+    url_trackmate_xml_loader = "https://github.com/Image-Analysis-Hub/TrackMate_XML_loader/archive/refs/heads/main.zip"
+    current_path = os.getcwd()
+    installation_path = os.path.join(current_path, "TrackMate_XML_loader-main")
+    if not os.path.exists(installation_path):
+        print("Downloading test dataset")
+        response = requests.get(url_trackmate_xml_loader, stream=True)
+
+        if response.status_code == 200:
+            # Create the extracted directory if it doesn't exist
+            os.makedirs(installation_path, exist_ok=True)
+
+            # Calculate the total file size for the progress bar
+            total_size = int(response.headers.get('content-length', 0))
+
+            # Create a tqdm progress bar
+            with tqdm(total=total_size, unit='B', unit_scale=True) as pbar:
+                # Download and save the content with progress tracking
+                with open(f"{installation_path}.zip", "wb") as file:
+                    for data in response.iter_content(chunk_size=1024):
+                        pbar.update(len(data))
+                        file.write(data)
+
+            print("Test dataset downloaded successfully.")
+    sys.path.append(os.path.join(installation_path, "TM_XML_loader"))
+    from loader import  load_and_populate_from_TM_XML
+
+    return installation_path
 
 def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
     """Save a DataFrame with a progress bar."""
@@ -97,11 +128,7 @@ def find_calibration_units(filepath, line=3):
             return row[37:43]
 
 
-def load_and_populate(Folder_path, file_pattern,
-                      skiprows=None, usecols=None,
-                      chunksize=100000,
-                      check_calibration=False,
-                      row=3):
+def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, chunksize=100000, check_calibration=False, row=3):
     df_list = []
     pattern = re.compile(file_pattern)  # Compile the file pattern to a regex object
     files_to_process = []
@@ -285,8 +312,9 @@ class TrackingData:
         self.Results_Folder = os.path.join(self.parent_dir, "Results")
         self.skiprows = None # Rows to skip if a TrackMate CSV file was given. It's a list, e.g., [1, 2, 3]
         self.usecols = None  # One could choose to load only specific columns, for example: self.usecols = [1, 2, 3] or self.usecols = ['ID', 'X', 'Y', 'T']
-        self.fileformat = "csv"  # CSV is the format by default but it could be XML file
-        self.datatype = "Custom"  # One of the followings ["Custom", "TrackMate Table", "TrackMate Files"]
+        self.file_format = "csv"  # CSV is the format by default but it could be XML file
+        self.data_type = "Custom"  # One of the followings ["Custom", "TrackMate Table", "TrackMate Files"]
+        self.data_dims = "2D" # Either "2D" or "3D"
         self.Spot_table = None # path to TrackMate spot table. If needed, update before loading the data.
         self.Track_table = None # path to TrackMate spot table. If needed, update before loading the data.
         # ----------------------------#
@@ -325,7 +353,7 @@ class TrackingData:
         # Update the merged_spots_df columns with calibration values
         self.spots_data['POSITION_X'] = self.spots_data['POSITION_X'] * x_cal
         self.spots_data['POSITION_Y'] = self.spots_data['POSITION_Y'] * y_cal
-        if self.datatype == "3D":
+        if self.data_type == "3D":
             self.spots_data['POSITION_Z'] = self.spots_data['POSITION_Z'] * z_cal
 
         # Update the temporal column with calibration value
@@ -340,7 +368,7 @@ class TrackingData:
 
     def __load_csv__(self):
         # Load Tracking data in memory
-        file_pattern = f'.*\.{self.fileformat}$'
+        file_pattern = f'.*\.{self.file_format}$'
         merged_spots_df = load_and_populate(self.Folder_path, file_pattern, skiprows=self.skiprows,
                                             usecols=self.usecols, check_calibration=False)
         print(f"Tracking data loaded in memory.")
@@ -383,20 +411,35 @@ class TrackingData:
         self.tracks_data = merged_tracks_df
 
     def __load_trackmate_xml__(self):
+
+        # Install TrackMate XML data loader
+        path_trackmate_loader = install_trackmate_xml_loader()
+
         # Load Tracking data in memory
-        merged_spots_df = load_and_populate(self.Folder_path, self.fileformat, skiprows=self.skiprows,
-                                            usecols=self.usecols)
+        merged_spots_df, merged_tracks_df = load_and_populate_from_TM_XML(self.Folder_path)
+
         print(f"Tracking data loaded in memory.")
+
+        if not validate_tracks_df(merged_tracks_df):
+            print("Error: Validation failed for merged tracks dataframe.")
+        else:
+            merged_tracks_df = sort_and_generate_repeat(merged_tracks_df)
+            merged_tracks_df['Unique_ID'] = merged_tracks_df['File_name'] + "_" + merged_tracks_df['TRACK_ID'].astype(
+                str)
+            save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+                                         desc="Saving Tracks")
+
         print(f"These are its column names:{merged_spots_df.columns}")
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
         self.spots_data = merged_spots_df
+        self.tracks_data = merged_tracks_df
 
     def __load_trackmate_csv__(self):
         # Trackmate is composed of tracks and spots
         # Load the tracking info data in memory
-        file_pattern = f'.*tracks.*\.{self.fileformat}$'
+        file_pattern = f'.*tracks.*\.{self.file_format}$'
         merged_tracks_df = load_and_populate(self.Folder_path, file_pattern, skiprows=self.skiprows,
                                              usecols=self.usecols, check_calibration=True)
         print(f"Tracking data loaded in memory.")
@@ -412,7 +455,7 @@ class TrackingData:
                                          desc="Saving Tracks")
 
         # Load the spots data info in memory
-        file_pattern = f'.*spots.*\.{self.fileformat}$'
+        file_pattern = f'.*spots.*\.{self.file_format}$'
         merged_spots_df = load_and_populate(self.Folder_path, file_pattern, skiprows=self.skiprows,
                                             usecols=self.usecols)
 
@@ -442,10 +485,9 @@ class TrackingData:
             print("Error: Validation failed for loaded spots dataframe.")
         self.spots_data = merged_spots_df
 
-    def LoadTrackingData(self, data_dims):
+    def LoadTrackingData(self):
 
-        self.data_dims = data_dims  # One of the followings ["2D", "3D"]
-        if data_dims=="2D":
+        if self.data_dims=="2D":
             self.ref_cols = ['TRACK_ID', 'POSITION_X', 'POSITION_Y', 'POSITION_T']
         else:
             self.ref_cols = ['TRACK_ID', 'POSITION_X', 'POSITION_Y', 'POSITION_Z', 'POSITION_T']
@@ -453,22 +495,40 @@ class TrackingData:
         start_time = time.time()
         # The following loading commands have redundancy in code but it's more modular this way and faster for now.
 
-        if self.datatype == "TrackMate Files" and self.fileformat.__contains__("csv"):
+        if self.data_type == "TrackMate Files" and self.file_format.__contains__("csv"):
 
             self.skiprows = [1, 2, 3]
             self.__load_trackmate_csv__()
 
-        elif self.datatype == "Custom" and self.fileformat.__contains__("csv"):
-
-            self.__load_csv__()
-
-        elif self.datatype == "Custom" and self.fileformat.__contains__("xml"):
+        elif self.data_type == "TrackMate Files" and self.file_format.__contains__("xml"):
 
             self.__load_trackmate_xml__()
 
-        elif self.datatype == "TrackMate Table":
+        elif self.data_type == "Custom" and self.file_format.__contains__("csv"):
+
+            self.__load_csv__()
+
+        elif self.data_type == "Custom" and self.file_format.__contains__("xml"):
+
+            self.__load_trackmate_xml__()
+
+        elif self.data_type == "TrackMate Table":
 
             self.__load_trackmate_table()
+
+        if self.data_type == "TrackMate Files" or self.data_type == "TrackMate Table":
+            if self.data_dims == "2D":
+                self.dim_mapping = {'TRACK_ID': 'ID',
+                                    'POSITION_X': 'POSITION_X',
+                                    'POSITION_Y': 'POSITION_Y',
+                                    'POSITION_T': 'POSITION_T'}
+            elif self.data_dims == "3D":
+                self.dim_mapping = {'TRACK_ID': 'ID',
+                                    'POSITION_X': 'POSITION_X',
+                                    'POSITION_Y': 'POSITION_Y',
+                                    'POSITION_Z': 'POSITION_Z',
+                                    'POSITION_T': 'POSITION_T'}
+            print(f"Data columns automatically mapped as: {self.dim_mapping}.")
 
         end_time = time.time()  # Record end time
         elapsed_time = end_time - start_time  # Calculate elapsed time
@@ -478,7 +538,7 @@ class TrackingData:
 
         # Only run this if dimensions were properly mapped in self.dim_mapping
 
-        if self.datatype == "Custom" and self.fileformat.__contains__("csv"):
+        if self.data_type == "Custom" and self.file_format.__contains__("csv"):
             self.__column_mapping__()
             self.__create_tracks_csv()
 
