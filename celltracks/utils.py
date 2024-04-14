@@ -6,7 +6,7 @@ import numpy as np
 import requests
 import zipfile
 import time
-from xml_loader import load_and_populate_from_TM_XML
+from .xml_loader import load_and_populate_from_TM_XML
 
 def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
     """Save a DataFrame with a progress bar."""
@@ -439,13 +439,13 @@ class TrackingData:
 
     def __load_trackmate_table(self):
         print("Loading track table file....")
-        merged_tracks_df = pd.read_csv(self.Track_table, low_memory=False)
+        merged_tracks_df = pd.read_csv(os.path.join(self.Folder_path, self.Track_table), low_memory=False)
         if not validate_tracks_df(merged_tracks_df):
             print("Error: Validation failed for loaded tracks dataframe.")
         self.tracks_data = merged_tracks_df
 
         print("Loading spot table file....")
-        merged_spots_df = pd.read_csv(self.Spot_table, low_memory=False)
+        merged_spots_df = pd.read_csv(os.path.join(self.Folder_path, self.Spot_table), low_memory=False)
         if not validate_spots_df(merged_spots_df):
             print("Error: Validation failed for loaded spots dataframe.")
         self.spots_data = merged_spots_df
@@ -493,7 +493,7 @@ class TrackingData:
                                     'POSITION_Y': 'POSITION_Y',
                                     'POSITION_Z': 'POSITION_Z',
                                     'POSITION_T': 'POSITION_T'}
-            print(f"Data columns automatically mapped as: {self.dim_mapping}.")
+            print(f"Data columns mapped as: {self.dim_mapping}.")
 
         end_time = time.time()  # Record end time
         elapsed_time = end_time - start_time  # Calculate elapsed time
