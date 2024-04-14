@@ -1,44 +1,12 @@
 import os
 import re
-#import glob
 import pandas as pd
 from tqdm.notebook import tqdm
 import numpy as np
 import requests
 import zipfile
 import time
-import sys
-
-
-def install_trackmate_xml_loader():
-
-    url_trackmate_xml_loader = "https://github.com/Image-Analysis-Hub/TrackMate_XML_loader/archive/refs/heads/main.zip"
-    current_path = os.getcwd()
-    installation_path = os.path.join(current_path, "TrackMate_XML_loader-main")
-    if not os.path.exists(installation_path):
-        print("Downloading test dataset")
-        response = requests.get(url_trackmate_xml_loader, stream=True)
-
-        if response.status_code == 200:
-            # Create the extracted directory if it doesn't exist
-            os.makedirs(installation_path, exist_ok=True)
-
-            # Calculate the total file size for the progress bar
-            total_size = int(response.headers.get('content-length', 0))
-
-            # Create a tqdm progress bar
-            with tqdm(total=total_size, unit='B', unit_scale=True) as pbar:
-                # Download and save the content with progress tracking
-                with open(f"{installation_path}.zip", "wb") as file:
-                    for data in response.iter_content(chunk_size=1024):
-                        pbar.update(len(data))
-                        file.write(data)
-
-            print("Test dataset downloaded successfully.")
-    sys.path.append(os.path.join(installation_path, "TM_XML_loader"))
-    from loader import  load_and_populate_from_TM_XML
-
-    return installation_path
+from .xml_loader import load_and_populate_from_TM_XML
 
 def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
     """Save a DataFrame with a progress bar."""
@@ -412,9 +380,6 @@ class TrackingData:
 
     def __load_trackmate_xml__(self):
 
-        # Install TrackMate XML data loader
-        path_trackmate_loader = install_trackmate_xml_loader()
-
         # Load Tracking data in memory
         merged_spots_df, merged_tracks_df = load_and_populate_from_TM_XML(self.Folder_path)
 
@@ -474,13 +439,13 @@ class TrackingData:
 
     def __load_trackmate_table(self):
         print("Loading track table file....")
-        merged_tracks_df = pd.read_csv(self.Track_table, low_memory=False)
+        merged_tracks_df = pd.read_csv(os.path.join(self.Folder_path, self.Track_table), low_memory=False)
         if not validate_tracks_df(merged_tracks_df):
             print("Error: Validation failed for loaded tracks dataframe.")
         self.tracks_data = merged_tracks_df
 
         print("Loading spot table file....")
-        merged_spots_df = pd.read_csv(self.Spot_table, low_memory=False)
+        merged_spots_df = pd.read_csv(os.path.join(self.Folder_path, self.Spot_table), low_memory=False)
         if not validate_spots_df(merged_spots_df):
             print("Error: Validation failed for loaded spots dataframe.")
         self.spots_data = merged_spots_df
@@ -528,7 +493,7 @@ class TrackingData:
                                     'POSITION_Y': 'POSITION_Y',
                                     'POSITION_Z': 'POSITION_Z',
                                     'POSITION_T': 'POSITION_T'}
-            print(f"Data columns automatically mapped as: {self.dim_mapping}.")
+            print(f"Data columns mapped as: {self.dim_mapping}.")
 
         end_time = time.time()  # Record end time
         elapsed_time = end_time - start_time  # Calculate elapsed time

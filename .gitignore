@@ -24,7 +24,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-TrackMate_XML_loader-main/
 *.xml
 
 # PyInstaller
