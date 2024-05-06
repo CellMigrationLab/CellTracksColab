@@ -21,6 +21,7 @@ def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_pl
         plt.ylabel('POSITION_Y')
         plt.title(f'Coordinates for {filename}')
         plt.savefig(f"{Results_Folder}/Tracks/Tracks_{filename}.pdf")
+        plt.gca().invert_yaxis()
         if display_plots:  # Only display plots if explicitly requested
           plt.show()
         else:
@@ -93,8 +94,7 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
 
         # Optionally save the plot
         plot_filename = f"Condition_{condition}_Repeat_{repeat}.pdf"
-        plt.savefig(os.path.join(Results_Folder, "Tracks", plot_filename))
-        print(f"Plot saved as {plot_filename} in {Results_Folder}/Tracks/")
+        plt.savefig(os.path.join(Results_Folder, "Tracks", plot_filename))        
     else:
         print("No data available for the selected condition and repeat.")
 
@@ -181,6 +181,7 @@ def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_pl
     plt.ylabel('POSITION_Y')
     plt.grid(True)
     plt.axis('equal')
+    plt.gca().invert_yaxis()
     plt.savefig(f"{Results_Folder}/Tracks/Vectors_Tracks_{filename}.pdf")
     if display_plots:  # Only display plots if explicitly requested
       plt.show()
