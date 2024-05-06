@@ -6,8 +6,8 @@ import os
 import matplotlib.colors as mcolors  
 import matplotlib.cm as cm  
 
+def plot_track_coordinates(filename, merged_spots_df, display_plots=True):
 
-def plot_track_coordinates(filename, display_plots=True):
     if filename:
         # Filter the DataFrame based on the selected filename
         filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
