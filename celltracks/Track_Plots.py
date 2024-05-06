@@ -6,7 +6,7 @@ import os
 import matplotlib.colors as mcolors  
 import matplotlib.cm as cm  
 
-def plot_track_coordinates(filename, merged_spots_df, display_plots=True):
+def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_plots=True):
 
     if filename:
         # Filter the DataFrame based on the selected filename
@@ -29,7 +29,7 @@ def plot_track_coordinates(filename, merged_spots_df, display_plots=True):
         print("No valid filename selected")
   
 
-def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, display_plots=True):
+def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Folder, display_plots=True):
   if filename:
       # Filter the DataFrame based on the selected filename
       filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
@@ -61,7 +61,7 @@ def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, display_pl
       print("No valid filename selected")
    
    
-def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, display_plots=True):
+def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, Results_Folder, display_plots=True):
     # Filter the DataFrame based on the selected condition and repeat
     filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition) &
                                   (merged_spots_df['Repeat'] == repeat)]
@@ -98,7 +98,7 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
     else:
         print("No data available for the selected condition and repeat.")
 
-def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, display_plots=True):
+def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Results_Folder, display_plots=True):
     # Filter the DataFrame based on the selected condition
     filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition)]
 
@@ -134,7 +134,7 @@ def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, dis
     else:
         print("No data available for the selected condition.")
 
-def plot_migration_vectors(filename, merged_spots_df, display_plots):
+def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_plots):
     # Filter data for the selected field of view
     fov_df = merged_spots_df[merged_spots_df['File_name'] == filename]
 
