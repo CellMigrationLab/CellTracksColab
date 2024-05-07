@@ -190,7 +190,7 @@ def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_pl
     else:
         plt.close()  # Close the plot to prevent it from displaying
         
-def plot_coordinates_side_by_side(filename, Results_Folder):
+def plot_coordinates_side_by_side(filename, merged_spots_df, Results_Folder):
     if filename:
         # Filter the DataFrames based on the selected filename
         raw_df = merged_spots_df[merged_spots_df['File_name'] == filename]
