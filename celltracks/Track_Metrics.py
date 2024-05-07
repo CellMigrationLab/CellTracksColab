@@ -123,36 +123,6 @@ def create_metric_slider(description, metric_key, global_metrics_df, width=None,
         layout=widgets.Layout(width=width),  # Apply optional width
     )
 
-def filter_on_button_click(button):
-    global filtered_and_smoothed_df
-    metric_filters = {
-        'Track Duration': duration_slider.value,
-        'Mean Speed': mean_speed_slider.value,
-        'Max Speed': max_speed_slider.value,
-        'Min Speed': min_speed_slider.value,
-        'Total Distance Traveled': total_distance_slider.value,
-    }
-    with output:
-        clear_output(wait=True)
-        filtered_and_smoothed_df, metrics_summary_df = optimized_filter_and_smooth_tracks(
-            merged_spots_df,
-            metric_filters,
-            smoothing_neighbors=smoothing_slider.value,
-            global_metrics_df=global_metrics_df  
-        )
-        # Save parameters
-        params_file_path = os.path.join(Results_Folder, "filter_smoothing_parameters.csv")
-        save_filter_smoothing_params(
-            params_file_path,
-            smoothing_slider.value,
-            duration_slider.value,
-            mean_speed_slider.value,
-            max_speed_slider.value,
-            min_speed_slider.value,
-            total_distance_slider.value
-        )
-        print("Filtering and Smoothing Done")
-
 def calculate_directionality(group):
 
     group = group.sort_values('POSITION_T')
