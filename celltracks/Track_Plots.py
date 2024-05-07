@@ -190,7 +190,7 @@ def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_pl
     else:
         plt.close()  # Close the plot to prevent it from displaying
         
-def plot_coordinates_side_by_side(filename, merged_spots_df, Results_Folder):
+def plot_coordinates_side_by_side(filename, merged_spots_df, filtered_and_smoothed_df, Results_Folder):
     if filename:
         # Filter the DataFrames based on the selected filename
         raw_df = merged_spots_df[merged_spots_df['File_name'] == filename]
@@ -222,7 +222,7 @@ def plot_coordinates_side_by_side(filename, merged_spots_df, Results_Folder):
         axes[1].set_title(f'Filtered & Smoothed Coordinates for {filename}')
         axes[1].set_xlabel('POSITION_X')
         axes[1].set_ylabel('POSITION_Y')
-	plt.gca().invert_yaxis()
+        plt.gca().invert_yaxis()
         plt.tight_layout()
         plt.savefig(f"{Results_Folder}/Tracks/Filtered_tracks_{filename}.pdf")
         plt.show()
