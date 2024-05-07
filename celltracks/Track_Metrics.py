@@ -98,7 +98,7 @@ def optimized_filter_and_smooth_tracks(merged_spots_df, metric_filters, smoothin
     return smoothed_df, filtered_metrics_df
 
 
-def create_metric_slider(description, metric_key, width=None, align_text='left'):
+def create_metric_slider(description, metric_key, global_metrics_df, width=None, align_text='left'):
 
     slider_min = global_metrics_df[metric_key].min()
     slider_max = global_metrics_df[metric_key].max()
