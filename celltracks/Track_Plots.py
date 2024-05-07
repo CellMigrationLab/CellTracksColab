@@ -1,13 +1,12 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import matplotlib.colors as mcolors
+import matplotlib.cm as cm
 
-import pandas as pd  
-import matplotlib.pyplot as plt  
-import numpy as np  
-import os  
-import matplotlib.colors as mcolors  
-import matplotlib.cm as cm  
 
 def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_plots=True):
-
     if filename:
         # Filter the DataFrame based on the selected filename
         filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
@@ -23,46 +22,47 @@ def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_pl
         plt.savefig(f"{Results_Folder}/Tracks/Tracks_{filename}.pdf")
         plt.gca().invert_yaxis()
         if display_plots:  # Only display plots if explicitly requested
-          plt.show()
+            plt.show()
         else:
-          plt.close()  # Close the plot to prevent it from displaying
+            plt.close()  # Close the plot to prevent it from displaying
     else:
         print("No valid filename selected")
-  
+
 
 def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Folder, display_plots=True):
-  if filename:
-      # Filter the DataFrame based on the selected filename
-      filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
+    if filename:
+        # Filter the DataFrame based on the selected filename
+        filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
 
-      plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(10, 8))
 
-      # Group by Unique_ID to work with each track individually
-      for unique_id in filtered_df['Unique_ID'].unique():
-          unique_df = filtered_df[filtered_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
+        # Group by Unique_ID to work with each track individually
+        for unique_id in filtered_df['Unique_ID'].unique():
+            unique_df = filtered_df[filtered_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
 
-          # Normalize starting point to (0, 0)
-          start_x = unique_df.iloc[0]['POSITION_X']
-          start_y = unique_df.iloc[0]['POSITION_Y']
-          normalized_x = unique_df['POSITION_X'] - start_x
-          normalized_y = unique_df['POSITION_Y'] - start_y
+            # Normalize starting point to (0, 0)
+            start_x = unique_df.iloc[0]['POSITION_X']
+            start_y = unique_df.iloc[0]['POSITION_Y']
+            normalized_x = unique_df['POSITION_X'] - start_x
+            normalized_y = unique_df['POSITION_Y'] - start_y
 
-          # Plot the normalized track without adding to the legend
-          plt.plot(normalized_x, normalized_y, marker='o', linestyle='-', markersize=2)
+            # Plot the normalized track without adding to the legend
+            plt.plot(normalized_x, normalized_y, marker='o', linestyle='-', markersize=2)
 
-      plt.xlabel('Normalized POSITION_X')
-      plt.ylabel('Normalized POSITION_Y')
-      plt.title(f'Origin-Normalized Tracks for {filename}')
-      plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{filename}.pdf")
-      if display_plots:  # Only display plots if explicitly requested
-        plt.show()
-      else:
-        plt.close()  # Close the plot to prevent it from displaying
-  else:
-      print("No valid filename selected")
-   
-   
-def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, Results_Folder, display_plots=True):
+        plt.xlabel('Normalized POSITION_X')
+        plt.ylabel('Normalized POSITION_Y')
+        plt.title(f'Origin-Normalized Tracks for {filename}')
+        plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{filename}.pdf")
+        if display_plots:  # Only display plots if explicitly requested
+            plt.show()
+        else:
+            plt.close()  # Close the plot to prevent it from displaying
+    else:
+        print("No valid filename selected")
+
+
+def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, Results_Folder,
+                                                        display_plots=True):
     # Filter the DataFrame based on the selected condition and repeat
     filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition) &
                                   (merged_spots_df['Repeat'] == repeat)]
@@ -94,9 +94,10 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
 
         # Optionally save the plot
         plot_filename = f"Condition_{condition}_Repeat_{repeat}.pdf"
-        plt.savefig(os.path.join(Results_Folder, "Tracks", plot_filename))        
+        plt.savefig(os.path.join(Results_Folder, "Tracks", plot_filename))
     else:
         print("No data available for the selected condition and repeat.")
+
 
 def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Results_Folder, display_plots=True):
     # Filter the DataFrame based on the selected condition
@@ -134,6 +135,7 @@ def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Res
     else:
         print("No data available for the selected condition.")
 
+
 def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_plots):
     # Filter data for the selected field of view
     fov_df = merged_spots_df[merged_spots_df['File_name'] == filename]
@@ -158,7 +160,7 @@ def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_pl
 
         vector_x = end_x - start_x
         vector_y = end_y - start_y
-        magnitude = np.sqrt(vector_x**2 + vector_y**2)
+        magnitude = np.sqrt(vector_x ** 2 + vector_y ** 2)
 
         magnitudes.append(magnitude)
         coordinates.append((start_x, start_y, vector_x, vector_y))
@@ -184,10 +186,45 @@ def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_pl
     plt.gca().invert_yaxis()
     plt.savefig(f"{Results_Folder}/Tracks/Vectors_Tracks_{filename}.pdf")
     if display_plots:  # Only display plots if explicitly requested
-      plt.show()
+        plt.show()
     else:
-      plt.close()  # Close the plot to prevent it from displaying
+        plt.close()  # Close the plot to prevent it from displaying
+        
+def plot_coordinates_side_by_side(filename, Results_Folder):
+    if filename:
+        # Filter the DataFrames based on the selected filename
+        raw_df = merged_spots_df[merged_spots_df['File_name'] == filename]
+        processed_df = filtered_and_smoothed_df[filtered_and_smoothed_df['File_name'] == filename]
 
+        # Create subplots
+        fig, axes = plt.subplots(1, 2, figsize=(20, 8))
 
-   
-   
+        # Create a colormap to ensure consistent colors across tracks
+        unique_ids = raw_df['Unique_ID'].unique()
+        colormap = plt.get_cmap('tab20')
+
+        # Plot Raw Data
+        for idx, unique_id in enumerate(unique_ids):
+            unique_data = raw_df[raw_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
+            color_val = colormap(idx % 20 / 20)  # Ensure colors are within colormap range
+            axes[0].plot(unique_data['POSITION_X'], unique_data['POSITION_Y'],
+                         color=color_val, marker='o', linestyle='-', markersize=2)
+        axes[0].set_title(f'Raw Coordinates for {filename}')
+        axes[0].set_xlabel('POSITION_X')
+        axes[0].set_ylabel('POSITION_Y')
+
+        # Plot Filtered & Smoothed Data
+        for idx, unique_id in enumerate(unique_ids):
+            unique_data = processed_df[processed_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
+            color_val = colormap(idx % 20 / 20)  # Ensure colors are within colormap range
+            axes[1].plot(unique_data['POSITION_X'], unique_data['POSITION_Y'],
+                         color=color_val, marker='o', linestyle='-', markersize=2)
+        axes[1].set_title(f'Filtered & Smoothed Coordinates for {filename}')
+        axes[1].set_xlabel('POSITION_X')
+        axes[1].set_ylabel('POSITION_Y')
+	plt.gca().invert_yaxis()
+        plt.tight_layout()
+        plt.savefig(f"{Results_Folder}/Tracks/Filtered_tracks_{filename}.pdf")
+        plt.show()
+    else:
+        print("No valid filename selected")
