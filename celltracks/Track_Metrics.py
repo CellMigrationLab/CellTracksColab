@@ -38,12 +38,13 @@ def calculate_track_metrics(group):
     # Speeds calculation
     deltas = np.linalg.norm(np.diff(positions, axis=0), axis=1)
     time_diffs = np.diff(times)
-    time_diffs[time_diffs == 0] = 1e-10  # Avoid division by zero
+    time_diffs[time_diffs == 0] = 1e-10  # To avoid division by zero
     speeds = deltas / time_diffs
 
     return pd.Series({
         'Track Duration': duration,
         'Mean Speed': speeds.mean(),
+        'Median Speed': np.median(speeds),  # Calculate median speed
         'Max Speed': speeds.max(),
         'Min Speed': speeds.min(),
         'Speed Standard Deviation': speeds.std(),
