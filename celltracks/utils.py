@@ -220,9 +220,12 @@ def validate_tracks_df(df):
     return True
 
 
-def validate_spots_df(df):
+def validate_spots_df(df, data_dims="2D"):
     """Validate the spots dataframe for necessary columns and data types, and clean NaN values from TRACK_ID."""
-    required_columns = ['TRACK_ID', 'POSITION_X', 'POSITION_Y', 'POSITION_Z', 'POSITION_T']
+    if data_dims == "2D":
+        required_columns = ['TRACK_ID', 'POSITION_X', 'POSITION_Y', 'POSITION_T']
+    else:
+        required_columns = ['TRACK_ID', 'POSITION_X', 'POSITION_Y', 'POSITION_Z', 'POSITION_T']
 
     # Check for required columns
     for col in required_columns:
@@ -363,6 +366,7 @@ class TrackingData:
         print(f"Tracking data loaded in memory.")
 
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
+
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
 
@@ -383,10 +387,10 @@ class TrackingData:
         merged_tracks_df = pd.DataFrame(unique_ids, columns=['Unique_ID'])
         print("Create the merged_tracks_df to store track parameters")
         # Specify the columns you want to merge
-        columns_to_merge = ['Unique_ID', 'File_name', 'Condition', 'experiment_nb', 'Repeat']
+        columns_to_merge = ['Unique_ID', 'TRACK_ID', 'File_name', 'Condition', 'experiment_nb', 'Repeat']
 
         # Filter to only include the desired columns
-        filtered_df = self.spots_data [columns_to_merge].drop_duplicates(subset='Unique_ID')
+        filtered_df = self.spots_data[columns_to_merge].drop_duplicates(subset='Unique_ID')
 
         # Find the overlapping columns between the two DataFrames, excluding the merging key
         overlapping_columns = merged_tracks_df.columns.intersection(filtered_df.columns).drop('Unique_ID')
@@ -417,6 +421,15 @@ class TrackingData:
 
         print(f"These are its column names:{merged_spots_df.columns}")
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
+
+        if not validate_spots_df(merged_spots_df, data_dims=self.data_dims):
+            print("Error: Validation failed for merged spots dataframe.")
+        else:
+            merged_spots_df = sort_and_generate_repeat(merged_spots_df)
+            merged_spots_df['TRACK_ID'] = merged_spots_df['TRACK_ID'].astype(int)
+            merged_spots_df['Unique_ID'] = merged_spots_df['File_name'] + "_" + merged_spots_df['TRACK_ID'].astype(str)
+            merged_spots_df.dropna(subset=['POSITION_X', 'POSITION_Y', 'POSITION_Z'], inplace=True)
+
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
         self.spots_data = merged_spots_df
@@ -445,7 +458,7 @@ class TrackingData:
         merged_spots_df = load_and_populate(self.Folder_path, file_pattern, skiprows=self.skiprows,
                                             usecols=self.usecols)
 
-        if not validate_spots_df(merged_spots_df):
+        if not validate_spots_df(merged_spots_df, data_dims=self.data_dims):
             print("Error: Validation failed for merged spots dataframe.")
         else:
             merged_spots_df = sort_and_generate_repeat(merged_spots_df)
@@ -467,7 +480,7 @@ class TrackingData:
 
         print("Loading spot table file....")
         merged_spots_df = pd.read_csv(os.path.join(self.Folder_path, self.Spot_table), low_memory=False)
-        if not validate_spots_df(merged_spots_df):
+        if not validate_spots_df(merged_spots_df, data_dims=self.data_dims):
             print("Error: Validation failed for loaded spots dataframe.")
         self.spots_data = merged_spots_df
 
