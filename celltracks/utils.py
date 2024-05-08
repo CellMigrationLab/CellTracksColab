@@ -8,6 +8,27 @@ import zipfile
 import time
 from .xml_loader import load_and_populate_from_TM_XML
 
+
+def check_for_nans(df, df_name):
+    """
+    Checks the given DataFrame for NaN values and prints the count for each column containing NaNs.
+
+    Args:
+    df (pd.DataFrame): DataFrame to be checked for NaN values.
+    df_name (str): The name of the DataFrame as a string, used for printing.
+    """
+    # Check if the DataFrame has any NaN values and print a warning if it does.
+    nan_columns = df.columns[df.isna().any()].tolist()
+
+    if nan_columns:
+        for col in nan_columns:
+            nan_count = df[col].isna().sum()
+            print(f"Column '{col}' in {df_name} contains {nan_count} NaN values.")
+    else:
+        print(f"No NaN values found in {df_name}.")
+
+
+
 def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
     """Save a DataFrame with a progress bar."""
 
