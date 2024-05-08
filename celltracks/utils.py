@@ -363,6 +363,7 @@ class TrackingData:
         print(f"Tracking data loaded in memory.")
 
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
+
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
 
@@ -417,6 +418,15 @@ class TrackingData:
 
         print(f"These are its column names:{merged_spots_df.columns}")
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
+
+        if not validate_spots_df(merged_spots_df):
+            print("Error: Validation failed for merged spots dataframe.")
+        else:
+            merged_spots_df = sort_and_generate_repeat(merged_spots_df)
+            merged_spots_df['TRACK_ID'] = merged_spots_df['TRACK_ID'].astype(int)
+            merged_spots_df['Unique_ID'] = merged_spots_df['File_name'] + "_" + merged_spots_df['TRACK_ID'].astype(str)
+            merged_spots_df.dropna(subset=['POSITION_X', 'POSITION_Y', 'POSITION_Z'], inplace=True)
+
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
         self.spots_data = merged_spots_df

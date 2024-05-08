@@ -428,7 +428,7 @@ def trackmate_xml_to_df(
 def load_and_populate_from_TM_XML(folder_path):
 
     track_dfs, spot_dfs = [], []
-    print(glob.glob(f"{folder_path}/*/*/*.xml"))
+    #print(glob.glob(f"{folder_path}/*/*/*.xml"))
     for filepath in glob.glob(f"{folder_path}/*/*/*.xml"):
         print(filepath)
         # Loading a TrackMate XML as a dataframe.
