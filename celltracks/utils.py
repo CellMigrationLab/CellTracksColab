@@ -437,7 +437,7 @@ class TrackingData:
         self.spots_data = merged_spots_df
         self.tracks_data = merged_tracks_df
 
-    def __load_trackmate_table(self):
+    def __load_celltrackscolab_table(self):
         print("Loading track table file....")
         merged_tracks_df = pd.read_csv(os.path.join(self.Folder_path, self.Track_table), low_memory=False)
         if not validate_tracks_df(merged_tracks_df):
@@ -477,11 +477,11 @@ class TrackingData:
 
             self.__load_trackmate_xml__()
 
-        elif self.data_type == "TrackMate Table":
+        elif self.data_type == "CellTracksColab":
 
-            self.__load_trackmate_table()
+            self.__load_celltrackscolab_table()
 
-        if self.data_type == "TrackMate Files" or self.data_type == "TrackMate Table":
+        if self.data_type == "TrackMate Files" or self.data_type == "CellTracksColab":
             if self.data_dims == "2D":
                 self.dim_mapping = {'TRACK_ID': 'ID',
                                     'POSITION_X': 'POSITION_X',
