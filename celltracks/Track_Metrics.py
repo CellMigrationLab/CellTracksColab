@@ -7,12 +7,7 @@ import matplotlib.cm as cm
 from tqdm.notebook import tqdm
 import ipywidgets as widgets
 from IPython.display import display, clear_output
-import pandas as pd
-import numpy as np
-from tqdm.notebook import tqdm
-import pandas as pd
-import numpy as np
-
+from scipy.spatial import ConvexHull
 
 # Functions related to the track filtering section of the notebook
 
