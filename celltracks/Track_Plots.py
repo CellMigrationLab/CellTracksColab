@@ -199,30 +199,51 @@ def plot_coordinates_side_by_side(filename, merged_spots_df, filtered_and_smooth
         # Create subplots
         fig, axes = plt.subplots(1, 2, figsize=(20, 8))
 
+        # Invert y-axis for both plots (optional, based on your preference)
+        # axes[0].invert_yaxis()
+        # axes[1].invert_yaxis()
+
         # Create a colormap to ensure consistent colors across tracks
         unique_ids = raw_df['Unique_ID'].unique()
         colormap = plt.get_cmap('tab20')
 
-        # Plot Raw Data
+        # Calculate data ranges for both DataFrames
+        raw_x_min, raw_x_max = raw_df['POSITION_X'].min(), raw_df['POSITION_X'].max()
+        raw_y_min, raw_y_max = raw_df['POSITION_Y'].min(), raw_df['POSITION_Y'].max()
+
+        processed_x_min, processed_x_max = processed_df['POSITION_X'].min(), processed_df['POSITION_X'].max()
+        processed_y_min, processed_y_max = processed_df['POSITION_Y'].min(), processed_df['POSITION_Y'].max()
+
+        # Combine data ranges for setting axis limits (consider margins if needed)
+        x_min = min(raw_x_min, processed_x_min) - 0.1  # Add margin (adjust as needed)
+        x_max = max(raw_x_max, processed_x_max) + 0.1  # Add margin (adjust as needed)
+        y_min = min(raw_y_min, processed_y_min) - 0.1  # Add margin (adjust as needed)
+        y_max = max(raw_y_max, processed_y_max) + 0.1  # Add margin (adjust as needed)
+
+        # Plot Raw Data with shared limits
         for idx, unique_id in enumerate(unique_ids):
             unique_data = raw_df[raw_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
-            color_val = colormap(idx % 20 / 20)  # Ensure colors are within colormap range
+            color_val = colormap(idx % 20 / 20)
             axes[0].plot(unique_data['POSITION_X'], unique_data['POSITION_Y'],
                          color=color_val, marker='o', linestyle='-', markersize=2)
         axes[0].set_title(f'Raw Coordinates for {filename}')
         axes[0].set_xlabel('POSITION_X')
         axes[0].set_ylabel('POSITION_Y')
+        axes[0].set_xlim(x_min, x_max)
+        axes[0].set_ylim(y_min, y_max)
 
-        # Plot Filtered & Smoothed Data
+        # Plot Filtered & Smoothed Data with shared limits
         for idx, unique_id in enumerate(unique_ids):
             unique_data = processed_df[processed_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
-            color_val = colormap(idx % 20 / 20)  # Ensure colors are within colormap range
+            color_val = colormap(idx % 20 / 20)
             axes[1].plot(unique_data['POSITION_X'], unique_data['POSITION_Y'],
                          color=color_val, marker='o', linestyle='-', markersize=2)
         axes[1].set_title(f'Filtered & Smoothed Coordinates for {filename}')
         axes[1].set_xlabel('POSITION_X')
         axes[1].set_ylabel('POSITION_Y')
-        plt.gca().invert_yaxis()
+        axes[1].set_xlim(x_min, x_max)
+        axes[1].set_ylim(y_min, y_max)
+
         plt.tight_layout()
         plt.savefig(f"{Results_Folder}/Tracks/Filtered_tracks_{filename}.pdf")
         plt.show()

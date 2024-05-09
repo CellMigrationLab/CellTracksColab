@@ -9,6 +9,10 @@ import ipywidgets as widgets
 from IPython.display import display, clear_output
 import pandas as pd
 import numpy as np
+from tqdm.notebook import tqdm
+import pandas as pd
+import numpy as np
+
 
 # Functions related to the track filtering section of the notebook
 
@@ -124,6 +128,72 @@ def create_metric_slider(description, metric_key, global_metrics_df, width=None,
         layout=widgets.Layout(width=width),  # Apply optional width
     )
 
+
+def calculate_rolling_distances(deltas, window_size=5):
+    if len(deltas) < window_size:
+        # Not enough data to compute rolling statistics
+        return np.nan
+
+    # Calculate rolling sums of the distances traveled
+    rolling_sums = np.convolve(deltas, np.ones(window_size), mode='valid')
+    return rolling_sums.mean()  # Return the average of these rolling sums
+
+def calculate_rolling_metrics(speeds, window_size=5):
+    if len(speeds) < window_size:
+        # Not enough data to compute rolling statistics
+        return {
+            'rolling_mean': np.nan,
+            'rolling_median': np.nan,
+            'rolling_max': np.nan,
+            'rolling_min': np.nan,
+            'rolling_std': np.nan
+        }
+
+    rolling_mean = np.convolve(speeds, np.ones(window_size)/window_size, mode='valid').mean()
+    rolling_median = np.median(np.convolve(speeds, np.ones(window_size)/window_size, mode='valid'))
+    rolling_max = np.max(np.convolve(speeds, np.ones(window_size)/window_size, mode='valid'))
+    rolling_min = np.min(np.convolve(speeds, np.ones(window_size)/window_size, mode='valid'))
+    rolling_std = np.std(np.convolve(speeds, np.ones(window_size)/window_size, mode='valid'))
+
+    return {
+        'rolling_mean': rolling_mean,
+        'rolling_median': rolling_median,
+        'rolling_max': rolling_max,
+        'rolling_min': rolling_min,
+        'rolling_std': rolling_std
+    }
+
+
+def calculate_track_metrics_rolling(group, window_size=5):
+    group = group.sort_values('POSITION_T')
+    positions = group[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].values
+    times = group['POSITION_T'].values
+
+    # Track Duration
+    duration = times[-1] - times[0]
+
+    # Speeds and distances calculation
+    deltas = np.linalg.norm(np.diff(positions, axis=0), axis=1)
+    time_diffs = np.diff(times)
+    time_diffs[time_diffs == 0] = 1e-10  # To avoid division by zero
+    speeds = deltas / time_diffs
+
+    # Calculate rolling metrics for speeds
+    rolling_metrics = calculate_rolling_metrics(speeds, window_size)
+
+    # Calculate average rolling total distance traveled
+    average_rolling_distance = calculate_rolling_distances(deltas, window_size)
+
+    return pd.Series({
+        'Mean Speed Rolling': rolling_metrics['rolling_mean'],
+        'Median Speed Rolling': rolling_metrics['rolling_median'],
+        'Max Speed Rolling': rolling_metrics['rolling_max'],
+        'Min Speed Rolling Rolling': rolling_metrics['rolling_min'],
+        'Speed Standard Deviation Rolling': rolling_metrics['rolling_std'],
+        'Total Distance Traveled Rolling': average_rolling_distance
+    })
+
+
 def calculate_directionality(group):
 
     group = group.sort_values('POSITION_T')
@@ -138,5 +208,207 @@ def calculate_directionality(group):
     D = euclidean_distance / total_path_length if total_path_length != 0 else 0
 
     return pd.Series({'Directionality': D})
+
+
+def calculate_rolling_directionality(group, window_size=5):
+    # Ensure the group is sorted by time
+    group = group.sort_values('POSITION_T')
+
+    # Initialize directionality list to store results for each window
+    directionalities = []
+
+    # Loop over the DataFrame using a rolling window
+    for start in range(len(group) - window_size + 1):
+        window = group.iloc[start:start + window_size]
+        if len(window) < 2:
+            directionalities.append(np.nan)  # Not enough points to define direction
+            continue
+
+        start_point = window.iloc[0][['POSITION_X', 'POSITION_Y', 'POSITION_Z']].to_numpy()
+        end_point = window.iloc[-1][['POSITION_X', 'POSITION_Y', 'POSITION_Z']].to_numpy()
+        euclidean_distance = np.linalg.norm(end_point - start_point)
+        path_length = np.linalg.norm(np.diff(window[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].values, axis=0), axis=1).sum()
+        D = euclidean_distance / path_length if path_length != 0 else 0
+        directionalities.append(D)
+
+    # Return the average directionality for the track if there are valid directionalities calculated
+    if directionalities:
+        return pd.Series({'Directionality Rolling': np.nanmean(directionalities)})
+    else:
+        return pd.Series({'Directionality Rolling': np.nan})
+
+def calculate_tortuosity(group):
+    group = group.sort_values('POSITION_T')
+
+    # Apply spatial calibration to the coordinates
+    calibrated_coords = group[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].values
+
+    start_point = calibrated_coords[0]
+    end_point = calibrated_coords[-1]
+
+    # Calculating Euclidean distance in 3D between start and end points
+    euclidean_distance = np.linalg.norm(end_point - start_point)
+
+    # Calculating the total path length in 3D
+    deltas = np.linalg.norm(np.diff(calibrated_coords, axis=0), axis=1)
+    total_path_length = deltas.sum()
+
+    # Calculating Tortuosity
+    T = total_path_length / euclidean_distance if euclidean_distance != 0 else 0
+
+    return pd.Series({'Tortuosity': T})
+
+def calculate_rolling_tortuosity(group, window_size=5):
+    # Ensure the group is sorted by time
+    group = group.sort_values('POSITION_T')
+
+    # Initialize tortuosity list to store results for each window
+    tortuosities = []
+
+    # Loop over the DataFrame using a rolling window
+    for start in range(len(group) - window_size + 1):
+        window = group.iloc[start:start + window_size]
+        if len(window) < 2:
+            tortuosities.append(np.nan)  # Not enough points to define a path
+            continue
+
+        # Apply spatial calibration to the coordinates
+        calibrated_coords = window[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].values
+
+        start_point = calibrated_coords[0]
+        end_point = calibrated_coords[-1]
+
+        # Calculating Euclidean distance in 3D between start and end points
+        euclidean_distance = np.linalg.norm(end_point - start_point)
+
+        # Calculating the total path length in 3D
+        deltas = np.linalg.norm(np.diff(calibrated_coords, axis=0), axis=1)
+        total_path_length = deltas.sum()
+
+        # Calculating Tortuosity
+        T = total_path_length / euclidean_distance if euclidean_distance != 0 else 0
+        tortuosities.append(T)
+
+    # Return the average tortuosity for the track if there are valid tortuosities calculated
+    if tortuosities:
+        return pd.Series({'Tortuosity Rolling': np.nanmean(tortuosities)})
+    else:
+        return pd.Series({'Tortuosity Rolling': np.nan})
+
+def calculate_total_turning_angle(group):
+    group = group.sort_values('POSITION_T')
+    directions = group[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].diff().dropna()
+    total_turning_angle = 0
+
+    for i in range(1, len(directions)):
+        dir1 = directions.iloc[i - 1]
+        dir2 = directions.iloc[i]
+
+        if np.linalg.norm(dir1) == 0 or np.linalg.norm(dir2) == 0:
+            continue
+
+        cos_angle = np.dot(dir1, dir2) / (np.linalg.norm(dir1) * np.linalg.norm(dir2))
+        cos_angle = np.clip(cos_angle, -1, 1)
+        angle = np.degrees(np.arccos(cos_angle))
+        total_turning_angle += angle
+
+    return pd.Series({'Total Turning Angle': total_turning_angle})
+
+def calculate_rolling_total_turning_angle(group, window_size=5):
+    group = group.sort_values('POSITION_T')
+
+    # Initialize the total turning angle list for each window
+    rolling_turning_angles = []
+
+    # Loop over the DataFrame using a rolling window
+    for start in range(len(group) - window_size + 1):
+        window = group.iloc[start:start + window_size]
+        if len(window) < 2:
+            rolling_turning_angles.append(np.nan)  # Not enough points to define a path
+            continue
+
+        directions = window[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].diff().dropna()
+        window_turning_angle = 0
+
+        for i in range(1, len(directions)):
+            dir1 = directions.iloc[i - 1]
+            dir2 = directions.iloc[i]
+
+            if np.linalg.norm(dir1) == 0 or np.linalg.norm(dir2) == 0:
+                continue
+
+            cos_angle = np.dot(dir1, dir2) / (np.linalg.norm(dir1) * np.linalg.norm(dir2))
+            cos_angle = np.clip(cos_angle, -1, 1)
+            angle = np.degrees(np.arccos(cos_angle))
+            window_turning_angle += angle
+
+        rolling_turning_angles.append(window_turning_angle)
+
+    # Calculate the average of the turning angles for all windows
+    average_turning_angle = np.nanmean(rolling_turning_angles) if rolling_turning_angles else np.nan
+
+    return pd.Series({'Total Turning Angle Rolling': average_turning_angle})
+    
+
+def calculate_spatial_coverage(group):
+    group = group.sort_values('POSITION_T')
+
+    # Apply spatial calibration to the coordinates
+    calibrated_coords = group[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].values  # Ensure .values is added here
+
+    # Drop rows with NaN values in the coordinates
+    calibrated_coords = calibrated_coords[~np.isnan(calibrated_coords).any(axis=1)]
+
+    # Check the variance of Z coordinates
+    z_variance = np.var(calibrated_coords[:, 2])
+
+    if z_variance == 0:  # If variance of Z is 0, calculate 2D spatial coverage
+        if len(calibrated_coords) < 3:  # Need at least 3 points for a 2D convex hull
+            return pd.Series({'Spatial Coverage': 0})
+
+        try:
+            coords_2d = calibrated_coords[:, :2]  # Use only X and Y coordinates
+            hull_2d = ConvexHull(coords_2d, qhull_options='QJ')  # 'QJ' joggles the input to avoid precision errors
+            spatial_coverage = hull_2d.volume  # Area of the convex hull in 2D
+        except Exception as e:
+            print(f"Error calculating 2D spatial coverage: {e}")
+            spatial_coverage = 0
+    else:  # If variance of Z is not 0, calculate 3D spatial coverage
+        if len(calibrated_coords) < 4:  # Need at least 4 points for a 3D convex hull
+            return pd.Series({'Spatial Coverage': 0})
+
+        try:
+            hull = ConvexHull(calibrated_coords, qhull_options='QJ')  # 'QJ' joggles the input to avoid precision errors
+            spatial_coverage = hull.volume  # Volume of the convex hull in 3D
+        except Exception as e:
+            print(f"Error calculating 3D spatial coverage: {e}")
+            spatial_coverage = 0
+
+    return pd.Series({'Spatial Coverage': spatial_coverage})
+    
+def calculate_rolling_spatial_coverage(group, window_size=5):
+    group = group.sort_values('POSITION_T')
+    spatial_coverages = []
+
+    for start in range(len(group) - window_size + 1):
+        window = group.iloc[start:start + window_size]
+        calibrated_coords = window[['POSITION_X', 'POSITION_Y', 'POSITION_Z']].dropna().values
+
+        if len(calibrated_coords) < 3:  # Not enough points to form a convex hull in 2D
+            continue
+
+        try:
+            if np.var(calibrated_coords[:, 2]) == 0 and len(calibrated_coords) >= 3:  # Calculate 2D hull if Z variance is zero
+                hull = ConvexHull(calibrated_coords[:, :2], qhull_options='QJ')
+                spatial_coverages.append(hull.volume)  # Area in 2D
+            elif len(calibrated_coords) >= 4:  # Calculate 3D hull if enough points and Z variance is non-zero
+                hull = ConvexHull(calibrated_coords, qhull_options='QJ')
+                spatial_coverages.append(hull.volume)  # Volume in 3D
+        except Exception as e:
+            print(f"Error in calculating hull: {e}")
+
+    # Average spatial coverage over the track
+    average_spatial_coverage = np.nanmean(spatial_coverages) if spatial_coverages else 0
+    return pd.Series({'Spatial Coverage Rolling': average_spatial_coverage})
 
 
