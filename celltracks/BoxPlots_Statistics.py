@@ -1,4 +1,3 @@
-
 import ipywidgets as widgets
 from ipywidgets import Layout, VBox, Button, Accordion, SelectMultiple, IntText
 import scipy.stats as stats
@@ -15,7 +14,8 @@ import seaborn as sns
 import itertools
 from matplotlib.gridspec import GridSpec
 import requests
-
+from scipy.stats import zscore
+from scipy.stats import ks_2samp
 
 def get_selectable_columns(df):
     exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
@@ -143,6 +143,21 @@ def perform_t_test(df, cond1, cond2, var):
 
     return p_value
 
+
+def calculate_ks_p_value(df1, df2, column):
+    """
+    Calculate the KS p-value for a given column between two dataframes.
+
+    Parameters:
+    df1 (pandas.DataFrame): Original DataFrame.
+    df2 (pandas.DataFrame): DataFrame after downsampling.
+    column (str): Column name to compare.
+
+    Returns:
+    float: KS p-value.
+    """
+    return ks_2samp(df1[column].dropna(), df2[column].dropna())[1]
+
 def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Folder, condition_selector, stat_method_selector):
     plt.clf()  # Clear the current figure before creating a new plot
     print("Plotting in progress...")
@@ -258,3 +273,123 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
 
         plt.tight_layout()
         pdf_pages.savefig(fig)
+        
+def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID'):
+    """
+    Counts the number of unique tracks for each combination of condition and repeat in the given DataFrame and
+    saves a stacked histogram plot as a PDF in the QC folder with annotations for each stack.
+
+    Parameters:
+    df (pandas.DataFrame): The DataFrame containing the data.
+    Results_Folder (str): The base folder where the results will be saved.
+    condition_col (str): The name of the column representing the condition. Default is 'Condition'.
+    repeat_col (str): The name of the column representing the repeat. Default is 'Repeat'.
+    track_id_col (str): The name of the column representing the track ID. Default is 'Unique_ID'.
+    """
+    track_counts = df.groupby([condition_col, repeat_col])[track_id_col].nunique()
+    track_counts_df = track_counts.reset_index()
+    track_counts_df.rename(columns={track_id_col: 'Number_of_Tracks'}, inplace=True)
+
+    # Pivot the data for plotting
+    pivot_df = track_counts_df.pivot(index=condition_col, columns=repeat_col, values='Number_of_Tracks').fillna(0)
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bars = pivot_df.plot(kind='bar', stacked=True, ax=ax)
+    ax.set_xlabel('Condition')
+    ax.set_ylabel('Number of Tracks')
+    ax.set_title('Stacked Histogram of Track Counts per Condition and Repeat')
+    ax.legend(title=repeat_col)
+    ax.grid(axis='y', linestyle='--')
+
+    # Hide horizontal grid lines
+    ax.yaxis.grid(False)
+
+    # Add number annotations on each stack
+    for bar in bars.patches:
+        ax.text(bar.get_x() + bar.get_width() / 2,
+                bar.get_y() + bar.get_height() / 2,
+                int(bar.get_height()),
+                ha='center', va='center', color='black', fontweight='bold', fontsize=8)
+
+    # Save the plot as a PDF
+    pdf_file = os.path.join(Results_Folder, 'Track_Counts_Histogram.pdf')
+    plt.savefig(pdf_file, bbox_inches='tight')
+    print(f"Saved histogram to {pdf_file}")
+
+    plt.show()
+
+    return track_counts_df        
+
+def heatmap_comparison(df, Results_Folder, Conditions, variables_per_page=40):
+    # Get all the selectable columns
+    variables_to_plot = get_selectable_columns(df)
+
+    # Drop rows where all elements are NaNs in the variables_to_plot columns
+    df = df.dropna()
+
+    # Compute median for each variable across Conditions
+    median_values = df.groupby(Conditions)[variables_to_plot].median().transpose()
+
+    # Normalize the median values using Z-score
+    normalized_values = median_values.apply(zscore, axis=1)
+
+    # Number of pages
+    total_variables = len(variables_to_plot)
+    num_pages = int(np.ceil(total_variables / variables_per_page))
+
+    # Initialize an empty DataFrame to store all pages' data
+    all_pages_data = pd.DataFrame()
+
+    # Create a PDF file to save the heatmaps
+    with PdfPages(f"{Results_Folder}/Heatmaps_Normalized_Median_Values_by_Condition.pdf") as pdf:
+        for page in range(num_pages):
+            start = page * variables_per_page
+            end = min(start + variables_per_page, total_variables)
+            page_data = normalized_values.iloc[start:end]
+
+            # Append this page's data to the all_pages_data DataFrame
+            all_pages_data = pd.concat([all_pages_data, page_data])
+
+            plt.figure(figsize=(16, 10))
+            sns.heatmap(page_data, cmap='coolwarm', annot=True, linewidths=.1)
+            plt.title(f"Z-score Normalized Median Values of Variables by Condition (Page {page + 1})")
+            plt.tight_layout()
+
+            pdf.savefig()  # saves the current figure into a pdf page
+            plt.show()
+            plt.close()
+
+    # Save all pages data to a single CSV file
+    all_pages_data.to_csv(f"{Results_Folder}/Normalized_Median_Values_by_Condition.csv")
+
+    print(f"Heatmaps saved to {Results_Folder}/Heatmaps_Normalized_Median_Values_by_Condition.pdf")
+    print(f"All data saved to {Results_Folder}/Normalized_Median_Values_by_Condition.csv")
+
+
+def balance_dataset(df, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID', random_seed=None):
+    """
+    Balances the dataset by downsampling tracks for each condition and repeat combination.
+
+    Parameters:
+    df (pandas.DataFrame): The DataFrame containing the data.
+    condition_col (str): The name of the column representing the condition.
+    repeat_col (str): The name of the column representing the repeat.
+    track_id_col (str): The name of the column representing the track ID.
+    random_seed (int, optional): The seed for the random number generator. Default is None.
+
+    Returns:
+    pandas.DataFrame: A new DataFrame with balanced track counts.
+    """
+    # Group by condition and repeat, and find the minimum track count
+    min_track_count = df.groupby([condition_col, repeat_col])[track_id_col].nunique().min()
+
+    # Function to sample min_track_count tracks from each group
+    def sample_tracks(group):
+        return group.sample(n=min_track_count, random_state=random_seed)
+
+    # Apply sampling to each group and concatenate the results
+    balanced_merged_tracks_df = df.groupby([condition_col, repeat_col]).apply(sample_tracks).reset_index(drop=True)
+
+    return balanced_merged_tracks_df
+
