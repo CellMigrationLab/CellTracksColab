@@ -15,6 +15,7 @@ import seaborn as sns
 import itertools
 from matplotlib.gridspec import GridSpec
 import requests
+from scipy.stats import zscore
 
 
 def get_selectable_columns(df):
