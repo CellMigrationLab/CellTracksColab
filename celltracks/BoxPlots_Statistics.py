@@ -1,4 +1,3 @@
-
 import ipywidgets as widgets
 from ipywidgets import Layout, VBox, Button, Accordion, SelectMultiple, IntText
 import scipy.stats as stats
