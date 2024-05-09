@@ -143,6 +143,21 @@ def perform_t_test(df, cond1, cond2, var):
 
     return p_value
 
+
+def calculate_ks_p_value(df1, df2, column):
+    """
+    Calculate the KS p-value for a given column between two dataframes.
+
+    Parameters:
+    df1 (pandas.DataFrame): Original DataFrame.
+    df2 (pandas.DataFrame): DataFrame after downsampling.
+    column (str): Column name to compare.
+
+    Returns:
+    float: KS p-value.
+    """
+    return ks_2samp(df1[column].dropna(), df2[column].dropna())[1]
+
 def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Folder, condition_selector, stat_method_selector):
     plt.clf()  # Clear the current figure before creating a new plot
     print("Plotting in progress...")
@@ -306,4 +321,75 @@ def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Cond
 
     return track_counts_df        
 
+def heatmap_comparison(df, Results_Folder, Conditions, variables_per_page=40):
+    # Get all the selectable columns
+    variables_to_plot = get_selectable_columns(df)
+
+    # Drop rows where all elements are NaNs in the variables_to_plot columns
+    df = df.dropna()
+
+    # Compute median for each variable across Conditions
+    median_values = df.groupby(Conditions)[variables_to_plot].median().transpose()
+
+    # Normalize the median values using Z-score
+    normalized_values = median_values.apply(zscore, axis=1)
+
+    # Number of pages
+    total_variables = len(variables_to_plot)
+    num_pages = int(np.ceil(total_variables / variables_per_page))
+
+    # Initialize an empty DataFrame to store all pages' data
+    all_pages_data = pd.DataFrame()
+
+    # Create a PDF file to save the heatmaps
+    with PdfPages(f"{Results_Folder}/Heatmaps_Normalized_Median_Values_by_Condition.pdf") as pdf:
+        for page in range(num_pages):
+            start = page * variables_per_page
+            end = min(start + variables_per_page, total_variables)
+            page_data = normalized_values.iloc[start:end]
+
+            # Append this page's data to the all_pages_data DataFrame
+            all_pages_data = pd.concat([all_pages_data, page_data])
+
+            plt.figure(figsize=(16, 10))
+            sns.heatmap(page_data, cmap='coolwarm', annot=True, linewidths=.1)
+            plt.title(f"Z-score Normalized Median Values of Variables by Condition (Page {page + 1})")
+            plt.tight_layout()
+
+            pdf.savefig()  # saves the current figure into a pdf page
+            plt.show()
+            plt.close()
+
+    # Save all pages data to a single CSV file
+    all_pages_data.to_csv(f"{Results_Folder}/Normalized_Median_Values_by_Condition.csv")
+
+    print(f"Heatmaps saved to {Results_Folder}/Heatmaps_Normalized_Median_Values_by_Condition.pdf")
+    print(f"All data saved to {Results_Folder}/Normalized_Median_Values_by_Condition.csv")
+
+
+def balance_dataset(df, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID', random_seed=None):
+    """
+    Balances the dataset by downsampling tracks for each condition and repeat combination.
+
+    Parameters:
+    df (pandas.DataFrame): The DataFrame containing the data.
+    condition_col (str): The name of the column representing the condition.
+    repeat_col (str): The name of the column representing the repeat.
+    track_id_col (str): The name of the column representing the track ID.
+    random_seed (int, optional): The seed for the random number generator. Default is None.
+
+    Returns:
+    pandas.DataFrame: A new DataFrame with balanced track counts.
+    """
+    # Group by condition and repeat, and find the minimum track count
+    min_track_count = df.groupby([condition_col, repeat_col])[track_id_col].nunique().min()
+
+    # Function to sample min_track_count tracks from each group
+    def sample_tracks(group):
+        return group.sample(n=min_track_count, random_state=random_seed)
+
+    # Apply sampling to each group and concatenate the results
+    balanced_merged_tracks_df = df.groupby([condition_col, repeat_col]).apply(sample_tracks).reset_index(drop=True)
+
+    return balanced_merged_tracks_df
 
