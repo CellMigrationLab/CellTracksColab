@@ -27,7 +27,33 @@ def check_for_nans(df, df_name):
     else:
         print(f"No NaN values found in {df_name}.")
 
+def save_parameters(params, file_path, param_type):
+    # Convert params dictionary to a DataFrame for human readability
+    new_params_df = pd.DataFrame(list(params.items()), columns=['Parameter', 'Value'])
+    new_params_df['Type'] = param_type
 
+    if os.path.exists(file_path):
+        # Read existing file
+        existing_params_df = pd.read_csv(file_path)
+
+        # Merge the new parameters with the existing ones
+        # Update existing parameters or append new ones
+        updated_params_df = pd.merge(existing_params_df, new_params_df,
+                                     on=['Type', 'Parameter'],
+                                     how='outer',
+                                     suffixes=('', '_new'))
+
+        # If there's a new value, update it, otherwise keep the old value
+        updated_params_df['Value'] = updated_params_df['Value_new'].combine_first(updated_params_df['Value'])
+
+        # Drop the temporary new value column
+        updated_params_df.drop(columns='Value_new', inplace=True)
+    else:
+        # Use new parameters DataFrame directly if file doesn't exist
+        updated_params_df = new_params_df
+
+    # Save the updated DataFrame to CSV
+    updated_params_df.to_csv(file_path, index=False)
 
 def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
     """Save a DataFrame with a progress bar."""
