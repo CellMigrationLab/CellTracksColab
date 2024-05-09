@@ -258,3 +258,52 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
 
         plt.tight_layout()
         pdf_pages.savefig(fig)
+        
+def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID'):
+    """
+    Counts the number of unique tracks for each combination of condition and repeat in the given DataFrame and
+    saves a stacked histogram plot as a PDF in the QC folder with annotations for each stack.
+
+    Parameters:
+    df (pandas.DataFrame): The DataFrame containing the data.
+    Results_Folder (str): The base folder where the results will be saved.
+    condition_col (str): The name of the column representing the condition. Default is 'Condition'.
+    repeat_col (str): The name of the column representing the repeat. Default is 'Repeat'.
+    track_id_col (str): The name of the column representing the track ID. Default is 'Unique_ID'.
+    """
+    track_counts = df.groupby([condition_col, repeat_col])[track_id_col].nunique()
+    track_counts_df = track_counts.reset_index()
+    track_counts_df.rename(columns={track_id_col: 'Number_of_Tracks'}, inplace=True)
+
+    # Pivot the data for plotting
+    pivot_df = track_counts_df.pivot(index=condition_col, columns=repeat_col, values='Number_of_Tracks').fillna(0)
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bars = pivot_df.plot(kind='bar', stacked=True, ax=ax)
+    ax.set_xlabel('Condition')
+    ax.set_ylabel('Number of Tracks')
+    ax.set_title('Stacked Histogram of Track Counts per Condition and Repeat')
+    ax.legend(title=repeat_col)
+    ax.grid(axis='y', linestyle='--')
+
+    # Hide horizontal grid lines
+    ax.yaxis.grid(False)
+
+    # Add number annotations on each stack
+    for bar in bars.patches:
+        ax.text(bar.get_x() + bar.get_width() / 2,
+                bar.get_y() + bar.get_height() / 2,
+                int(bar.get_height()),
+                ha='center', va='center', color='black', fontweight='bold', fontsize=8)
+
+    # Save the plot as a PDF
+    pdf_file = os.path.join(Results_Folder, 'Track_Counts_Histogram.pdf')
+    plt.savefig(pdf_file, bbox_inches='tight')
+    print(f"Saved histogram to {pdf_file}")
+
+    plt.show()
+
+    return track_counts_df        
+
+
