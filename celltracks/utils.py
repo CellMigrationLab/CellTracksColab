@@ -323,7 +323,11 @@ class TrackingData:
 
     def __init__(self):
         # ---------Parameters---------#
-        self.test_data_url = "https://zenodo.org/record/8420011/files/T_Cells_spots_only.zip?download=1"
+
+        #self.test_trackmate_csv = "https://zenodo.org/records/8413510/files/T_cell_dataset.zip?download=1"
+        #self.test_celltrackcolabs = "https://zenodo.org/record/8420011/files/T_Cells_spots_only.zip?download=1"
+
+        #self.test_data_url = "https://zenodo.org/record/8420011/files/T_Cells_spots_only.zip?download=1"
         self.parent_dir = os.getcwd().split("/Notebook")[
             0]  # We want the parent dir to the github repo. Sometimes the notebook may run somewhere else.
         self.Folder_path = os.path.join(self.parent_dir, "Tracks")
@@ -337,7 +341,8 @@ class TrackingData:
         self.Track_table = None # path to TrackMate spot table. If needed, update before loading the data.
         # ----------------------------#
 
-    def DownloadTestData(self):
+    def DownloadTestData(self, test_data_url):
+        self.test_data_url = test_data_url
 
         # Define the path to the ready to use tracking data
         local_zip_file = os.path.join(self.parent_dir, "Test_dataset", "T_cell_dataset.zip")
