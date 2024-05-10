@@ -1,3 +1,4 @@
+
 import ipywidgets as widgets
 from ipywidgets import Layout, VBox, Button, Accordion, SelectMultiple, IntText
 import scipy.stats as stats
@@ -16,6 +17,8 @@ from matplotlib.gridspec import GridSpec
 import requests
 from scipy.stats import zscore
 from scipy.stats import ks_2samp
+from sklearn.preprocessing import MinMaxScaler
+
 
 def get_selectable_columns(df):
     exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
@@ -321,7 +324,15 @@ def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Cond
 
     return track_counts_df        
 
-def heatmap_comparison(df, Results_Folder, Conditions, variables_per_page=40):
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import zscore
+from sklearn.preprocessing import MinMaxScaler
+from matplotlib.backends.backend_pdf import PdfPages
+import seaborn as sns
+
+def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', variables_per_page=40):
     # Get all the selectable columns
     variables_to_plot = get_selectable_columns(df)
 
@@ -331,8 +342,14 @@ def heatmap_comparison(df, Results_Folder, Conditions, variables_per_page=40):
     # Compute median for each variable across Conditions
     median_values = df.groupby(Conditions)[variables_to_plot].median().transpose()
 
-    # Normalize the median values using Z-score
-    normalized_values = median_values.apply(zscore, axis=1)
+    # Normalize the median values based on selected method
+    if normalization == 'zscore':
+        normalized_values = median_values.apply(zscore, axis=1)
+    elif normalization == 'minmax':
+        scaler = MinMaxScaler(feature_range=(-1, 1))
+        normalized_values = pd.DataFrame(scaler.fit_transform(median_values.values), index=median_values.index, columns=median_values.columns)
+    else:
+        raise ValueError("Unsupported normalization type. Use 'zscore' or 'minmax'.")
 
     # Number of pages
     total_variables = len(variables_to_plot)
@@ -353,7 +370,7 @@ def heatmap_comparison(df, Results_Folder, Conditions, variables_per_page=40):
 
             plt.figure(figsize=(16, 10))
             sns.heatmap(page_data, cmap='coolwarm', annot=True, linewidths=.1)
-            plt.title(f"Z-score Normalized Median Values of Variables by Condition (Page {page + 1})")
+            plt.title(f"{normalization.capitalize()} Normalized Median Values of Variables by Condition (Page {page + 1})")
             plt.tight_layout()
 
             pdf.savefig()  # saves the current figure into a pdf page
@@ -365,6 +382,7 @@ def heatmap_comparison(df, Results_Folder, Conditions, variables_per_page=40):
 
     print(f"Heatmaps saved to {Results_Folder}/Heatmaps_Normalized_Median_Values_by_Condition.pdf")
     print(f"All data saved to {Results_Folder}/Normalized_Median_Values_by_Condition.csv")
+
 
 
 def balance_dataset(df, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID', random_seed=None):
