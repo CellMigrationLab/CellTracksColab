@@ -440,7 +440,7 @@ def load_and_populate_from_TM_XML(folder_path):
     for filepath in tqdm(xml_files, desc="Processing XML Files"):
         #print(filepath)
         # Loading a TrackMate XML as a dataframe.
-        spot_df, track_df = trackmate_xml_to_df(filepath)
+        spot_df, track_df, units = trackmate_xml_to_df(filepath)
         units_list.append(units)
 
         # Adding CellTracksCollab features in spots dataframe.
