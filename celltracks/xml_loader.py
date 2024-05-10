@@ -373,7 +373,7 @@ def trackmate_xml_to_df(xml_path: str) -> tuple[pd.DataFrame, pd.DataFrame, dict
         # Getting spatial and temporal units.
         if element.tag == "Model" and event == "start":  # Add units.
             units = element.attrib
-            print(f"Units: {units}")
+            #print(f"Units: {units}")
             root.clear()  # Cleaning the tree to free up some memory.
             # All the browsed subelements of `root` are deleted.
 
