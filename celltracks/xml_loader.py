@@ -8,6 +8,8 @@ from typing import TypeAlias
 
 from lxml import etree as ET
 import pandas as pd
+from tqdm.notebook import tqdm
+
 
 
 # Notes about TrackMate CSVs:
@@ -19,6 +21,12 @@ import pandas as pd
 
 Features: TypeAlias = dict[str, dict[str, str]]
 
+def check_calibration(units_list):
+    """Check if all units calibration data match and print them."""
+    if all(u == units_list[0] for u in units_list):
+        print(f"All files have consistent calibration: {units_list[0]}")
+    else:
+        print("Warning: Inconsistent calibration data across files!")
 
 def get_features_dict(
     iterator: ET.iterparse,
@@ -339,11 +347,10 @@ def get_filtered_tracks_ID(
     return filtered_tracks_ID
 
 
-def trackmate_xml_to_df(
-    xml_path: str,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def trackmate_xml_to_df(xml_path: str) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+
     """
-    Read a XML file and extract a spots and a tracks dataframes.
+    Read a XML file and extract spots, tracks dataframes, and calibration units.
 
     Parameters
     ----------
@@ -422,17 +429,19 @@ def trackmate_xml_to_df(
     track_column_order = ["LABEL"] + [k for k in features["TrackFeatures"]]
     track_df = track_df.reindex(columns=track_column_order)
 
-    return spot_df, track_df
+    return spot_df, track_df, units
 
 
 def load_and_populate_from_TM_XML(folder_path):
 
     track_dfs, spot_dfs = [], []
-    #print(glob.glob(f"{folder_path}/*/*/*.xml"))
-    for filepath in glob.glob(f"{folder_path}/*/*/*.xml"):
-        print(filepath)
+    units_list = []
+    xml_files = list(glob.glob(f"{folder_path}/*/*/*.xml"))
+    for filepath in tqdm(xml_files, desc="Processing XML Files"):
+        #print(filepath)
         # Loading a TrackMate XML as a dataframe.
         spot_df, track_df = trackmate_xml_to_df(filepath)
+        units_list.append(units)
 
         # Adding CellTracksCollab features in spots dataframe.
         filename = Path(filepath).stem
@@ -459,5 +468,5 @@ def load_and_populate_from_TM_XML(folder_path):
     # Creating the final dataframes.
     merged_spots_df = pd.concat(spot_dfs, ignore_index=True)
     merged_tracks_df = pd.concat(track_dfs, ignore_index=True)
-
+    check_calibration(units_list)
     return merged_spots_df, merged_tracks_df
