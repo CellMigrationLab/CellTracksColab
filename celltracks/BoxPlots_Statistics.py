@@ -324,32 +324,28 @@ def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Cond
 
     return track_counts_df        
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.stats import zscore
-from sklearn.preprocessing import MinMaxScaler
-from matplotlib.backends.backend_pdf import PdfPages
-import seaborn as sns
 
-def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', variables_per_page=40):
+def heatmap_comparison(df, Results_Folder, Conditions, normalization='minmax', variables_per_page=40):
     # Get all the selectable columns
     variables_to_plot = get_selectable_columns(df)
 
+    # Work on a copy of the DataFrame to avoid SettingWithCopyWarning
+    df_mod = df.copy()
+    
     # Drop rows where all elements are NaNs in the variables_to_plot columns
-    df = df.dropna()
+    df_mod = df_mod.dropna(subset=variables_to_plot)
 
-    # Compute median for each variable across Conditions
-    median_values = df.groupby(Conditions)[variables_to_plot].median().transpose()
-
-    # Normalize the median values based on selected method
+    # Normalize the entire dataset for each variable
     if normalization == 'zscore':
-        normalized_values = median_values.apply(zscore, axis=1)
+        df_mod.loc[:, variables_to_plot] = df_mod[variables_to_plot].apply(zscore)
     elif normalization == 'minmax':
         scaler = MinMaxScaler(feature_range=(-1, 1))
-        normalized_values = pd.DataFrame(scaler.fit_transform(median_values.values), index=median_values.index, columns=median_values.columns)
+        df_mod.loc[:, variables_to_plot] = df_mod[variables_to_plot].apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten())
     else:
         raise ValueError("Unsupported normalization type. Use 'zscore' or 'minmax'.")
+
+    # Compute median for each variable across Conditions
+    median_values = df_mod.groupby(Conditions)[variables_to_plot].median().transpose()
 
     # Number of pages
     total_variables = len(variables_to_plot)
@@ -363,7 +359,7 @@ def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', v
         for page in range(num_pages):
             start = page * variables_per_page
             end = min(start + variables_per_page, total_variables)
-            page_data = normalized_values.iloc[start:end]
+            page_data = median_values.iloc[start:end]
 
             # Append this page's data to the all_pages_data DataFrame
             all_pages_data = pd.concat([all_pages_data, page_data])
