@@ -406,4 +406,20 @@ def calculate_rolling_spatial_coverage(group, window_size=5):
     average_spatial_coverage = np.nanmean(spatial_coverages) if spatial_coverages else 0
     return pd.Series({'Spatial Coverage Rolling': average_spatial_coverage})
 
+def compute_morphological_metrics(spots_df, metrics):
+    # Compute mean, median, std, min, and max for each metric
+    mean_df = spots_df.groupby('Unique_ID')[metrics].mean(numeric_only=True).add_prefix('MEAN_')
+    median_df = spots_df.groupby('Unique_ID')[metrics].median(numeric_only=True).add_prefix('MEDIAN_')
+    std_df = spots_df.groupby('Unique_ID')[metrics].std(numeric_only=True).add_prefix('STD_')
+    min_df = spots_df.groupby('Unique_ID')[metrics].min(numeric_only=True).add_prefix('MIN_')
+    max_df = spots_df.groupby('Unique_ID')[metrics].max(numeric_only=True).add_prefix('MAX_')
 
+    # Concatenate the computed metrics into a single dataframe
+    metrics_df = pd.concat([mean_df, median_df, std_df, min_df, max_df], axis=1)
+
+    return metrics_df
+
+def check_metrics_availability(spots_df, required_metrics):
+    # Identify available metrics in the DataFrame
+    available_metrics = [metric for metric in required_metrics if metric in spots_df.columns]
+    return available_metrics
