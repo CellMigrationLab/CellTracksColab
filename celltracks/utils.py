@@ -128,7 +128,7 @@ def populate_columns(df, filepath):
     parent_folder_name = path_parts[-3]  # The parent folder name is the third last part of the path
 
     filename_without_extension = os.path.splitext(os.path.basename(filepath))[0]
-    df['File_name'] = filename_without_extension
+    df['File_name'] = remove_suffix(filename_without_extension)
     df['Condition'] = parent_folder_name  # Populate 'Condition' with the parent folder name
     df['experiment_nb'] = folder_name  # Populate 'Repeat' with the folder name
 
@@ -141,77 +141,6 @@ def find_calibration_units(filepath, line=3):
         k += 1
         if k > line:
             return row[37:43]
-
-
-def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, chunksize=100000, check_calibration=False, row=3):
-    df_list = []
-    pattern = re.compile(file_pattern)  # Compile the file pattern to a regex object
-    files_to_process = []
-    if skiprows is None:
-        header_len = 1
-    else:
-        header_len = len(skiprows)
-
-    # First, list all the files we'll be processing
-    for dirpath, dirnames, filenames in os.walk(Folder_path):
-        for filename in filenames:
-            if pattern.match(filename):  # Check if the filename matches the file pattern
-                filepath = os.path.join(dirpath, filename)
-                files_to_process.append(filepath)
-
-    # Metadata list used to check for correct loading of rows
-    metadata_list = []
-
-    # Create a tqdm instance for progress tracking
-    for filepath in tqdm(files_to_process, desc="Processing Files"):
-
-        # Add to the metadata list
-        if check_calibration:
-            calibration_units = find_calibration_units(filepath, line=row)
-            metadata_list.append({
-                'filename': os.path.basename(filepath),
-                'expected_rows': sum(1 for row in open(filepath)) - (1+header_len),
-                # Get the expected number of rows in the file (subtracting header rows)
-                'file_size': os.path.getsize(filepath),  # Get file size
-                'calibration_units': calibration_units
-            })
-        else:
-            metadata_list.append({
-                'filename': os.path.basename(filepath),
-                'expected_rows': sum(1 for row in open(filepath)) - (1+header_len),
-                # Get the expected number of rows in the file (subtracting header rows)
-                'file_size': os.path.getsize(filepath)  # Get file size
-            })
-        # Load the data in chunksizes to avoid memory colapse
-        chunked_reader = pd.read_csv(filepath, skiprows=skiprows, usecols=usecols, chunksize=chunksize)
-        for chunk in chunked_reader:
-            processed_chunk = populate_columns(chunk, filepath)
-            df_list.append(processed_chunk)
-
-    if not df_list:  # if df_list is empty, return an empty DataFrame
-        print(f"No files found with pattern: {file_pattern}")
-        return pd.DataFrame()
-
-    else:
-
-        merged_df = pd.concat(df_list, ignore_index=True)
-
-        # Verify the total rows in the merged dataframe matches the total expected rows from metadata
-        total_expected_rows = sum(item['expected_rows'] for item in metadata_list)
-        if check_calibration:
-            calibration_units = [item['calibration_units'] for item in metadata_list]
-
-            if len(np.unique(calibration_units)) > 1:
-                print(f'Warning: The data is calibrated using different units: {np.unique(calibration_units)}')
-            else:
-                print(f'The data is calibrated using {np.unique(calibration_units)[0]} as units.')
-
-        if len(merged_df) != total_expected_rows:
-            print(f"Warning: Mismatch in total rows. Expected {total_expected_rows}, found {len(merged_df)} in the merged dataframe.")
-        else:
-            print(f"Success: The processed dataframe matches the metadata. Total rows: {len(merged_df)}")
-        return merged_df
-
 
 def generate_repeat(group):
     unique_experiment_nbs = sorted(group['experiment_nb'].unique())
@@ -317,6 +246,75 @@ def automatic_column_mapping(ref_columns, data_columns):
         for i in range(len(ref_columns) - len(values)):
             values.append(aux[i])
     return dict(zip(ref_columns, values))
+
+def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, chunksize=100000, check_calibration=False, row=3):
+    df_list = []
+    pattern = re.compile(file_pattern)  # Compile the file pattern to a regex object
+    files_to_process = []
+    if skiprows is None:
+        header_len = 1
+    else:
+        header_len = len(skiprows)
+
+    # First, list all the files we'll be processing
+    for dirpath, dirnames, filenames in os.walk(Folder_path):
+        for filename in filenames:
+            if pattern.match(filename):  # Check if the filename matches the file pattern
+                filepath = os.path.join(dirpath, filename)
+                files_to_process.append(filepath)
+
+    # Metadata list used to check for correct loading of rows
+    metadata_list = []
+
+    # Create a tqdm instance for progress tracking
+    for filepath in tqdm(files_to_process, desc="Processing Files"):
+
+        # Add to the metadata list
+        if check_calibration:
+            calibration_units = find_calibration_units(filepath, line=row)
+            metadata_list.append({
+                'filename': os.path.basename(filepath),
+                'expected_rows': sum(1 for row in open(filepath)) - (1+header_len),
+                # Get the expected number of rows in the file (subtracting header rows)
+                'file_size': os.path.getsize(filepath),  # Get file size
+                'calibration_units': calibration_units
+            })
+        else:
+            metadata_list.append({
+                'filename': os.path.basename(filepath),
+                'expected_rows': sum(1 for row in open(filepath)) - (1+header_len),
+                # Get the expected number of rows in the file (subtracting header rows)
+                'file_size': os.path.getsize(filepath)  # Get file size
+            })
+        # Load the data in chunksizes to avoid memory colapse
+        chunked_reader = pd.read_csv(filepath, skiprows=skiprows, usecols=usecols, chunksize=chunksize)
+        for chunk in chunked_reader:
+            processed_chunk = populate_columns(chunk, filepath)
+            df_list.append(processed_chunk)
+
+    if not df_list:  # if df_list is empty, return an empty DataFrame
+        print(f"No files found with pattern: {file_pattern}")
+        return pd.DataFrame()
+
+    else:
+
+        merged_df = pd.concat(df_list, ignore_index=True)
+
+        # Verify the total rows in the merged dataframe matches the total expected rows from metadata
+        total_expected_rows = sum(item['expected_rows'] for item in metadata_list)
+        if check_calibration:
+            calibration_units = [item['calibration_units'] for item in metadata_list]
+
+            if len(np.unique(calibration_units)) > 1:
+                print(f'Warning: The data is calibrated using different units: {np.unique(calibration_units)}')
+            else:
+                print(f'The data is calibrated using {np.unique(calibration_units)[0]} as units.')
+
+        if len(merged_df) != total_expected_rows:
+            print(f"Warning: Mismatch in total rows. Expected {total_expected_rows}, found {len(merged_df)} in the merged dataframe.")
+        else:
+            print(f"Success: The processed dataframe matches the metadata. Total rows: {len(merged_df)}")
+        return merged_df
 
 
 class TrackingData:
