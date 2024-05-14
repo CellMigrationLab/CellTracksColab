@@ -123,7 +123,7 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_ca
                     raise ValueError(f"DataFrame contains 'FRAME' numbers that exceed the number of frames in the video for file {file_name}.")
                 for frame_idx in range(num_frames):
                     # Process each frame with matching spots
-                    process_frame(ROI_img[frame_idx], df, file_name, frame_idx, Pixel_calibration)
+                    process_frame(ROI_img[frame_idx], df, file_name, Pixel_calibration, frame_idx)
             else:
                 # Process a single image
                 process_frame(ROI_img, df, file_name)
@@ -137,7 +137,7 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_ca
 
     return df
 
-def process_frame(ROI_img, df, file_name, ROI_name, frame_idx=None, Pixel_calibration):
+def process_frame(ROI_img, df, file_name, ROI_name, Pixel_calibration, frame_idx=None):
     """
     Process a single frame or image and update the dataframe with distance values.
 
