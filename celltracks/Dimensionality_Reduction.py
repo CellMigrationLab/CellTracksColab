@@ -21,6 +21,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tifffile import imwrite
 from tqdm.notebook import tqdm
 import imageio
+from celltracks.BoxPlots_Statistics import *
 
 # Function to plot selected variables per cluster with data saved to CSV and plots saved as PDF
 def plot_selected_vars_per_cluster(button, variable_checkboxes, Cluster, df, base_folder):
