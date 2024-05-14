@@ -37,7 +37,7 @@ def check_zero_pixel_percentage(ROI_img):
     return zero_pixel_percentage
 
 
-def check_and_correct_coordinates(df, file_name, image_dir, ROI_name):
+def check_and_correct_coordinates(df, file_name, image_dir, ROI_name, Pixel_calibration):
     """
     Checks and corrects the coordinates in the DataFrame for a given file to ensure they are within the bounds
     of the associated image or video.
