@@ -190,7 +190,7 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
 
     unique_conditions = filtered_df[Conditions].unique().tolist()
     num_comparisons = len(unique_conditions) * (len(unique_conditions) - 1) // 2
-    n_iterations = 10000
+    n_iterations = 1000
 
     for var in variables_to_plot:
         pdf_pages = PdfPages(f"{Results_Folder}/pdf/{var}_Boxplots_and_Statistics.pdf")
