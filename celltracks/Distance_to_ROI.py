@@ -89,7 +89,7 @@ def check_and_correct_coordinates(df, file_name, image_dir, ROI_name, Pixel_cali
 
     return df
     
-def compute_distances_using_distance_transform(df, image_dir, ROI_name):
+def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_calibration):
     """
     Compute distances to the nearest labeled pixel for each spot using the distance transform method.
     Automatically detects if the file is a single image or a video sequence and checks if the frame
@@ -123,7 +123,7 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name):
                     raise ValueError(f"DataFrame contains 'FRAME' numbers that exceed the number of frames in the video for file {file_name}.")
                 for frame_idx in range(num_frames):
                     # Process each frame with matching spots
-                    process_frame(ROI_img[frame_idx], df, file_name, frame_idx)
+                    process_frame(ROI_img[frame_idx], df, file_name, frame_idx, Pixel_calibration)
             else:
                 # Process a single image
                 process_frame(ROI_img, df, file_name)
@@ -137,7 +137,7 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name):
 
     return df
 
-def process_frame(ROI_img, df, file_name, ROI_name, frame_idx=None):
+def process_frame(ROI_img, df, file_name, ROI_name, frame_idx=None, Pixel_calibration):
     """
     Process a single frame or image and update the dataframe with distance values.
 
