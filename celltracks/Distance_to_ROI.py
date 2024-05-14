@@ -98,44 +98,37 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_ca
     Parameters:
     df (DataFrame): The dataframe containing the spots' data.
     image_dir (str): The directory where the ROI images or videos are stored.
+    ROI_name (str): The suffix for ROI images.
+    Pixel_calibration (float): Calibration multiplier to adjust distances.
     """
+    if Pixel_calibration == 0:
+        raise ValueError("Pixel_calibration cannot be zero.")
+
     for file_name in tqdm(df['File_name'].unique(), desc="Processing files"):
-        # Paths to the label images or video
-        ROI_img_path = f"{image_dir}/{file_name}_{ROI_name}.tif"
+        ROI_img_path = os.path.join(image_dir, f"{file_name}_{ROI_name}.tif")
 
         try:
             ROI_img = io.imread(ROI_img_path)
-            # Ensure the image dimensions are 3 or below
             if ROI_img.ndim > 3:
                 raise ValueError(f"Image file {file_name} has more than 3 dimensions, which is not supported.")
-
-            # Determine if the file is a video by checking if it has more than two dimensions
             is_video = ROI_img.ndim == 3
 
-            # Verify that the 'FRAME' number in the dataframe does not exceed the number of frames in the video
-            if is_video and 'FRAME' in df.columns:
+            if is_video:
                 file_df = df[df['File_name'] == file_name]
-            # Compute max_frame_num for the current file_name
-                max_frame_num = file_df['FRAME'].max()
+                max_frame_num = file_df['FRAME'].max() if 'FRAME' in file_df.columns else 0
                 num_frames = ROI_img.shape[0]
-                if max_frame_num > num_frames:
-                    print(f"Error: max_frame_num ({max_frame_num}) exceeds num_frames ({num_frames}) in file {file_name}.")
+                if max_frame_num >= num_frames:
                     raise ValueError(f"DataFrame contains 'FRAME' numbers that exceed the number of frames in the video for file {file_name}.")
                 for frame_idx in range(num_frames):
-                    # Process each frame with matching spots
-                    process_frame(ROI_img[frame_idx], df, file_name, Pixel_calibration, frame_idx)
+                    process_frame(ROI_img[frame_idx], file_df[file_df['FRAME'] == frame_idx], file_name, ROI_name, Pixel_calibration, frame_idx)
             else:
-                # Process a single image
-                process_frame(ROI_img, df, file_name)
+                process_frame(ROI_img, df[df['File_name'] == file_name], file_name, ROI_name, Pixel_calibration)
 
         except FileNotFoundError:
             print(f"Error: Image for {file_name} not found. Skipping...")
-            continue
         except ValueError as e:
             print(e)
-            break
-
-    return df
+            continue
 
 def process_frame(ROI_img, df, file_name, ROI_name, Pixel_calibration, frame_idx=None):
     """
@@ -145,24 +138,19 @@ def process_frame(ROI_img, df, file_name, ROI_name, Pixel_calibration, frame_idx
     ROI_img (ndarray): The ROI image or a single frame from a video.
     df (DataFrame): The dataframe to update.
     file_name (str): The name of the file being processed.
-    frame_idx (int, optional): The index of the frame in the video.
+    ROI_name (str): The ROI name used for labeling distances.
+    Pixel_calibration (float): Calibration factor for pixel coordinates.
+    frame_idx (int, optional): The index of the frame in the video, if applicable.
     """
-    # Compute distance transform
     distance_transform_ROI = distance_transform_edt(ROI_img == 0) * Pixel_calibration
 
-    # Filter dataframe for the current file and frame
-    file_df = df[df['File_name'] == file_name]
-    if frame_idx is not None:
-        file_df = file_df[file_df['FRAME'] == frame_idx]
-
-    for idx, row in tqdm(file_df.iterrows(), total=file_df.shape[0], desc=f"Processing coordinates for {file_name}", leave=False):
+    for idx, row in tqdm(df.iterrows(), total=df.shape[0], desc=f"Processing coordinates for {file_name}", leave=False):
         y, x = int(row['POSITION_Y'] / Pixel_calibration), int(row['POSITION_X'] / Pixel_calibration)
-                # Check if x and y are within the bounds of the image
-
         if 0 <= x < distance_transform_ROI.shape[1] and 0 <= y < distance_transform_ROI.shape[0]:
-            df.loc[df.index[idx], f'DistanceTo{ROI_name}'] = distance_transform_ROI[y, x]
+            df.at[idx, f'DistanceTo{ROI_name}'] = distance_transform_ROI[y, x]
         else:
-            print(f"Warning: Coordinates (x={x}, y={y}) out of bounds for {file_name}")    
+            print(f"Warning: Coordinates (x={x}, y={y}) out of bounds for {file_name}. Skipping...")
+    
     
 def print_filenames_with_nan_distances(spots_df, ROI_name):
     nan_filenames = []
