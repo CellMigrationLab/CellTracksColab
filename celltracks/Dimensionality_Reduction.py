@@ -214,58 +214,6 @@ def overlay_square_on_frame(frame, x, y, square_size=50, border_width=3):
 
     return overlaid_frame
 
-# Function to visualize a track for a cluster
-def visualize_track_for_cluster(cluster_number):
-    # Filter merged_tracks_df for exemplars and the selected cluster
-    exemplar_tracks = merged_tracks_df[(merged_tracks_df['Cluster_UMAP'] == cluster_number) & (merged_tracks_df['Exemplar'] == 1)]
-
-    if exemplar_tracks.empty:
-        display_error_message("No exemplar found for this cluster.")
-        return
-
-    for idx, track in exemplar_tracks.iterrows():
-        # Get the filename
-        filename = track['File_name']
-
-        # Find the corresponding tiff file
-        full_path = refined_find_matching_tiff_file(Video_path, filename)
-
-        if not full_path:
-            display_error_message(f"No matching .tif or .tiff file found for filename: {filename}")
-            continue
-
-        # Load the movie
-        movie = imread(full_path)
-
-        if len(movie.shape) != 3:
-            display_error_message(f"Warning: The loaded movie from file '{filename}' is not 2D over time.")
-            continue
-
-        # Fetch the track coordinates from merged_spots_df and adjust for calibration
-        track_id = track['Unique_ID']
-        track_coordinates = merged_spots_df[merged_spots_df['Unique_ID'] == track_id][['POSITION_T', 'POSITION_X', 'POSITION_Y']].copy()
-        track_coordinates['POSITION_X'] = track_coordinates['POSITION_X'] / Pixel_calibration
-        track_coordinates['POSITION_Y'] = track_coordinates['POSITION_Y'] / Pixel_calibration
-
-        # Define a function to update the display based on the frame slider
-        def update_display(frame_number):
-            plt.figure(figsize=(10, 10))
-            frame_with_square = movie[frame_number, :, :].copy()
-            coords_for_frame = track_coordinates[track_coordinates['POSITION_T'] == frame_number]
-            if not coords_for_frame.empty:
-                x, y = int(coords_for_frame['POSITION_X'].values[0]), int(coords_for_frame['POSITION_Y'].values[0])
-                frame_with_square = overlay_square_on_frame(frame_with_square, x, y)
-            plt.imshow(frame_with_square, cmap='gray')
-            plt.title(f"Frame {frame_number} for Exemplar in Cluster {cluster_number} from file {filename}")
-            plt.show()
-
-        # Create a slider for frame navigation
-        frame_slider = widgets.IntSlider(min=0, max=len(movie) - 1, description='Frame')
-
-        # Display the visualization with interactive for more reactive updates
-        w = interactive(update_display, frame_number=frame_slider)
-        display(w)  # This line explicitly displays the widget
-        break  # Only display for the first matching exemplar for the sake of demonstration
 
 def percentile_normalize_and_convert_uint8(image_sequence, low_percentile=1, high_percentile=99):
     """

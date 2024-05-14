@@ -100,12 +100,11 @@ def perform_randomization_test(df, cond1, cond2, var, n_iterations=1000):
         if abs(new_effect_size) >= abs(observed_effect_size):
             count_extreme += 1
 
-    p_value = (count_extreme + 1) / (n_iterations +1)
-
+    p_value = (count_extreme + 1) / (n_iterations + 1)
     return p_value
 
 def run_batch(params):
-    """ Function to run a batch of randomization tests. """
+    """Function to run a batch of randomization tests."""
     group1, group2, combined, observed_effect_size, n_iter = params
     count_extreme = 0
     for _ in range(n_iter):
@@ -122,14 +121,14 @@ def perform_randomization_test_parallel(df, cond1, cond2, var, n_iterations=1000
     group2 = df[df['Condition'] == cond2][var].to_numpy()
     observed_effect_size = cohen_d(group1, group2)
     combined = np.concatenate([group1, group2])
-    
+
     # Split iterations across multiple cores
     iter_per_core = [(group1, group2, combined.copy(), observed_effect_size, n_iterations // n_cores) for _ in range(n_cores)]
     for i in range(n_iterations % n_cores):
         iter_per_core[i] = (group1, group2, combined.copy(), observed_effect_size, iter_per_core[i][-1] + 1)
 
-    # Create a multiprocessing pool and map the execution to the pool
-    with Pool(n_cores) as pool:
+    # Create a multiprocessing pool with the 'spawn' start method to avoid threading issues
+    with get_context("spawn").Pool(n_cores) as pool:
         results = pool.map(run_batch, iter_per_core)
 
     total_extreme = sum(results)
