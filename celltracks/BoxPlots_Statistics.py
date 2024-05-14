@@ -3,7 +3,7 @@ import ipywidgets as widgets
 from ipywidgets import Layout, VBox, Button, Accordion, SelectMultiple, IntText
 import scipy.stats as stats
 import numpy as np
-from multiprocessing import Pool
+from multiprocessing import Pool, get_context
 import pandas as pd
 import os
 from matplotlib.backends.backend_pdf import PdfPages
