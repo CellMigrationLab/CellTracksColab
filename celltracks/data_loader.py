@@ -256,7 +256,7 @@ def automatic_column_mapping(ref_columns, data_columns):
     if len(values)<len(ref_columns):
         for i in range(len(ref_columns) - len(values)):
             values.append(aux[i])
-    return dict(zip(ref_columns, values)))
+    return dict(zip(ref_columns, values))
 
 def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, chunksize=100000, check_calibration=False, row=3):
     df_list = []
