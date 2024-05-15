@@ -75,7 +75,6 @@ def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
                 chunk.to_csv(f, mode="a", header=False, index=False)
                 pbar.update(len(chunk))
 
-
 def download_test_datasets(path_extracted_dir, url, local_zip_file=''):
     local_zip_file = os.path.join(path_extracted_dir, "T_cell_dataset.zip")
 
@@ -113,7 +112,6 @@ def download_test_datasets(path_extracted_dir, url, local_zip_file=''):
         zip_ref.extractall(path_extracted_dir)
     print("Test dataset extracted successfully.")
 
-
 def populate_columns(df, filepath):
     # Extract the parts of the file path
     path_parts = os.path.normpath(filepath).split(os.sep)
@@ -134,7 +132,6 @@ def populate_columns(df, filepath):
 
     return df
 
-
 def find_calibration_units(filepath, line=3):
     k = 0
     for row in open(filepath):
@@ -148,12 +145,10 @@ def generate_repeat(group):
     group['Repeat'] = group['experiment_nb'].map(experiment_nb_to_repeat)
     return group
 
-
 def sort_and_generate_repeat(merged_df):
     merged_df.sort_values(['Condition', 'experiment_nb'], inplace=True)
     merged_df = merged_df.groupby('Condition', group_keys=False).apply(generate_repeat)
     return merged_df
-
 
 def remove_suffix(filename):
     suffixes_to_remove = ["-tracks", "-spots"]
@@ -162,7 +157,6 @@ def remove_suffix(filename):
             filename = filename[:-len(suffix)]
             break
     return filename
-
 
 def validate_tracks_df(df):
     """Validate the tracks dataframe for necessary columns and data types."""
@@ -173,7 +167,6 @@ def validate_tracks_df(df):
             return False
 
     return True
-
 
 def validate_spots_df(df, data_dims="2D"):
     """Validate the spots dataframe for necessary columns and data types, and clean NaN values from TRACK_ID."""
@@ -204,7 +197,6 @@ def validate_spots_df(df, data_dims="2D"):
 
     return True
 
-
 def check_unique_id_match(df1, df2):
     df1_ids = set(df1['Unique_ID'])
     df2_ids = set(df2['Unique_ID'])
@@ -226,6 +218,25 @@ def check_unique_id_match(df1, df2):
                 f"There are {len(missing_in_df2)} Unique_ID values present in the first dataframe but missing in the second.")
             print("Examples of these IDs are:", list(missing_in_df2)[:5])
 
+def check_metadata(df, df_name="DataFrame", metadata_columns=['Condition', 'experiment_nb', 'Repeat']):
+    # Checks the metadata columns that are expected to have identical values for each filename
+    # For example: the file track_01.xml should only belong to one experimental repeat and condition.
+    # The column names depend on the dataframe being tested.
+    consistent_metadata = True
+    for name, group in df.groupby('File_name'):
+        for col in metadata_columns:
+            if not group[col].nunique() == 1:
+                consistent_metadata = False
+                print(f"Inconsistency found in {df_name} for file: {name} in column: {col}")
+                break  # Stop checking other columns for this group
+        if not consistent_metadata:
+            break  # Stop the entire process if any inconsistency is found
+
+    if consistent_metadata:
+        print(f"{df_name} has consistent metadata.")
+    else:
+        print(f"{df_name} has inconsistencies in the metadata. Please check the output for details.")
+    return
 
 def automatic_column_mapping(ref_columns, data_columns):
     aux = data_columns.copy()
@@ -245,7 +256,7 @@ def automatic_column_mapping(ref_columns, data_columns):
     if len(values)<len(ref_columns):
         for i in range(len(ref_columns) - len(values)):
             values.append(aux[i])
-    return dict(zip(ref_columns, values))
+    return dict(zip(ref_columns, values)))
 
 def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, chunksize=100000, check_calibration=False, row=3):
     df_list = []
@@ -426,6 +437,9 @@ class TrackingData:
 
         # Merge the filtered df_directionality back into the original DataFrame
         merged_tracks_df = pd.merge(merged_tracks_df, filtered_df, on='Unique_ID', how='left')
+        # Check that there are no duplicate files with different metadata
+        metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
+        check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
 
         self.tracks_data = merged_tracks_df
 
@@ -455,6 +469,11 @@ class TrackingData:
             merged_spots_df['TRACK_ID'] = merged_spots_df['TRACK_ID'].astype(int)
             merged_spots_df['Unique_ID'] = merged_spots_df['File_name'] + "_" + merged_spots_df['TRACK_ID'].astype(str)
             merged_spots_df.dropna(subset=['POSITION_X', 'POSITION_Y', 'POSITION_Z'], inplace=True)
+
+        # Check that there are no duplicate files with different metadata
+        metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
+        check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
+        check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
 
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
@@ -494,20 +513,31 @@ class TrackingData:
             save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                          desc="Saving Spots")
 
+        # Check that there are no duplicate files with different metadata
+        metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
+        check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
+        check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
+        # Store the values
         self.spots_data = merged_spots_df
         self.tracks_data = merged_tracks_df
+
 
     def __load_celltrackscolab_table(self):
         print("Loading track table file....")
         merged_tracks_df = pd.read_csv(os.path.join(self.Folder_path, self.Track_table), low_memory=False)
         if not validate_tracks_df(merged_tracks_df):
             print("Error: Validation failed for loaded tracks dataframe.")
+        # Check that there are no duplicate files with different metadata
+        metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
+        check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
         self.tracks_data = merged_tracks_df
 
         print("Loading spot table file....")
         merged_spots_df = pd.read_csv(os.path.join(self.Folder_path, self.Spot_table), low_memory=False)
         if not validate_spots_df(merged_spots_df, data_dims=self.data_dims):
             print("Error: Validation failed for loaded spots dataframe.")
+        # Check that there are no duplicate files with different metadata
+        check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
         self.spots_data = merged_spots_df
 
     def LoadTrackingData(self):
@@ -568,6 +598,10 @@ class TrackingData:
             self.__create_tracks_csv()
 
         check_unique_id_match(self.spots_data, self.tracks_data)
+        # Check that there are no duplicate files with different metadata
+        metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
+        check_metadata(self.spots_data, df_name="Spots DataFrame", metadata_columns=metadata_columns)
+        check_metadata(self.tracks_data, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
         # Save the DataFrame with the selected columns merged
         save_dataframe_with_progress(self.tracks_data, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
                                      desc="Saving Tracks")
