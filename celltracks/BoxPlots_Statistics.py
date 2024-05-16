@@ -275,6 +275,7 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
 
         plt.tight_layout()
         pdf_pages.savefig(fig)
+        plt.show()
         
 def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID'):
     """

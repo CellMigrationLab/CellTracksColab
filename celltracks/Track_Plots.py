@@ -19,8 +19,9 @@ def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_pl
         plt.xlabel('POSITION_X')
         plt.ylabel('POSITION_Y')
         plt.title(f'Coordinates for {filename}')
-        plt.savefig(f"{Results_Folder}/Tracks/Tracks_{filename}.pdf")
         plt.gca().invert_yaxis()
+        plt.savefig(f"{Results_Folder}/Tracks/Tracks_{filename}.pdf")
+        
         if display_plots:  # Only display plots if explicitly requested
             plt.show()
         else:
@@ -53,6 +54,7 @@ def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Fo
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for {filename}')
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{filename}.pdf")
+        
         if display_plots:  # Only display plots if explicitly requested
             plt.show()
         else:
@@ -82,19 +84,17 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
 
             # Plot the normalized track
             plt.plot(normalized_x, normalized_y, marker='o', linestyle='-', markersize=2)
-
+            
         plt.xlabel('Normalized POSITION_X')
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for Condition: {condition}, Repeat: {repeat}')
-
+	plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}_{repeat}.pdf")
+	
         if display_plots:
             plt.show()
         else:
             plt.close()
 
-        # Optionally save the plot
-        plot_filename = f"Condition_{condition}_Repeat_{repeat}.pdf"
-        plt.savefig(os.path.join(Results_Folder, "Tracks", plot_filename))
     else:
         print("No data available for the selected condition and repeat.")
 
@@ -122,16 +122,13 @@ def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Res
         plt.xlabel('Normalized POSITION_X')
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for Condition: {condition}')
+        plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}.pdf")
 
         if display_plots:
             plt.show()
         else:
             plt.close()
 
-        # Optionally save the plot
-        plot_filename = f"Condition_{condition}_All_Repeat.pdf"
-        plt.savefig(os.path.join(Results_Folder, "Tracks", plot_filename))
-        print(f"Plot saved as {plot_filename} in {Results_Folder}/Tracks/")
     else:
         print("No data available for the selected condition.")
 
@@ -185,6 +182,7 @@ def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_pl
     plt.axis('equal')
     plt.gca().invert_yaxis()
     plt.savefig(f"{Results_Folder}/Tracks/Vectors_Tracks_{filename}.pdf")
+    
     if display_plots:  # Only display plots if explicitly requested
         plt.show()
     else:
@@ -199,9 +197,9 @@ def plot_coordinates_side_by_side(filename, merged_spots_df, filtered_and_smooth
         # Create subplots
         fig, axes = plt.subplots(1, 2, figsize=(20, 8))
 
-        # Invert y-axis for both plots (optional, based on your preference)
-        # axes[0].invert_yaxis()
-        # axes[1].invert_yaxis()
+        # Invert y-axis for both plots
+        axes[0].invert_yaxis()
+        axes[1].invert_yaxis()
 
         # Create a colormap to ensure consistent colors across tracks
         unique_ids = raw_df['Unique_ID'].unique()
