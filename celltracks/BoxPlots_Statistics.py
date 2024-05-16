@@ -47,6 +47,21 @@ def display_condition_selection(df, column_name):
     condition_accordion.set_title(0, 'Select Conditions')
     return condition_selector, condition_accordion
 
+def format_scientific_for_ticks(x):
+    """Format p-values for ticks: use scientific notation for values below 0.001, otherwise use standard notation."""
+    if x < 0.001:
+        return f"{x:.1e}"
+    else:
+        return f"{x:.4f}"
+
+def format_p_value(x):
+    """Format p-values to four significant digits."""
+    if x < 0.001:
+        return "< 0.001"
+    else:
+        return f"{x:.4g}"  # .4g ensures four significant digits
+
+
 def safe_log10_p_values(matrix):
     """Apply a safe logarithmic transformation to p-values, handling p=1 specifically."""
     # Replace non-positive values with a very small number just greater than 0
@@ -59,20 +74,35 @@ def safe_log10_p_values(matrix):
 
 def plot_heatmap(ax, matrix, title, cmap='viridis'):
     """Plot a heatmap with logarithmic scaling of p-values and real p-values as annotations."""
-    log_matrix = safe_log10_p_values(matrix.fillna(1))  # Handle NaN values by assuming non-significant (p=1)
+    log_matrix = safe_log10_p_values(matrix.fillna(1))
 
-    # Use LogNorm for the color scale, ensuring no invalid vmin or vmax
-    vmin = np.min(log_matrix[np.isfinite(log_matrix)])
+    # Define the normalization range
+    vmin = -np.log10(0.1)  # Set vmin to the log-transformed value of 0.1
     vmax = np.max(log_matrix[np.isfinite(log_matrix)])
-    norm = LogNorm(vmin=max(vmin, 1e-10), vmax=0.1)  # Ensure vmin is positive and small
 
-    # Annotations as real p-values, formatted in scientific notation, special handling for p=1 to show as "1.00"
-    formatted_annotations = matrix.applymap(lambda x: f"{x:.2e}" if pd.notna(x) and x != 1 else "1.00")
+    if vmin > vmax:
+      vmin = vmax        
 
-    # Plot the heatmap with string annotations for clarity
-    sns.heatmap(log_matrix, ax=ax, cmap=cmap, norm=norm, annot=formatted_annotations,
-                fmt="", xticklabels=matrix.columns, yticklabels=matrix.index)
+    # Format annotations
+    formatted_annotations = matrix.applymap(lambda x: format_p_value(x) if pd.notna(x) else "NaN")
+
+    # Plot the heatmap without the color bar
+    heatmap = sns.heatmap(log_matrix, ax=ax, cmap=cmap, annot=formatted_annotations,
+                          fmt="", xticklabels=matrix.columns, yticklabels=matrix.index, cbar=False, vmin=vmin, vmax=vmax)
     ax.set_title(title)
+
+    # Create a color bar with conditional formatting for ticks
+    norm = plt.Normalize(vmin=vmin, vmax=vmax)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = ax.figure.colorbar(sm, ax=ax)
+
+    # Set custom ticks and labels for the color bar
+    num_ticks = 5
+    tick_locs = np.linspace(vmin, vmax, num_ticks)
+    tick_labels = [format_scientific_for_ticks(10**-tick) for tick in tick_locs]
+    cbar.set_ticks(tick_locs)
+    cbar.set_ticklabels(tick_labels)
 
 def cohen_d(group1, group2):
     """Calculate Cohen's d for measuring effect size between two groups."""
@@ -202,7 +232,7 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
             group1 = filtered_df[filtered_df[Conditions] == cond1][var]
             group2 = filtered_df[filtered_df[Conditions] == cond2][var]
 
-            effect_size = cohen_d(group1, group2)
+            effect_size = abs(cohen_d(group1, group2))
 
             if method == 't-test':
                 p_value = perform_t_test(filtered_df, cond1, cond2, var)
