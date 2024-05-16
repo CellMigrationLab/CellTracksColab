@@ -139,6 +139,38 @@ def find_calibration_units(filepath, line=3):
         if k > line:
             return row[37:43]
 
+def filter_and_delete_short_tracks(merged_spots_df, merged_tracks_df):
+    """
+    Filters out tracks with fewer than two spots from the given spots and tracks DataFrames.
+
+    Parameters:
+    - merged_spots_df: DataFrame containing all spots data, each row is a spot,
+                       and 'Unique_ID' is used to identify tracks.
+    - merged_tracks_df: DataFrame containing all tracks data, each row is a track,
+                        and 'Unique_ID' must correspond to the IDs in the spots DataFrame.
+
+    Returns:
+    - filtered_spots_df: DataFrame containing only spots from tracks with two or more spots.
+    - filtered_tracks_df: DataFrame containing only tracks that have two or more spots.
+
+    Note: This function assumes that both DataFrames are properly aligned and that the
+    'Unique_ID' column is correctly formatted.
+    """
+
+    # Print initial status
+    print("Starting to filter tracks with fewer than two spots...")
+
+    # Filter out tracks with fewer than 2 spots
+    valid_ids = merged_spots_df.groupby('Unique_ID').filter(lambda x: len(x) >= 2)['Unique_ID'].unique()
+    print(f"Found {len(valid_ids)} tracks with two or more spots.")
+
+    filtered_spots_df = merged_spots_df[merged_spots_df['Unique_ID'].isin(valid_ids)]
+    filtered_tracks_df = merged_tracks_df[merged_tracks_df['Unique_ID'].isin(valid_ids)]
+
+    print("Filtering complete. Returning filtered DataFrames.")
+
+    return filtered_spots_df, filtered_tracks_df
+
 def generate_repeat(group):
     unique_experiment_nbs = sorted(group['experiment_nb'].unique())
     experiment_nb_to_repeat = {experiment_nb: i + 1 for i, experiment_nb in enumerate(unique_experiment_nbs)}
@@ -456,8 +488,6 @@ class TrackingData:
             merged_tracks_df = sort_and_generate_repeat(merged_tracks_df)
             merged_tracks_df['Unique_ID'] = merged_tracks_df['File_name'] + "_" + merged_tracks_df['TRACK_ID'].astype(
                 str)
-            save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
-                                         desc="Saving Tracks")
 
         print(f"These are its column names:{merged_spots_df.columns}")
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
@@ -469,12 +499,16 @@ class TrackingData:
             merged_spots_df['TRACK_ID'] = merged_spots_df['TRACK_ID'].astype(int)
             merged_spots_df['Unique_ID'] = merged_spots_df['File_name'] + "_" + merged_spots_df['TRACK_ID'].astype(str)
             merged_spots_df.dropna(subset=['POSITION_X', 'POSITION_Y', 'POSITION_Z'], inplace=True)
+            # filter out short tracks (2 data points)
+            merged_spots_df, merged_tracks_df = filter_and_delete_short_tracks(merged_spots_df, merged_tracks_df)
 
         # Check that there are no duplicate files with different metadata
         metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
         check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
         check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
 
+        save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+                                     desc="Saving Tracks")
         save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
                                      desc="Saving Spots")
         self.spots_data = merged_spots_df
@@ -510,13 +544,17 @@ class TrackingData:
             merged_spots_df['TRACK_ID'] = merged_spots_df['TRACK_ID'].astype(int)
             merged_spots_df['Unique_ID'] = merged_spots_df['File_name'] + "_" + merged_spots_df['TRACK_ID'].astype(str)
             merged_spots_df.dropna(subset=['POSITION_X', 'POSITION_Y', 'POSITION_Z'], inplace=True)
-            save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
-                                         desc="Saving Spots")
+            # filter out short tracks (2 data points)
+            merged_spots_df, merged_tracks_df = filter_and_delete_short_tracks(merged_spots_df, merged_tracks_df)
 
         # Check that there are no duplicate files with different metadata
         metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
         check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
         check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
+        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+                                     desc="Saving Spots")
+        save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+                                     desc="Saving Tracks")
         # Store the values
         self.spots_data = merged_spots_df
         self.tracks_data = merged_tracks_df
@@ -539,6 +577,11 @@ class TrackingData:
         # Check that there are no duplicate files with different metadata
         check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
         self.spots_data = merged_spots_df
+        # filter out short tracks (2 data points)
+        merged_spots_df, merged_tracks_df = filter_and_delete_short_tracks(self.spots_data, self.tracks_data)
+        self.spots_data = merged_spots_df
+        self.tracks_data = merged_tracks_df
+
 
     def LoadTrackingData(self):
 
@@ -602,9 +645,12 @@ class TrackingData:
         metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
         check_metadata(self.spots_data, df_name="Spots DataFrame", metadata_columns=metadata_columns)
         check_metadata(self.tracks_data, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
+        # filter out short tracks (2 data points)
+        merged_spots_df, merged_tracks_df = filter_and_delete_short_tracks(self.spots_data, self.tracks_data)
+        self.spots_data = merged_spots_df
+        self.tracks_data = merged_tracks_df
         # Save the DataFrame with the selected columns merged
+        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+                                     desc="Saving Spots")
         save_dataframe_with_progress(self.tracks_data, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
                                      desc="Saving Tracks")
-
-
-
