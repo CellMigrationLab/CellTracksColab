@@ -88,7 +88,7 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
         plt.xlabel('Normalized POSITION_X')
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for Condition: {condition}, Repeat: {repeat}')
-	plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}_{repeat}.pdf")
+        plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}_{repeat}.pdf")
 	
         if display_plots:
             plt.show()
