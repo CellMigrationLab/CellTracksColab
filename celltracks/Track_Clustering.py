@@ -77,7 +77,7 @@ def plot_clustering_coordinates(filename, merged_spots_df, analysis_option, Resu
     else:
         print("No valid filename selected")
         
- def simulate_random_points(num_points, x_range, y_range):
+def simulate_random_points(num_points, x_range, y_range):
     x_coords = np.random.uniform(x_range[0], x_range[1], num_points)
     y_coords = np.random.uniform(y_range[0], y_range[1], num_points)
     return np.column_stack((x_coords, y_coords))
