@@ -148,7 +148,7 @@ def select_analysis_point(track, analysis_option):
 
     return point
 
-def plot_coordinates_Clustering(filename, analysis_option, base_folder):
+def plot_coordinates_Clustering(filename, merged_spots_df, analysis_option, base_folder):
     if filename:
         # Filter the DataFrame based on the selected filename
         filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
