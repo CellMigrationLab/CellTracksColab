@@ -64,7 +64,7 @@ def plot_heatmap(ax, matrix, title, cmap='viridis'):
     # Use LogNorm for the color scale, ensuring no invalid vmin or vmax
     vmin = np.min(log_matrix[np.isfinite(log_matrix)])
     vmax = np.max(log_matrix[np.isfinite(log_matrix)])
-    norm = LogNorm(vmin=max(vmin, 1e-10), vmax=vmax)  # Ensure vmin is positive and small
+    norm = LogNorm(vmin=max(vmin, 1e-10), vmax=0.1)  # Ensure vmin is positive and small
 
     # Annotations as real p-values, formatted in scientific notation, special handling for p=1 to show as "1.00"
     formatted_annotations = matrix.applymap(lambda x: f"{x:.2e}" if pd.notna(x) and x != 1 else "1.00")
