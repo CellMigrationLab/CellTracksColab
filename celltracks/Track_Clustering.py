@@ -28,6 +28,7 @@ from scipy.ndimage import distance_transform_edt
 from tqdm.notebook import tqdm
 from scipy.ndimage import distance_transform_edt
 from scipy.stats import linregress
+from scipy.spatial import distance_matrix
 from celltracks.BoxPlots_Statistics import *
 
 def plot_clustering_coordinates(filename, merged_spots_df, analysis_option, Results_Folder, r_values_end, max_x, max_y, show_plots=True):
