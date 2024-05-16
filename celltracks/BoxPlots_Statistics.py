@@ -164,7 +164,7 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
     plt.clf()  # Clear the current figure before creating a new plot
     print("Plotting in progress...")
 
-  # Get selected variables
+    # Get selected variables
     variables_to_plot = [box.description for box in variable_checkboxes if box.value]
     n_plots = len(variables_to_plot)
     method = stat_method_selector.value
@@ -172,20 +172,21 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
     if n_plots == 0:
         print("No variables selected for plotting")
         return
-
-  # Get selected conditions
+    
+    # Get selected conditions
     selected_conditions = condition_selector.value
     n_selected_conditions = len(selected_conditions)
-
     if n_selected_conditions == 0:
-        print("No conditions selected for plotting")
-        return
+        print("No conditions selected for plotting, therefore all available conditions are selected by default")        
+        selected_conditions = df[Conditions].unique().tolist()
+    
+    n_selected_conditions = len(selected_conditions)
 
     effect_size_matrices = {}
     p_value_matrices = {}
     bonferroni_matrices = {}
 
-# Use only selected and ordered conditions
+    # Use only selected and ordered conditions
     filtered_df = df[df[Conditions].isin(selected_conditions)].copy()
 
     unique_conditions = filtered_df[Conditions].unique().tolist()
@@ -193,7 +194,6 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
     n_iterations = 1000
 
     for var in variables_to_plot:
-        pdf_pages = PdfPages(f"{Results_Folder}/pdf/{var}_Boxplots_and_Statistics.pdf")
         effect_size_matrices[var] = pd.DataFrame(0, index=unique_conditions, columns=unique_conditions)
         p_value_matrices[var] = pd.DataFrame(1, index=unique_conditions, columns=unique_conditions)
         bonferroni_matrices[var] = pd.DataFrame(1, index=unique_conditions, columns=unique_conditions)
@@ -207,9 +207,7 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
             if method == 't-test':
                 p_value = perform_t_test(filtered_df, cond1, cond2, var)
             if method == 'randomization test':
-                #p_value = perform_randomization_test(filtered_df, cond1, cond2, var, n_iterations=n_iterations)
                 p_value = perform_randomization_test_parallel(filtered_df, cond1, cond2, var, n_iterations=n_iterations)
-
 
             # Set and mirror effect sizes and p-values
             effect_size_matrices[var].loc[cond1, cond2] = effect_size_matrices[var].loc[cond2, cond1] = effect_size
@@ -226,26 +224,27 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
 
         combined_df.to_csv(f"{Results_Folder}/csv/{var}_statistics_combined.csv")
 
-    # Create a new figure
+        # Create a new figure
         fig = plt.figure(figsize=(16, 10))
         gs = GridSpec(2, 3, height_ratios=[1.5, 1])
         ax_box = fig.add_subplot(gs[0, :])
-    # Extract the data for this variable
+
+        # Extract the data for this variable
         data_for_var = df[[Conditions, var, 'Repeat', 'File_name' ]]
-    # Save the data_for_var to a CSV for replotting
+        # Save the data_for_var to a CSV for replotting
         data_for_var.to_csv(f"{Results_Folder}/csv/{var}_boxplot_data.csv", index=False)
 
-    # Calculate the Interquartile Range (IQR) using the 25th and 75th percentiles
+        # Calculate the Interquartile Range (IQR) using the 25th and 75th percentiles
         Q1 = df[var].quantile(0.2)
         Q3 = df[var].quantile(0.8)
         IQR = Q3 - Q1
 
-    # Define bounds for the outliers
+        # Define bounds for the outliers
         multiplier = 10
         lower_bound = Q1 - multiplier * IQR
         upper_bound = Q3 + multiplier * IQR
 
-    # Plotting
+        # Plotting
         sns.boxplot(x=Conditions, y=var, data=filtered_df, ax=ax_box, color='lightgray')  # Boxplot
         sns.stripplot(x=Conditions, y=var, data=filtered_df, ax=ax_box, hue='Repeat', dodge=True, jitter=True, alpha=0.2)  # Individual data points
         ax_box.set_ylim([max(min(filtered_df[var]), lower_bound), min(max(filtered_df[var]), upper_bound)])
@@ -258,24 +257,26 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
         ax_box.set_xticklabels(tick_labels, rotation=90)
         ax_box.legend(loc='center left', bbox_to_anchor=(1, 0.5), title='Repeat')
 
-    # Statistical Analyses and Heatmaps
+        # Statistical Analyses and Heatmaps
 
-      # Effect Size heatmap
+        # Effect Size heatmap
         ax_d = fig.add_subplot(gs[1, 0])
         sns.heatmap(effect_size_matrices[var].fillna(0), annot=True, cmap="viridis", cbar=True, square=True, ax=ax_d, vmax=1)
         ax_d.set_title(f"Effect Size (Cohen's d)")
 
-      # p-value heatmap using the new function
+        # p-value heatmap using the new function
         ax_p = fig.add_subplot(gs[1, 1])
         plot_heatmap(ax_p, p_value_matrices[var], f"{method} p-value")
 
-      # Bonferroni corrected p-value heatmap using the new function
+        # Bonferroni corrected p-value heatmap using the new function
         ax_bonf = fig.add_subplot(gs[1, 2])
         plot_heatmap(ax_bonf, bonferroni_matrices[var], "Bonferroni-corrected p-value")
 
         plt.tight_layout()
-        pdf_pages.savefig(fig)
-        plt.show()
+        pdf_pages = PdfPages(f"{Results_Folder}/pdf/{var}_Boxplots_and_Statistics.pdf")
+        pdf_pages.savefig(fig)  
+        pdf_pages.close()
+        plt.show()   
         
 def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID'):
     """
