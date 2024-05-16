@@ -103,7 +103,7 @@ def plot_selected_vars_cluster(button, variable_checkboxes, df, Conditions, Clus
             group1 = filtered_df[filtered_df[Conditions] == cond1][var]
             group2 = filtered_df[filtered_df[Conditions] == cond2][var]
 
-            effect_size = cohen_d(group1, group2)
+            effect_size = abs(cohen_d(group1, group2))
 
             if method == 't-test':
                 p_value = perform_t_test(filtered_df, cond1, cond2, var)
