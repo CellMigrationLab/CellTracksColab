@@ -75,9 +75,11 @@ def plot_selected_vars_cluster(button, variable_checkboxes, df, Conditions, Clus
     n_selected_conditions = len(selected_conditions)
 
     if n_selected_conditions == 0:
-        print("No conditions selected for plotting")
-        return
-
+        print("No conditions selected for plotting, therefore all available conditions are selected by default")        
+        selected_conditions = df[Conditions].unique().tolist()
+        
+    n_selected_conditions = len(selected_conditions)
+    
     selected_cluster = cluster_dropdown.value
     print(f"Plotting in progress for Cluster {selected_cluster}...")
     filtered_df = df[(df[Conditions].isin(selected_conditions)) & (df[Cluster] == selected_cluster)].copy()
@@ -172,7 +174,9 @@ def plot_selected_vars_cluster(button, variable_checkboxes, df, Conditions, Clus
         plot_heatmap(ax_bonf, bonferroni_matrices[var], "Bonferroni-corrected p-value")
 
         plt.tight_layout()
-        pdf_pages.savefig(fig)
+        pdf_pages.savefig(fig)  
+        pdf_pages.close()
+        plt.show()
 
 def display_cluster_dropdown(df, Cluster):
     # Extract unique clusters
