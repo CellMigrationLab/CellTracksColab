@@ -62,7 +62,18 @@ def plot_selected_vars_cluster(button, variable_checkboxes, df, Conditions, Clus
     plt.clf()  # Clear the current figure before creating a new plot
 
     # Get selected variables
-    variables_to_plot = [box.description for box in variable_checkboxes if box.value]
+    variables_to_plot = []
+    for category, checkboxes in checkboxes_dict.items():
+        if isinstance(checkboxes, dict):
+            for subcategory, subcheckboxes in checkboxes.items():
+                for checkbox in subcheckboxes:
+                    if checkbox.value:
+                        variables_to_plot.append(checkbox.description)
+        else:
+            for checkbox in checkboxes:
+                if checkbox.value:
+                    variables_to_plot.append(checkbox.description)
+    
     n_plots = len(variables_to_plot)
     method = stat_method_selector.value
 
