@@ -23,7 +23,7 @@ from sklearn.preprocessing import MinMaxScaler
 computed_metrics = {
     'Track Metrics': [
         'Track Duration', 'Mean Speed', 'Median Speed', 'Max Speed', 'Min Speed',
-        'Speed Standard Deviation', 'Total Distance Traveled', 'Spatial Coverage', 'Tortuosity', 'Total Turning Angle'
+        'Speed Standard Deviation', 'Directionality', 'Total Distance Traveled', 'Spatial Coverage', 'Tortuosity', 'Total Turning Angle'
     ],
     'Rolling Track Metrics': [
         'Mean Speed Rolling', 'Median Speed Rolling', 'Max Speed Rolling',
