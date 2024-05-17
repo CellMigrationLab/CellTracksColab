@@ -20,17 +20,105 @@ from scipy.stats import ks_2samp
 from sklearn.preprocessing import MinMaxScaler
 
 
+computed_metrics = {
+    'Track Metrics': [
+        'Track Duration', 'Mean Speed', 'Median Speed', 'Max Speed', 'Min Speed',
+        'Speed Standard Deviation', 'Total Distance Traveled', 'Spatial Coverage', 'Tortuosity', 'Total Turning Angle'
+    ],
+    'Rolling Track Metrics': [
+        'Mean Speed Rolling', 'Median Speed Rolling', 'Max Speed Rolling',
+        'Min Speed Rolling Rolling', 'Speed Standard Deviation Rolling',
+        'Total Distance Traveled Rolling', 'Directionality Rolling', 'Tortuosity Rolling', 'Total Turning Angle Rolling', 'Spatial Coverage Rolling'
+    ],
+    'Morphological Metrics': [
+        'MEAN_', 'MEDIAN_', 'STD_', 'MIN_', 'MAX_'
+    ]
+}
+
+def categorize_columns(df):
+    exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
+    all_columns = [col for col in df.columns if col not in exclude_cols]
+    
+    categorized_columns = {
+        'Metrics Computed in CellTracksColab': {
+            'Track Metrics': [],
+            'Rolling Track Metrics': [],
+            'Morphological Metrics': []
+        },
+        'Metrics Imported from your Tracking Software': []
+    }
+    
+    for col in all_columns:
+        added = False
+        for category, metrics in computed_metrics.items():
+            if category in categorized_columns['Metrics Computed in CellTracksColab']:
+                if col in metrics:
+                    categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
+                    added = True
+                    break
+                # Handle prefix matching for Morphological Metrics
+                if category == 'Morphological Metrics' and any(col.startswith(prefix) for prefix in metrics):
+                    categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
+                    added = True
+                    break
+        if not added:
+            categorized_columns['Metrics Imported from your Tracking Software'].append(col)
+    
+    return categorized_columns
+
 def get_selectable_columns(df):
     exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
     return [col for col in df.columns if (df[col].dtype.kind in 'biufc') and (col not in exclude_cols)]
 
-def display_variable_checkboxes(selectable_columns):
-    variable_checkboxes = [widgets.Checkbox(value=False, description=col) for col in selectable_columns]
-    checkboxes_widget = widgets.VBox([
-        widgets.Label('Variables to Plot:'),
-        widgets.GridBox(variable_checkboxes, layout=widgets.Layout(grid_template_columns="repeat(3, 300px)"))
-    ])
-    return variable_checkboxes, checkboxes_widget
+def get_selectable_columns_plots(df):
+    computed_patterns = ['directionality', 'tortuosity', 'area', 'perimeter', 'basic_metric', 'advanced_metric']
+    exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
+    columns = [col for col in df.columns if (df[col].dtype.kind in 'biufc') and (col not in exclude_cols)]
+    
+    computed_columns = [col for col in columns if any(pattern in col for pattern in computed_patterns)]
+    imported_columns = [col for col in columns if col not in computed_columns]
+    
+    return {'Computed in CellTracksColab': computed_columns, 'Imported from Tracking Software': imported_columns}
+
+def display_variable_checkboxes(categorized_columns):
+    def create_select_all_checkbox(category, checkboxes):
+        def toggle_all(change):
+            for checkbox in checkboxes:
+                checkbox.value = change.new
+        select_all_checkbox = widgets.Checkbox(value=False, description=f'Select All {category}')
+        select_all_checkbox.observe(toggle_all, names='value')
+        return select_all_checkbox
+
+    accordion_items = []
+    checkboxes_dict = {}
+    for main_category, sub_categories in categorized_columns.items():
+        if isinstance(sub_categories, dict):
+            sub_accordion_items = []
+            checkboxes_dict[main_category] = {}
+            for sub_category, columns in sub_categories.items():
+                checkboxes = [widgets.Checkbox(value=False, description=col) for col in columns]
+                checkboxes_grid = widgets.GridBox(checkboxes, layout=widgets.Layout(grid_template_columns="repeat(3, 300px)"))
+                sub_accordion_items.append(VBox([create_select_all_checkbox(sub_category, checkboxes), checkboxes_grid]))
+                checkboxes_dict[main_category][sub_category] = checkboxes
+            sub_accordion = Accordion(children=sub_accordion_items)
+            for i, sub_category in enumerate(sub_categories.keys()):
+                sub_accordion.set_title(i, sub_category)
+            sub_accordion.selected_index = None  # Close all accordion sections by default
+            accordion_items.append(sub_accordion)
+        else:
+            columns = sub_categories
+            checkboxes = [widgets.Checkbox(value=False, description=col) for col in columns]
+            checkboxes_grid = widgets.GridBox(checkboxes, layout=widgets.Layout(grid_template_columns="repeat(3, 300px)"))
+            accordion_items.append(VBox([create_select_all_checkbox(main_category, checkboxes), checkboxes_grid]))
+            checkboxes_dict[main_category] = checkboxes
+    
+    accordion = Accordion(children=accordion_items)
+    for i, main_category in enumerate(categorized_columns.keys()):
+        accordion.set_title(i, main_category)
+    accordion.selected_index = None  # Close all accordion sections by default
+    
+    return checkboxes_dict, accordion
+
 
 def create_condition_selector(df, column_name):
     conditions = df[column_name].unique()
@@ -195,7 +283,18 @@ def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Fold
     print("Plotting in progress...")
 
     # Get selected variables
-    variables_to_plot = [box.description for box in variable_checkboxes if box.value]
+    variables_to_plot = []
+    for category, checkboxes in checkboxes_dict.items():
+        if isinstance(checkboxes, dict):
+            for subcategory, subcheckboxes in checkboxes.items():
+                for checkbox in subcheckboxes:
+                    if checkbox.value:
+                        variables_to_plot.append(checkbox.description)
+        else:
+            for checkbox in checkboxes:
+                if checkbox.value:
+                    variables_to_plot.append(checkbox.description)
+                    
     n_plots = len(variables_to_plot)
     method = stat_method_selector.value
 
