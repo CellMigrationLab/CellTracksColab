@@ -39,6 +39,12 @@ def categorize_columns(df):
     exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
     all_columns = [col for col in df.columns if col not in exclude_cols]
     
+    tracking_software_metrics = [
+        'MAX_DISTANCE_TRAVELED',
+        'MEAN_STRAIGHT_LINE_SPEED',
+        'MEAN_DIRECTIONAL_CHANGE'
+    ]
+    
     categorized_columns = {
         'Metrics Computed in CellTracksColab': {
             'Track Metrics': [],
@@ -49,20 +55,23 @@ def categorize_columns(df):
     }
     
     for col in all_columns:
-        added = False
-        for category, metrics in computed_metrics.items():
-            if category in categorized_columns['Metrics Computed in CellTracksColab']:
-                if col in metrics:
-                    categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
-                    added = True
-                    break
-                # Handle prefix matching for Morphological Metrics
-                if category == 'Morphological Metrics' and any(col.startswith(prefix) for prefix in metrics):
-                    categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
-                    added = True
-                    break
-        if not added:
+        if col in tracking_software_metrics:
             categorized_columns['Metrics Imported from your Tracking Software'].append(col)
+        else:
+            added = False
+            for category, metrics in computed_metrics.items():
+                if category in categorized_columns['Metrics Computed in CellTracksColab']:
+                    if col in metrics:
+                        categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
+                        added = True
+                        break
+                    # Handle prefix matching for Morphological Metrics
+                    if category == 'Morphological Metrics' and any(col.startswith(prefix) for prefix in metrics):
+                        categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
+                        added = True
+                        break
+            if not added:
+                categorized_columns['Metrics Imported from your Tracking Software'].append(col)
     
     return categorized_columns
 
