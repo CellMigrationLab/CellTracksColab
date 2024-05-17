@@ -27,13 +27,19 @@ computed_metrics = {
     ],
     'Rolling Track Metrics': [
         'Mean Speed Rolling', 'Median Speed Rolling', 'Max Speed Rolling',
-        'Min Speed Rolling Rolling', 'Speed Standard Deviation Rolling',
+        'Min Speed Rolling', 'Speed Standard Deviation Rolling',
         'Total Distance Traveled Rolling', 'Directionality Rolling', 'Tortuosity Rolling', 'Total Turning Angle Rolling', 'Spatial Coverage Rolling'
     ],
     'Morphological Metrics': [
         'MEAN_', 'MEDIAN_', 'STD_', 'MIN_', 'MAX_'
+    ],
+    'Distance to ROI Metrics': [
+        'MaxDistance_', 'MinDistance_', 'StartDistance_', 'EndDistance_',
+        'MedianDistance_', 'StdDevDistance_', 'DirectionMovement_', 
+        'AvgRateChange_', 'PercentageChange_', 'TrendSlope_'
     ]
 }
+
 
 def categorize_columns(df):
     exclude_cols = ['Condition', 'experiment_nb', 'File_name', 'Repeat', 'Unique_ID', 'LABEL', 'TRACK_INDEX', 'TRACK_ID', 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'TRACK_Z_LOCATION', 'Exemplar', 'TRACK_STOP', 'TRACK_START', 'Cluster_UMAP', 'Cluster_tsne']
@@ -42,14 +48,15 @@ def categorize_columns(df):
     tracking_software_metrics = [
         'MAX_DISTANCE_TRAVELED',
         'MEAN_STRAIGHT_LINE_SPEED',
-        'MEAN_DIRECTIONAL_CHANGE_RATE'
+        'MEAN_DIRECTIONAL_CHANGE'
     ]
     
     categorized_columns = {
         'Metrics Computed in CellTracksColab': {
             'Track Metrics': [],
             'Rolling Track Metrics': [],
-            'Morphological Metrics': []
+            'Morphological Metrics': [],
+            'Distance to ROI Metrics': []
         },
         'Metrics Imported from your Tracking Software': []
     }
@@ -65,8 +72,9 @@ def categorize_columns(df):
                         categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
                         added = True
                         break
-                    # Handle prefix matching for Morphological Metrics
-                    if category == 'Morphological Metrics' and any(col.startswith(prefix) for prefix in metrics):
+                    # Handle prefix matching for Morphological Metrics and Distance to ROI Metrics
+                    if (category in ['Morphological Metrics', 'Distance to ROI Metrics'] 
+                            and any(col.startswith(prefix) for prefix in metrics)):
                         categorized_columns['Metrics Computed in CellTracksColab'][category].append(col)
                         added = True
                         break
