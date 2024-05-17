@@ -251,24 +251,38 @@ def check_unique_id_match(df1, df2):
             print("Examples of these IDs are:", list(missing_in_df2)[:5])
 
 def check_metadata(df, df_name="DataFrame", metadata_columns=['Condition', 'experiment_nb', 'Repeat']):
-    # Checks the metadata columns that are expected to have identical values for each filename
-    # For example: the file track_01.xml should only belong to one experimental repeat and condition.
-    # The column names depend on the dataframe being tested.
-    consistent_metadata = True
+    """
+    Checks the metadata columns that are expected to have identical values for each filename.
+    For example: the file track_01.xml should only belong to one experimental repeat and condition.
+    The column names depend on the dataframe being tested.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame to be checked.
+    df_name (str): The name of the DataFrame (for display purposes).
+    metadata_columns (list): List of columns expected to have identical values for each filename.
+
+    Returns:
+    None
+    """
+    inconsistencies = []
+    
     for name, group in df.groupby('File_name'):
         for col in metadata_columns:
-            if not group[col].nunique() == 1:
-                consistent_metadata = False
-                print(f"Inconsistency found in {df_name} for file: {name} in column: {col}")
-                break  # Stop checking other columns for this group
-        if not consistent_metadata:
-            break  # Stop the entire process if any inconsistency is found
+            unique_values = group[col].unique()
+            if len(unique_values) > 1:
+                inconsistencies.append({
+                    'File_name': name,
+                    'Column': col,
+                    'Values': unique_values
+                })
 
-    if consistent_metadata:
+    if not inconsistencies:
         print(f"{df_name} has consistent metadata.")
     else:
         print(f"{df_name} has inconsistencies in the metadata. Please check the output for details.")
-    return
+        for inconsistency in inconsistencies:
+            print(f"Inconsistency found in {df_name} for file: {inconsistency['File_name']} in column: {inconsistency['Column']}")
+            print(f"Values found: {inconsistency['Values']}\n")
 
 def automatic_column_mapping(ref_columns, data_columns):
     aux = data_columns.copy()
