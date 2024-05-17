@@ -24,11 +24,22 @@ import imageio
 from celltracks.BoxPlots_Statistics import *
 
 # Function to plot selected variables per cluster with data saved to CSV and plots saved as PDF
-def plot_selected_vars_per_cluster(button, variable_checkboxes, Cluster, df, base_folder):
+def plot_selected_vars_per_cluster(button, checkboxes_dict, df, base_folder):
     print("Plotting in progress...")
 
     # Get selected variables
-    variables_to_plot = [box.description for box in variable_checkboxes if box.value]
+    variables_to_plot = []
+    for category, checkboxes in checkboxes_dict.items():
+        if isinstance(checkboxes, dict):
+            for subcategory, subcheckboxes in checkboxes.items():
+                for checkbox in subcheckboxes:
+                    if checkbox.value:
+                        variables_to_plot.append(checkbox.description)
+        else:
+            for checkbox in checkboxes:
+                if checkbox.value:
+                    variables_to_plot.append(checkbox.description)
+
     n_plots = len(variables_to_plot)
 
     if n_plots == 0:
@@ -37,25 +48,25 @@ def plot_selected_vars_per_cluster(button, variable_checkboxes, Cluster, df, bas
 
     for var in variables_to_plot:
         # Extract data for the specific variable and cluster
-        data_to_save = df[[Cluster, var]]
+        data_to_save = df[['Cluster_UMAP', var]]
 
         # Save data for the plot to CSV
-        data_to_save.to_csv(os.path.join(base_folder, f"{var}_data_by_Cluster.csv"), index=False)
+        data_to_save.to_csv(f"{base_folder}/{var}_data_by_Cluster.csv", index=False)
 
         plt.figure(figsize=(16, 10))
 
         # Plotting
-        sns.boxplot(x=Cluster, y=var, data=df, color='lightgray')  # Boxplot by cluster
-        sns.stripplot(x=Cluster, y=var, data=df, jitter=True, alpha=0.2)  # Individual data points
+        sns.boxplot(x='Cluster_UMAP', y=var, data=df, color='lightgray')  # Boxplot by cluster
+        sns.stripplot(x='Cluster_UMAP', y=var, data=df, jitter=True, alpha=0.2)  # Individual data points
 
         plt.title(f"{var} by Cluster")
-        plt.xlabel(Cluster)
+        plt.xlabel('Cluster_UMAP')
         plt.ylabel(var)
         plt.xticks(rotation=90)
         plt.tight_layout()
 
         # Save the plot
-        plt.savefig(os.path.join(base_folder, f"{var}_Boxplots_by_Cluster.pdf"))
+        plt.savefig(f"{base_folder}/{var}_Boxplots_by_Cluster.pdf")
         plt.show()
         
 def plot_selected_vars_cluster(button, checkboxes_dict, df, Conditions, Cluster, cluster_dropdown, Results_Folder, condition_selector, stat_method_selector):
