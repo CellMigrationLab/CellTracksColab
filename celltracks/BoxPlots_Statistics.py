@@ -473,7 +473,7 @@ def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Cond
     return track_counts_df        
 
 
-def heatmap_comparison(df, Results_Folder, Conditions, normalization='minmax', variables_per_page=40):
+def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', variables_per_page=40):
     # Get all the selectable columns
     variables_to_plot = get_selectable_columns(df)
 
