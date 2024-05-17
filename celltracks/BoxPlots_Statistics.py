@@ -278,7 +278,7 @@ def calculate_ks_p_value(df1, df2, column):
     """
     return ks_2samp(df1[column].dropna(), df2[column].dropna())[1]
 
-def plot_selected_vars(button, variable_checkboxes, df, Conditions, Results_Folder, condition_selector, stat_method_selector):
+def plot_selected_vars(button, checkboxes_dict, df, Conditions, Results_Folder, condition_selector, stat_method_selector):
     plt.clf()  # Clear the current figure before creating a new plot
     print("Plotting in progress...")
 
