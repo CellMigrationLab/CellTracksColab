@@ -195,7 +195,7 @@ def plot_heatmap(ax, matrix, title, cmap='viridis'):
     heatmap = sns.heatmap(log_matrix, ax=ax, cmap=cmap, annot=formatted_annotations,
                           fmt="", xticklabels=matrix.columns, yticklabels=matrix.index, cbar=False, vmin=vmin, vmax=vmax)
     ax.set_title(title)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha='center', va='center', rotation_mode='anchor')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
 
     # Create a color bar with conditional formatting for ticks
     norm = plt.Normalize(vmin=vmin, vmax=vmax)
