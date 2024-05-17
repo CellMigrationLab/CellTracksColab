@@ -58,7 +58,7 @@ def plot_selected_vars_per_cluster(button, variable_checkboxes, Cluster, df, bas
         plt.savefig(os.path.join(base_folder, f"{var}_Boxplots_by_Cluster.pdf"))
         plt.show()
         
-def plot_selected_vars_cluster(button, variable_checkboxes, df, Conditions, Cluster, cluster_dropdown, Results_Folder, condition_selector, stat_method_selector):
+def plot_selected_vars_cluster(button, checkboxes_dict, df, Conditions, Cluster, cluster_dropdown, Results_Folder, condition_selector, stat_method_selector):
     plt.clf()  # Clear the current figure before creating a new plot
 
     # Get selected variables
