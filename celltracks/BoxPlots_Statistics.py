@@ -42,7 +42,7 @@ def categorize_columns(df):
     tracking_software_metrics = [
         'MAX_DISTANCE_TRAVELED',
         'MEAN_STRAIGHT_LINE_SPEED',
-        'MEAN_DIRECTIONAL_CHANGE'
+        'MEAN_DIRECTIONAL_CHANGE_RATE'
     ]
     
     categorized_columns = {
