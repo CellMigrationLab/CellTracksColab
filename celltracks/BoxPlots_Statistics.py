@@ -408,6 +408,7 @@ def plot_selected_vars(button, checkboxes_dict, df, Conditions, Results_Folder, 
 
         # Effect Size heatmap
         ax_d = fig.add_subplot(gs[1, 0])
+        ax_d.set_xticklabels(ax_d.get_xticklabels(), rotation=90)
         sns.heatmap(effect_size_matrices[var].fillna(0), annot=True, cmap="viridis", cbar=True, square=True, ax=ax_d, vmax=1)
         ax_d.set_title(f"Effect Size (Cohen's d)")
 
