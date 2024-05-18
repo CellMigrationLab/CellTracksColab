@@ -117,24 +117,23 @@ def get_distances_and_metrics(track_df, spots_df, ROI_name):
             distances = track_spots[f'DistanceTo{ROI_name}']
 
             if distances.empty or distances.isna().all():
-                max_distance = min_distance = start_distance = end_distance = median_distance = average_rate_of_change = percentage_change = direction_of_movement = np.nan
-            # Basic metrics
-
+                max_distance = min_distance = start_distance = end_distance = median_distance = std_dev_distance = average_rate_of_change = percentage_change = direction_of_movement = slope = np.nan
             else:
-              max_distance = distances.max(skipna=True)
-              min_distance = distances.min(skipna=True)
-              start_distance = distances.iloc[0] if not distances.empty else np.nan
-              end_distance = distances.iloc[-1] if not distances.empty else np.nan
-              median_distance = distances.median(skipna=True)
-              std_dev_distance = distances.std(skipna=True)
+                # Basic metrics
+                max_distance = distances.max(skipna=True)
+                min_distance = distances.min(skipna=True)
+                start_distance = distances.iloc[0] if not distances.empty else np.nan
+                end_distance = distances.iloc[-1] if not distances.empty else np.nan
+                median_distance = distances.median(skipna=True)
+                std_dev_distance = distances.std(skipna=True)
 
-              # Advanced metrics
-              direction_of_movement = end_distance - start_distance
-              average_rate_of_change = direction_of_movement / len(distances) if len(distances) > 0 else np.nan
-              percentage_change = (direction_of_movement / start_distance * 100) if start_distance != 0 else np.nan
+                # Advanced metrics
+                direction_of_movement = np.nan if pd.isna(start_distance) or pd.isna(end_distance) else end_distance - start_distance
+                average_rate_of_change = np.nan if len(distances) == 0 else direction_of_movement / len(distances)
+                percentage_change = np.nan if start_distance == 0 else (direction_of_movement / start_distance * 100)
 
-              # Linear regression to determine trend
-              slope, _, _, _, _ = linregress(range(len(distances)), distances) if not distances.empty else (np.nan,)*5
+                # Linear regression to determine trend
+                slope, _, _, _, _ = linregress(range(len(distances)), distances) if len(distances) > 1 else (np.nan,)*5
 
             results.append({
                 'Unique_ID': unique_id,
