@@ -89,29 +89,37 @@ def check_and_correct_coordinates(df, file_name, image_dir, ROI_name, Pixel_cali
 
     return df
     
-def process_frame(ROI_img, df, Pixel_calibration):
+def process_frame(ROI_img, positions, Pixel_calibration):
     """
-    Process a single frame or image and return a Series with distance values.
+    Process a single frame or image and return an array with distance values.
 
     Parameters:
     ROI_img (ndarray): The ROI image or a single frame from a video.
-    df (DataFrame): The dataframe containing the spots' data for the current frame.
+    positions (pd.DataFrame): The dataframe containing the spots' data for the current frame.
     Pixel_calibration (float): Calibration factor for pixel coordinates.
 
     Returns:
-    pd.Series: Series with computed distances.
+    np.array: Array with computed distances.
     """
     distance_transform_ROI = distance_transform_edt(ROI_img == 0) * Pixel_calibration
 
-    def compute_distance(row):
-        y, x = int(row['POSITION_Y'] / Pixel_calibration), int(row['POSITION_X'] / Pixel_calibration)
-        if 0 <= x < distance_transform_ROI.shape[1] and 0 <= y < distance_transform_ROI.shape[0]:
-            return distance_transform_ROI[y, x]
-        else:
-            print(f"Warning: Coordinates (x={x}, y={y}) out of bounds. Skipping...")
-            return float('inf')
+    # Extract and scale positions
+    y_positions = (positions['POSITION_Y'] / Pixel_calibration).astype(int)
+    x_positions = (positions['POSITION_X'] / Pixel_calibration).astype(int)
 
-    return df.apply(compute_distance, axis=1)
+    # Ensure positions are within bounds
+    valid_positions = (x_positions >= 0) & (x_positions < distance_transform_ROI.shape[1]) & \
+                      (y_positions >= 0) & (y_positions < distance_transform_ROI.shape[0])
+
+    distances = np.full(positions.shape[0], float('inf'))
+    distances[valid_positions] = distance_transform_ROI[y_positions[valid_positions], x_positions[valid_positions]]
+
+    # Warn for out of bounds coordinates
+    if not valid_positions.all():
+        out_of_bounds_count = (~valid_positions).sum()
+        print(f"Warning: {out_of_bounds_count} coordinates out of bounds. Skipping...")
+
+    return distances
 
 def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_calibration):
     """
@@ -120,7 +128,7 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_ca
     number corresponds to the actual number of frames in the video.
 
     Parameters:
-    df (DataFrame): The dataframe containing the spots' data.
+    df (pd.DataFrame): The dataframe containing the spots' data.
     image_dir (str): The directory where the ROI images or videos are stored.
     ROI_name (str): The suffix for ROI images.
     Pixel_calibration (float): Calibration multiplier to adjust distances.
@@ -143,17 +151,17 @@ def compute_distances_using_distance_transform(df, image_dir, ROI_name, Pixel_ca
             is_video = ROI_img.ndim == 3
 
             if is_video:
-                file_df = df[df['File_name'] == file_name]
-                max_frame_num = file_df['FRAME'].max() if 'FRAME' in file_df.columns else 0
                 num_frames = ROI_img.shape[0]
-                if max_frame_num >= num_frames:
-                    raise ValueError(f"DataFrame contains 'FRAME' numbers that exceed the number of frames in the video for file {file_name}.")
                 for frame_idx in range(num_frames):
                     frame_df_idx = (df['File_name'] == file_name) & (df['FRAME'] == frame_idx)
-                    df.loc[frame_df_idx, distance_col] = process_frame(ROI_img[frame_idx], df.loc[frame_df_idx], Pixel_calibration)
+                    positions = df.loc[frame_df_idx, ['POSITION_Y', 'POSITION_X']]
+                    distances = process_frame(ROI_img[frame_idx], positions, Pixel_calibration)
+                    df.loc[frame_df_idx, distance_col] = distances
             else:
                 file_df_idx = df['File_name'] == file_name
-                df.loc[file_df_idx, distance_col] = process_frame(ROI_img, df.loc[file_df_idx], Pixel_calibration)
+                positions = df.loc[file_df_idx, ['POSITION_Y', 'POSITION_X']]
+                distances = process_frame(ROI_img, positions, Pixel_calibration)
+                df.loc[file_df_idx, distance_col] = distances
 
         except FileNotFoundError:
             print(f"Error: Image for {file_name} not found. Skipping...")
