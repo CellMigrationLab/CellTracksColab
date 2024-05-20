@@ -40,7 +40,7 @@ To begin your analysis journey, click the "Open In Colab" button below, correspo
 2. **Analysis for Other Data Types**:
    - Explore our general-purpose notebook for analyzing diverse tracking datasets.
    - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb)
-   - currently datasets (csv.) generated using CellProfiler, ICY, ilastik, and Fiji Manual tracker have been succesfully tested. 
+   - currently datasets (.csv) generated using CellProfiler, ICY, ilastik, and Fiji Manual tracker have been succesfully tested. 
 ---
 
 ## 🗒️ **Additional Notebooks**
