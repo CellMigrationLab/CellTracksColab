@@ -60,9 +60,9 @@ def smooth_track(track_data, smoothing_neighbors):
     smoothed_track = track_data.copy()
 
     if len(track_data) >= smoothing_neighbors:
-        smoothed_X = track_data['POSITION_X'].rolling(window=smoothing_neighbors, center=True).mean()
-        smoothed_Y = track_data['POSITION_Y'].rolling(window=smoothing_neighbors, center=True).mean()
-        smoothed_Z = track_data['POSITION_Z'].rolling(window=smoothing_neighbors, center=True).mean()
+        smoothed_X = track_data['POSITION_X'].rolling(window=smoothing_neighbors, center=True).mean().fillna(method='bfill').fillna(method='ffill')
+        smoothed_Y = track_data['POSITION_Y'].rolling(window=smoothing_neighbors, center=True).mean().fillna(method='bfill').fillna(method='ffill')
+        smoothed_Z = track_data['POSITION_Z'].rolling(window=smoothing_neighbors, center=True).mean().fillna(method='bfill').fillna(method='ffill')
 
         smoothed_track['POSITION_X'] = smoothed_X
         smoothed_track['POSITION_Y'] = smoothed_Y
