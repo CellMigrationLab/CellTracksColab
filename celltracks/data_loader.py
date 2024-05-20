@@ -27,10 +27,6 @@ def check_for_nans(df, df_name):
     else:
         print(f"No NaN values found in {df_name}.")
 
-
-def frame_estimation(df):
-
-
 def save_parameters(params, file_path, param_type):
     # Convert params dictionary to a DataFrame for human readability
     new_params_df = pd.DataFrame(list(params.items()), columns=['Parameter', 'Value'])
@@ -185,6 +181,28 @@ def sort_and_generate_repeat(merged_df):
     merged_df.sort_values(['Condition', 'experiment_nb'], inplace=True)
     merged_df = merged_df.groupby('Condition', group_keys=False).apply(generate_repeat)
     return merged_df
+
+def frame_estimation(df, col_file = "File_name", t_col="POSITION_T"):
+
+    files = np.unique(df[col_file])
+    new_df = None
+    df["FRAME"] = 0
+    for f in files:
+        aux = df.loc[lambda df: df[col_file] == f]
+        # normalisation of the time dimension to obtain the frame number
+        t0 = np.min(aux[t_col])
+        time_points = np.unique(aux[t_col])
+        frame_rate = np.min(time_points[1:]-time_points[:-1])
+        frames = (1/frame_rate)*(aux[t_col]-t0)
+        # Update values of FRAME. Copying is recommended to avoid panda dataframes visualisation
+        aux1 = aux.copy()
+        aux1.loc[frames.index, "FRAMES"] = frames.values
+        #Build the new dataset
+        if new_df is None:
+            new_df = aux1
+        else:
+            new_df = pd.concat([new_df, aux1]).reset_index(drop=True)
+    return new_df
 
 def remove_suffix(filename):
     suffixes_to_remove = ["-tracks", "-spots"]
@@ -468,7 +486,7 @@ class TrackingData:
                                      desc="Saving Spots")
 
         # Extracting unique Unique_ID values from merged_spots_df
-        unique_ids = self.spots_data ['Unique_ID'].drop_duplicates().reset_index(drop=True)
+        unique_ids = self.spots_data['Unique_ID'].drop_duplicates().reset_index(drop=True)
 
         # Creating merged_tracks_df with only the unique Unique_ID values
         merged_tracks_df = pd.DataFrame(unique_ids, columns=['Unique_ID'])
@@ -657,6 +675,7 @@ class TrackingData:
         if self.data_type == "Custom" and self.file_format.__contains__("csv"):
             self.__column_mapping__()
             self.__create_tracks_csv()
+            self.spots_data = frame_estimation(self.spots_data, col_file="File_name", t_col="POSITION_T")
 
         check_unique_id_match(self.spots_data, self.tracks_data)
         # Check that there are no duplicate files with different metadata
