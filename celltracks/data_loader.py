@@ -353,7 +353,7 @@ def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, ch
             calibration_units = find_calibration_units(filepath, line=row)
             metadata_list.append({
                 'filename': os.path.basename(filepath),
-                'expected_rows': sum(1 for row in open(filepath)) - (1+header_len),
+                'expected_rows': sum(1 for row in open(filepath, encoding = "ISO-8859-1")) - (1+header_len),
                 # Get the expected number of rows in the file (subtracting header rows)
                 'file_size': os.path.getsize(filepath),  # Get file size
                 'calibration_units': calibration_units
@@ -361,12 +361,12 @@ def load_and_populate(Folder_path, file_pattern, skiprows=None, usecols=None, ch
         else:
             metadata_list.append({
                 'filename': os.path.basename(filepath),
-                'expected_rows': sum(1 for row in open(filepath)) - (1+header_len),
+                'expected_rows': sum(1 for row in open(filepath, encoding = "ISO-8859-1")) - (1+header_len),
                 # Get the expected number of rows in the file (subtracting header rows)
                 'file_size': os.path.getsize(filepath)  # Get file size
             })
         # Load the data in chunksizes to avoid memory colapse
-        chunked_reader = pd.read_csv(filepath, skiprows=skiprows, usecols=usecols, chunksize=chunksize)
+        chunked_reader = pd.read_csv(filepath, skiprows=skiprows, usecols=usecols, chunksize=chunksize, encoding = "ISO-8859-1")
         for chunk in chunked_reader:
             processed_chunk = populate_columns(chunk, filepath)
             df_list.append(processed_chunk)
@@ -429,7 +429,6 @@ class TrackingData:
         # If 2D is selected and POSITION_Z exists, delete it
         if self.data_dims == '2D' and 'POSITION_Z' in self.spots_data.columns:
             self.spots_data = self.spots_data.drop('POSITION_Z', axis=1)
-            self.ref_cols.remove('POSITION_Z')
         column_mapping = {data_col: col for col, data_col in self.dim_mapping.items()}
         self.spots_data = self.spots_data.rename(columns=column_mapping)
         print("Columns Renamed!")
