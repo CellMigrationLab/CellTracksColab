@@ -27,6 +27,10 @@ def check_for_nans(df, df_name):
     else:
         print(f"No NaN values found in {df_name}.")
 
+
+def frame_estimation(df):
+
+
 def save_parameters(params, file_path, param_type):
     # Convert params dictionary to a DataFrame for human readability
     new_params_df = pd.DataFrame(list(params.items()), columns=['Parameter', 'Value'])
