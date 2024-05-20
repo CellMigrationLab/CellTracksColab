@@ -126,9 +126,10 @@ def populate_columns(df, filepath):
     parent_folder_name = path_parts[-3]  # The parent folder name is the third last part of the path
 
     filename_without_extension = os.path.splitext(os.path.basename(filepath))[0]
-    df['File_name'] = remove_suffix(filename_without_extension)
+    df['File_name_raw'] = remove_suffix(filename_without_extension)
     df['Condition'] = parent_folder_name  # Populate 'Condition' with the parent folder name
     df['experiment_nb'] = folder_name  # Populate 'Repeat' with the folder name
+    df['File_name'] = parent_folder_name + "_" + folder_name + "_" + remove_suffix(filename_without_extension)
 
     return df
 
@@ -491,7 +492,7 @@ class TrackingData:
         merged_tracks_df = pd.DataFrame(unique_ids, columns=['Unique_ID'])
         print("Create the merged_tracks_df to store track parameters")
         # Specify the columns you want to merge
-        columns_to_merge = ['Unique_ID', 'TRACK_ID', 'File_name', 'Condition', 'experiment_nb', 'Repeat']
+        columns_to_merge = ['Unique_ID', 'TRACK_ID', 'File_name', 'Condition', 'experiment_nb', 'File_name_raw', 'Repeat']
 
         # Filter to only include the desired columns
         filtered_df = self.spots_data[columns_to_merge].drop_duplicates(subset='Unique_ID')
