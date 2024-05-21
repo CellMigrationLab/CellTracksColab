@@ -36,11 +36,13 @@ To begin your analysis journey, click the "Open In Colab" button below, correspo
 1. **For TrackMate Data**:
    - Delve into your TrackMate data with our specialized notebook.
    - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
+   - See how prepate the data in the [TrackMate notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook).
 
 2. **Analysis for Other Data Types**:
    - Explore our general-purpose notebook for analyzing diverse tracking datasets.
    - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb)
-   - currently datasets (.csv) generated using CellProfiler, ICY, ilastik, and Fiji Manual tracker have been succesfully tested. 
+   - currently datasets (.csv) generated using CellProfiler, ICY, ilastik, and Fiji Manual tracker have been succesfully tested.
+   - See how prepate the data in the [General notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-General-notebook).
 ---
 
 ## 🗒️ **Additional Notebooks**
