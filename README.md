@@ -30,7 +30,7 @@
 
 ## ✅ **Compatible with**
 - [TrackMate](http://imagej.net/TrackMate)
-- [CellProfiler](https://cellprofiler.org/)
+- [CellProfiler](https://github.com/CellProfiler/CellProfiler)
 - [Icy](http://icy.bioimageanalysis.org/)
 - [ilastik](https://www.ilastik.org/)
 - [Fiji Manual Tracker](https://imagej.net/Fiji)
