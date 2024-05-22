@@ -29,55 +29,122 @@
 ---
 
 ## ✅ **Compatible with**
-- [TrackMate](http://imagej.net/TrackMate)
-- [CellProfiler](https://github.com/CellProfiler/CellProfiler)
-- [Icy](http://icy.bioimageanalysis.org/)
-- [ilastik](https://www.ilastik.org/)
-- [Fiji Manual Tracker](https://imagej.net/Fiji)
+<table>
+  <tr>
+    <th><a href="http://imagej.net/TrackMate"><img src="https://imagej.net/media/icons/trackmate.png" alt="TrackMate Logo" width="100"></a></th>
+    <th><a href="https://github.com/CellProfiler/CellProfiler"><img src="https://avatars.githubusercontent.com/u/710590?s=280&v=4" alt="CellProfiler Logo" width="100"></a></th>
+    <th><a href="http://icy.bioimageanalysis.org/"><img src="https://icy.bioimageanalysis.org/wp-content/uploads/2018/07/logo_full_notext600px.png" alt="Icy Logo" width="100"></a></th>
+    <th><a href="https://www.ilastik.org/"><img src="https://www.ilastik.org/assets/ilastik-logo.png" alt="ilastik Logo" width="100"></a></th>
+    <th><a href="https://imagej.net/Fiji"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/FIJI_%28software%29_Logo.svg/1200px-FIJI_%28software%29_Logo.svg.png" alt="Fiji Logo" width="100"></a></th>
+  </tr>
+  <tr>
+    <td style="text-align: center;"><a href="http://imagej.net/TrackMate">TrackMate</a></td>
+    <td style="text-align: center;"><a href="https://github.com/CellProfiler/CellProfiler">CellProfiler</a></td>
+    <td style="text-align: center;"><a href="http://icy.bioimageanalysis.org/">Icy</a></td>
+    <td style="text-align: center;"><a href="https://www.ilastik.org/">ilastik</a></td>
+    <td style="text-align: center;"><a href="https://imagej.net/Fiji">Fiji Manual Tracker</a></td>
+  </tr>
+</table>
+
+But may also be compatible with other tracking software exporting tracking results that meet our minimal requirements. Ensure your data is well-organized according to the recommended folder hierarchy. This structure helps in managing and analyzing the data efficiently.
+
+- [Check the data requirements and the supported software](https://github.com/CellMigrationLab/CellTracksColab/wiki/Data-requirements-and-supported-software)
 
 ## 🛠️ **Quick Start**
 
 The easiest way to start using **CellTracksColab** is in the cloud using Google Collaboratory, but it can also be used on your own computer using Jupyter Notebooks. See our [wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki) for installation instructions.
 
 ### 1. **Load and Plot Your Data**
-
 We provide three notebooks for loading and analyzing your data depending on its format:
 
-#### For TrackMate Data (CSV or XML files):
-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
-- See how to prepare the data in the [TrackMate notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook).
-
-#### For Data Generated in CellProfiler, ICY, ilastik, or the Fiji Manual Tracker (CSV files):
-- Explore our general-purpose notebook for analyzing diverse tracking datasets.
-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb)
-- See how to prepare the data in the [General notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-General-notebook).
-
-#### For Data Already in the CellTracksColab Format:
-- **CellTracksColab - Viewer**: Ideal for loading datasets in CellTracksColab format or sharing data with colleagues.
-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
+<table>
+  <tr>
+    <th>Notebook</th>
+    <th>Purpose</th>
+    <th>Required File Format</th>
+    <th>Link</th>
+  </tr>
+  <tr>
+    <td><strong>CellTracksColab - TrackMate</strong></td>
+    <td>Load and analyze TrackMate data. More info <a href="https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook">here</a>.</td>
+    <td>CSV or XML files</td>
+    <td>
+      <a href="https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>CellTracksColab - Custom</strong></td>
+    <td>Analyze data from CellProfiler, ICY, ilastik, or Fiji Manual Tracker. More info <a href="https://github.com/CellMigrationLab/CellTracksColab/wiki/The-Custom-notebook">here</a>.</td>
+    <td>CSV files</td>
+    <td>
+      <a href="https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>CellTracksColab - Viewer</strong></td>
+    <td>Load and share data in the CellTracksColab format.</td>
+    <td>CellTracksColab format</td>
+    <td>
+      <a href="https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+      </a>
+    </td>
+  </tr>
+</table>
 
 ### 2. **Advanced Analysis Modules**
 
 These notebooks require your dataset to be in the CellTracksColab format.
 
-#### CellTracksColab - Dimensionality Reduction: 
-  - Utilize advanced dimensionality reduction techniques to facilitate the interpretation of complex, high-dimensional data.
-  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Dimensionality_Reduction.ipynb)
+<table>
+  <tr>
+    <th>Notebook</th>
+    <th>Purpose</th>
+    <th>Required File Format</th>
+    <th>Link</th>
+  </tr>
+  <tr>
+    <td><strong>CellTracksColab - Dimensionality Reduction</strong></td>
+    <td>Utilize advanced dimensionality reduction techniques.</td>
+    <td>CellTracksColab format</td>
+    <td>
+      <a href="https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Dimensionality_Reduction.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>CellTracksColab - Track Spatial Clustering Analysis</strong></td>
+    <td>Dive deeper into your dataset with track clustering analysis.</td>
+    <td>CellTracksColab format</td>
+    <td>
+      <a href="https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Track_Clustering.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>CellTracksColab - Distance to ROI</strong></td>
+    <td>Analyze movement tracks in relation to designated ROIs.</td>
+    <td>CellTracksColab format</td>
+    <td>
+      <a href="https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+      </a>
+    </td>
+  </tr>
+</table>
 
-#### CellTracksColab - Track Spatial Clustering Analysis:
-  - Dive deeper into your dataset with our track clustering analysis module.
-  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Track_Clustering.ipynb)
-
-#### CellTracksColab - Distance to ROI: 
-  - Analyze movement tracks in relation to designated Regions of Interest (ROIs). Compute and analyze the distances between moving objects (tracks) and dynamic ROIs.
-  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb)
-
-#### More to come
+More to come
 
 ##  Other Notebooks
 
 #### CellTracksColab - TrackMate - Plate:
-  - Handle TrackMate data structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
+  - Handle TrackMate CSV files structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate_Plate.ipynb)
     
 ---
