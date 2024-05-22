@@ -36,11 +36,13 @@ To begin your analysis journey, click the "Open In Colab" button below, correspo
 1. **For TrackMate Data**:
    - Delve into your TrackMate data with our specialized notebook.
    - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
+   - See how prepare the data in the [TrackMate notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook).
 
 2. **Analysis for Other Data Types**:
    - Explore our general-purpose notebook for analyzing diverse tracking datasets.
-   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab.ipynb)
-
+   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb)
+   - currently datasets (.csv) generated using CellProfiler, ICY, ilastik, and Fiji Manual tracker have been succesfully tested.
+   - See how prepare the data in the [General notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-General-notebook).
 ---
 
 ## 🗒️ **Additional Notebooks**
@@ -68,6 +70,11 @@ Maximize your analysis with our supplementary tools and modules.
    - This notebook is specifically designed to analyze movement tracks in relation to designated Regions of Interest (ROIs). Its primary aim is to compute and analyze the distances between moving objects (tracks) and ROIs, which may also be dynamic.
    - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb)
 
+- **CellTracksColab - Dimensionality Reduction**: 
+   - This notebook is designed for analyzing datasets stored in the CellTracksColab format, utilizing advanced dimensionality reduction techniques to facilitate the interpretation of complex, high-dimensional data. To convert the data in CellTrackColab format, please use the corresponding [Quick Start notebooks](https://github.com/CellMigrationLab/CellTracksColab/tree/main?tab=readme-ov-file#%EF%B8%8F-quick-start).
+   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Dimensionality_Reduction.ipynb)
+
+
 - More to come soon
 
   
@@ -79,8 +86,8 @@ CellTracksColab is inspired by several key projects in cell tracking and analysi
 
 ---
 ## 📦 **Resources**
-- **Test Dataset**: Start exploring with our [test dataset](https://zenodo.org/record/8413510).
-- **Data Structure**: Organize with our two-tiered folder hierarchy. [Details here](#).
+- **Test Dataset**: Start exploring with our test datasets in [CellTracksColab CSV format](https://zenodo.org/records/8420011), or [TrackMate CSV format](https://zenodo.org/records/8413510).
+- **Data Structure**: Organize with our two-tiered folder hierarchy. [Details here](https://github.com/CellMigrationLab/CellTracksColab/wiki/Prepare-the-Session-and-Load-Your-Data#3-navigating-to-your-dataset-on-google-drive).
 - **Data Requirements**: Note that **CellTracksColab** does not yet support track merging or splitting.
 
 ---
