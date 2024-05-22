@@ -1,4 +1,4 @@
-name: celltracks
+name: celltrackscolab
 channels:
   - conda-forge
   - nodefaults
