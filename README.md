@@ -28,12 +28,12 @@
 
 ---
 
-## 🚀 **Compatible with**
-- TrackMate
-- CellProfiler
-- Icy
-- ilastik
-- Fiji Manual Tracker
+## ✅ **Compatible with**
+- [TrackMate](http://imagej.net/TrackMate)
+- [CellProfiler](https://cellprofiler.org/)
+- [Icy](http://icy.bioimageanalysis.org/)
+- [ilastik](https://www.ilastik.org/)
+- [Fiji Manual Tracker](https://imagej.net/Fiji)
 
 ## 🛠️ **Quick Start**
 
