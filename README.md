@@ -9,7 +9,7 @@
 
 > In life sciences, tracking objects from movies is pivotal for quantifying behaviors of particles, organelles, bacteria, cells, and whole animals. **CellTracksColab** bridges the gap between tracking and analysis.
 
-> **CellTracksColab** simplifies the journey from data compilation to analysis. The easiest way to start using **CellTracksColab** is in the cloud using Google Collaboratory, but it can also be used on your own computer using Jupyter Notebooks. See our [wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki) for installation instructions.
+> **CellTracksColab** simplifies the journey from data compilation to analysis.
 
 </td>
 </tr>
@@ -36,6 +36,8 @@
 - [Fiji Manual Tracker](https://imagej.net/Fiji)
 
 ## 🛠️ **Quick Start**
+
+The easiest way to start using **CellTracksColab** is in the cloud using Google Collaboratory, but it can also be used on your own computer using Jupyter Notebooks. See our [wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki) for installation instructions.
 
 ### 1. **Load and Plot Your Data**
 
