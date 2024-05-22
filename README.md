@@ -101,12 +101,12 @@ Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/Cell
 
 ## ✍️ **Contributors**
 
-- [Estibaliz Gómez-de-Mariscal](https://github.com/EstibalizGdM)
-- [Hanna Grobe](https://github.com/hgrobe)
-- [Joanna W. Pylvänäinen](https://github.com/jpylvan)
-- [Laura Xénard](https://github.com/lauraxenard)
+- [Estibaliz Gómez-de-Mariscal](https://esgomezm.github.io/)
+- [Hanna Grobe](https://www.abo.fi/en/contact/hanna-grobe/)
+- [Joanna W. Pylvänäinen](https://research.abo.fi/en/persons/joanna-pylv%C3%A4n%C3%A4inen)
+- [Laura Xénard](https://research.pasteur.fr/en/member/laura-xenard/)
 - [Ricardo Henriques](https://henriqueslab.github.io/)
-- [Jean-Yves Tinevez](https://imagej.net/user/tinevez)
+- [Jean-Yves Tinevez](https://research.pasteur.fr/en/member/jean-yves-tinevez/)
 - [Guillaume Jacquemet](https://cellmig.org/)
 
 ---
