@@ -99,6 +99,38 @@ Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/Cell
 
 ---
 
+## ✍️ **Contributors**
+
+- [Estibaliz Gómez-de-Mariscal](https://github.com/EstibalizGdM)
+- [Hanna Grobe](https://github.com/hgrobe)
+- [Joanna W. Pylvänäinen](https://github.com/jpylvan)
+- [Laura Xénard](https://github.com/lauraxenard)
+- [Ricardo Henriques](https://henriqueslab.github.io/)
+- [Jean-Yves Tinevez](https://imagej.net/user/tinevez)
+- [Guillaume Jacquemet](https://cellmig.org/)
+
+---
+
+## 🤝 **Contribute**
+We welcome your insights and improvements. Raise an [issue here](https://github.com/guijacquemet/CellTracksColab/issues).
+
+---
+
+## **License**
+Licensed under the MIT License. [Details here](https://opensource.org/licenses/MIT).
+
+---
+
+## 📜 **Citation**
+
+If you use CellTracksColab in your research, please cite the following paper:
+
+### Reference
+Guillaume Jacquemet. (2023). CellTracksColab—A platform for compiling, analyzing, and exploring tracking data. *bioRxiv*. [https://doi.org/10.1101/2023.10.20.563252](https://doi.org/10.1101/2023.10.20.563252)
+
+[Download PDF](https://www.biorxiv.org/content/early/2023/10/26/2023.10.20.563252.full.pdf)
+
+
 ## 🖼️ **Screenshots**
 
 <table>
@@ -152,32 +184,6 @@ Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/Cell
 </tr>
 </table>
 
-
----
-
-## ✍️ **Contributor(s)**
-Created by [Guillaume Jacquemet](https://cellmig.org/).
-
----
-
-## 🤝 **Contribute**
-We welcome your insights and improvements. Raise an [issue here](https://github.com/guijacquemet/CellTracksColab/issues).
-
----
-
-## **License**
-Licensed under the MIT License. [Details here](https://opensource.org/licenses/MIT).
-
----
-
-## 📜 **Citation**
-
-If you use CellTracksColab in your research, please cite the following paper:
-
-### Reference
-Guillaume Jacquemet. (2023). CellTracksColab—A platform for compiling, analyzing, and exploring tracking data. *bioRxiv*. [https://doi.org/10.1101/2023.10.20.563252](https://doi.org/10.1101/2023.10.20.563252)
-
-[Download PDF](https://www.biorxiv.org/content/early/2023/10/26/2023.10.20.563252.full.pdf)
 
 ---
 
