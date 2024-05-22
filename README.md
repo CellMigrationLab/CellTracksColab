@@ -46,9 +46,7 @@
   </tr>
 </table>
 
-But may also be compatible with other tracking software exporting tracking results that meet our minimal requirements. Ensure your data is well-organized according to the recommended folder hierarchy. This structure helps in managing and analyzing the data efficiently.
-
-- [Check the data requirements and the supported software](https://github.com/CellMigrationLab/CellTracksColab/wiki/Data-requirements-and-supported-software)
+May also be compatible with other tracking software exporting tracking results that meet our minimal requirements. More info <a href="https://github.com/CellMigrationLab/CellTracksColab/wiki/The-Custom-notebook">here</a>.
 
 ## 🛠️ **Quick Start**
 
