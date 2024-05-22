@@ -1,4 +1,3 @@
-
 <table>
 <tr>
 <td valign="top">
@@ -8,9 +7,9 @@
 </td>
 <td>
 
-> In life sciences, tracking objects from movies is pivotal for quantifying behaviors of particles, organelles, bacteria, cells, and whole animals. **CellTracksColab** bridges the gap between tracking and insightful analysis.
+> In life sciences, tracking objects from movies is pivotal for quantifying behaviors of particles, organelles, bacteria, cells, and whole animals. **CellTracksColab** bridges the gap between tracking and analysis.
 
-> CellTracksColab simplifies the journey from data compilation to analysis. Built on the Google Colaboratory framework, it provides a cloud-based solution accessible with just a web browser and a Google account.
+> **CellTracksColab** simplifies the journey from data compilation to analysis. The easiest way to start using **CellTracksColab** is in the cloud using Google Collaboratory, but it can also be used on your own computer using Jupyter Notebooks. See our [wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki) for installation instructions.
 
 </td>
 </tr>
@@ -24,60 +23,61 @@
 - 🔍 **Visualization**: Track visualization and filtering.
 - 📊 **Analysis**: Deep-dive into track metrics and statistics.
 - 🧪 **Reliability**: Check experimental variability using hierarchical clustering.
-- 🔧 **Advanced Tools**: Harness the power of UMAP, t-SNE and HDBSCAN.
+- 🔧 **Advanced Tools**: Harness the power of UMAP, t-SNE, and HDBSCAN.
 - 💼 **Flexibility**: Tailor and adapt to your needs.
 
 ---
 
+## 🚀 **Compatible with**
+- TrackMate
+- CellProfiler
+- Icy
+- ilastik
+- Fiji Manual Tracker
+
 ## 🛠️ **Quick Start**
 
-To begin your analysis journey, click the "Open In Colab" button below, corresponding to your data type. For a seamless experience, right-click the button and select "Open in a new tab."
+### 1. **Load and Plot Your Data**
 
-1. **For TrackMate Data**:
-   - Delve into your TrackMate data with our specialized notebook.
-   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
-   - See how prepare the data in the [TrackMate notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook).
+We provide three notebooks for loading and analyzing your data depending on its format:
 
-2. **Analysis for Other Data Types**:
-   - Explore our general-purpose notebook for analyzing diverse tracking datasets.
-   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb)
-   - currently datasets (.csv) generated using CellProfiler, ICY, ilastik, and Fiji Manual tracker have been succesfully tested.
-   - See how prepare the data in the [General notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-General-notebook).
----
+#### For TrackMate Data (CSV or XML files):
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate.ipynb)
+- See how to prepare the data in the [TrackMate notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook).
 
-## 🗒️ **Additional Notebooks**
+#### For Data Generated in CellProfiler, ICY, ilastik, or the Fiji Manual Tracker (CSV files):
+- Explore our general-purpose notebook for analyzing diverse tracking datasets.
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Custom.ipynb)
+- See how to prepare the data in the [General notebook wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki/The-General-notebook).
 
-Maximize your analysis with our supplementary tools and modules.
+#### For Data Already in the CellTracksColab Format:
+- **CellTracksColab - Viewer**: Ideal for loading datasets in CellTracksColab format or sharing data with colleagues.
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
 
-### 🌐 **Data Viewing and Sharing**
+### 2. 📈 **Advanced Analysis Modules**
 
-- **CellTracksColab - Viewer**:
-  - Ideal for loading datasets in CellTracksColab format or sharing data with colleagues.
-  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
+These notebooks require your dataset to be in the CellTracksColab format.
 
-### 🔍 **Alternative data loading strategy**
-- **CellTracksColab - TrackMate - Plate**:
-  - This notebook can handle TrackMate data structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
-  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate_Plate.ipynb)
+- **CellTracksColab - Dimensionality Reduction**: 
+  - Utilize advanced dimensionality reduction techniques to facilitate the interpretation of complex, high-dimensional data.
+  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Dimensionality_Reduction.ipynb)
 
-### 📈 **Advanced Analysis Modules**
-
-- **CellTracksColab - Track Clustering Analysis**:
+- **CellTracksColab - Track Spatial Clustering Analysis**:
   - Dive deeper into your dataset with our track clustering analysis module.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Track_Clustering.ipynb)
 
 - **CellTracksColab - Distance to ROI**: 
-   - This notebook is specifically designed to analyze movement tracks in relation to designated Regions of Interest (ROIs). Its primary aim is to compute and analyze the distances between moving objects (tracks) and ROIs, which may also be dynamic.
-   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb)
+  - Analyze movement tracks in relation to designated Regions of Interest (ROIs). Compute and analyze the distances between moving objects (tracks) and dynamic ROIs.
+  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb)
 
-- **CellTracksColab - Dimensionality Reduction**: 
-   - This notebook is designed for analyzing datasets stored in the CellTracksColab format, utilizing advanced dimensionality reduction techniques to facilitate the interpretation of complex, high-dimensional data. To convert the data in CellTrackColab format, please use the corresponding [Quick Start notebooks](https://github.com/CellMigrationLab/CellTracksColab/tree/main?tab=readme-ov-file#%EF%B8%8F-quick-start).
-   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Dimensionality_Reduction.ipynb)
+- More to come
 
+## 🗒️ **Other Notebooks**
 
-- More to come soon
-
-  
+- **CellTracksColab - TrackMate - Plate**:
+  - Handle TrackMate data structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
+  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate_Plate.ipynb)
+    
 ---
 
 ## ⭐️ **Acknowledgments**
