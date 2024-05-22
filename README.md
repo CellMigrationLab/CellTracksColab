@@ -112,7 +112,27 @@ Dive deeper. [Visit our comprehensive wiki](https://github.com/guijacquemet/Cell
 ---
 
 ## 🤝 **Contribute**
-We welcome your insights and improvements. Raise an [issue here](https://github.com/guijacquemet/CellTracksColab/issues).
+
+We welcome your insights and improvements! There are several ways you can contribute to the CellTracksColab project:
+
+### Issues
+If you encounter any bugs, have suggestions for improvements, or want to discuss new features, please raise an issue on our [GitHub Issues page](https://github.com/CellMigrationLab/CellTracksColab/issues).
+
+### New Analysis Notebooks
+We are excited to see new analysis notebooks built on the CellTracksColab platform. If you have developed a new notebook, please submit it via a pull request. All submitted notebooks should include a test dataset to showcase their functionality. Each notebook will be tested by a member of the team before being released.
+
+### Code of Conduct
+We expect all contributors to adhere to our simple code of conduct:
+
+- Be respectful and considerate of others.
+- Provide constructive feedback.
+- Collaborate openly and honestly.
+
+By participating in this project, you agree to abide by these guidelines.
+
+---
+
+Thank you for contributing to CellTracksColab! Your support and contributions help us improve and expand the platform for everyone in the community.
 
 ---
 
