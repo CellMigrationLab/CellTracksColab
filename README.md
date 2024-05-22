@@ -62,19 +62,19 @@ These notebooks require your dataset to be in the CellTracksColab format.
   - Utilize advanced dimensionality reduction techniques to facilitate the interpretation of complex, high-dimensional data.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Dimensionality_Reduction.ipynb)
 
-#### CellTracksColab - Track Spatial Clustering Analysis**:
+#### CellTracksColab - Track Spatial Clustering Analysis:
   - Dive deeper into your dataset with our track clustering analysis module.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Track_Clustering.ipynb)
 
-#### CellTracksColab - Distance to ROI**: 
+#### CellTracksColab - Distance to ROI: 
   - Analyze movement tracks in relation to designated Regions of Interest (ROIs). Compute and analyze the distances between moving objects (tracks) and dynamic ROIs.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Distance_to_ROI.ipynb)
 
 #### More to come
 
-## 🗒️ **Other Notebooks**
+## 🗒️ Other Notebooks
 
-#### CellTracksColab - TrackMate - Plate**:
+#### CellTracksColab - TrackMate - Plate:
   - Handle TrackMate data structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
   - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_TrackMate_Plate.ipynb)
     
