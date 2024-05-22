@@ -56,7 +56,7 @@ We provide three notebooks for loading and analyzing your data depending on its 
 - **CellTracksColab - Viewer**: Ideal for loading datasets in CellTracksColab format or sharing data with colleagues.
 - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/guijacquemet/CellTracksColab/blob/main/Notebook/CellTracksColab_Viewer.ipynb)
 
-### 2. 📈 **Advanced Analysis Modules**
+### 2. **Advanced Analysis Modules**
 
 These notebooks require your dataset to be in the CellTracksColab format.
 
@@ -74,7 +74,7 @@ These notebooks require your dataset to be in the CellTracksColab format.
 
 #### More to come
 
-## 🗒️ Other Notebooks
+##  Other Notebooks
 
 #### CellTracksColab - TrackMate - Plate:
   - Handle TrackMate data structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
