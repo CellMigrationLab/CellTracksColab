@@ -15,6 +15,8 @@
 </tr>
 </table>
 
+
+
 ---
 
 ## 🚀 **Key Features**
@@ -47,6 +49,32 @@
 </table>
 
 May also be compatible with other tracking software exporting tracking results that meet our minimal requirements. More info <a href="https://github.com/CellMigrationLab/CellTracksColab/wiki/The-Custom-notebook">here</a>.
+
+## 📹 **Video Tutorials**
+
+<table>
+<tr>
+<td>
+<a href="https://youtu.be/BzE_YPkgzSM" target="_blank">
+<img src="https://img.youtube.com/vi/BzE_YPkgzSM/0.jpg" alt="CellTracksColab in Goolgle drive">
+</a>
+<p style="text-align: center;">Tutorial 1: Getting Started with CellTracksColab using Google Colab</p>
+</td>
+<td>
+<a href="https://youtu.be/9vU8vjgTKqI" target="_blank">
+<img src="https://img.youtube.com/vi/9vU8vjgTKqI/0.jpg" alt="CellTracksColab in Jupyter lab">
+</a>
+<p style="text-align: center;">Tutorial 2: Using CellTracksColab locally using Jupyter</p>
+</td>
+<td>
+<a href="https://youtu.be/xZyVT2w15_c" target="_blank">
+<img src="https://img.youtube.com/vi/xZyVT2w15_c/0.jpg" alt="CellTracksColab in locally with Google Colab">
+</a>
+<p style="text-align: center;">Tutorial 3: Using CellTracksColab locally using Google Colab</p>
+</td>
+</tr>
+</table>
+
 
 ## 🛠️ **Quick Start**
 
