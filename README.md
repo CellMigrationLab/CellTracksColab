@@ -239,9 +239,9 @@ Licensed under the MIT License. [Details here](https://opensource.org/licenses/M
 If you use CellTracksColab in your research, please cite the following paper:
 
 ### Reference
-Guillaume Jacquemet. (2023). CellTracksColab—A platform for compiling, analyzing, and exploring tracking data. *bioRxiv*. [https://doi.org/10.1101/2023.10.20.563252](https://doi.org/10.1101/2023.10.20.563252)
 
-[Download PDF](https://www.biorxiv.org/content/early/2023/10/26/2023.10.20.563252.full.pdf)
+Gómez-de-Mariscal, E., Grobe, H., Pylvänäinen, J. W., Xénard, L., Henriques, R., Tinevez, J.-Y., & Jacquemet, G. (2024). CellTracksColab is a platform that enables compilation, analysis, and exploration of cell tracking data. *PLOS Biology*. Published August 8, 2024. https://doi.org/10.1371/journal.pbio.3002740
+
 
 
 ## 🖼️ **Screenshots**
