@@ -6,6 +6,8 @@ import numpy as np
 import requests
 import zipfile
 import time
+import gzip
+
 from .xml_loader import load_and_populate_from_TM_XML
 
 
@@ -56,18 +58,15 @@ def save_parameters(params, file_path, param_type):
     updated_params_df.to_csv(file_path, index=False)
 
 def save_dataframe_with_progress(df, path, desc="Saving", chunk_size=50000):
-    """Save a DataFrame with a progress bar."""
-
-    if not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+    """Save a DataFrame with a progress bar and gzip compression."""
 
     # Estimating the number of chunks based on the provided chunk size
     num_chunks = int(len(df) / chunk_size) + 1
 
     # Create a tqdm instance for progress tracking
     with tqdm(total=len(df), unit="rows", desc=desc) as pbar:
-        # Open the file for writing
-        with open(path, "w") as f:
+        # Open the file for writing with gzip compression
+        with gzip.open(path, "wt") as f:
             # Write the header once at the beginning
             df.head(0).to_csv(f, index=False)
 
@@ -434,7 +433,7 @@ class TrackingData:
         self.spots_data = self.spots_data.rename(columns=column_mapping)
         print("Columns Renamed!")
         self.spots_data = sort_and_generate_repeat(self.spots_data)
-        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv.gz'),
                                      desc="Saving Spots")
 
     def CalibrateUnits(self, x_cal=1., y_cal=1., z_cal=1., t_cal=1., spatial_calibration_unit="pixel", time_unit="second"):
@@ -457,7 +456,7 @@ class TrackingData:
         self.spots_data['POSITION_T'] = self.spots_data['POSITION_T'] * t_cal
 
         save_dataframe_with_progress(self.spots_data,
-                                     os.path.join(self.Results_Folder, 'merged_Spots_calibrated.csv'), desc="Saving Spots")
+                                     os.path.join(self.Results_Folder, 'merged_Spots_calibrated.csv.gz'), desc="Saving Spots")
 
         print(
             f"Spatial Calibration saved: X={x_cal}, Y={y_cal}, Z={z_cal} in {spatial_calibration_unit}")
@@ -472,7 +471,7 @@ class TrackingData:
 
         merged_spots_df = sort_and_generate_repeat(merged_spots_df)
 
-        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv.gz'),
                                      desc="Saving Spots")
 
         self.spots_data = merged_spots_df
@@ -482,7 +481,7 @@ class TrackingData:
 
     def __create_tracks_csv(self):
         self.spots_data['Unique_ID'] = self.spots_data ['File_name'] + "_" + self.spots_data ['TRACK_ID'].astype(str)
-        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv.gz'),
                                      desc="Saving Spots")
 
         # Extracting unique Unique_ID values from merged_spots_df
@@ -543,9 +542,9 @@ class TrackingData:
         check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
         check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
 
-        save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+        save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv.gz'),
                                      desc="Saving Tracks")
-        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv.gz'),
                                      desc="Saving Spots")
         self.spots_data = merged_spots_df
         self.tracks_data = merged_tracks_df
@@ -565,7 +564,7 @@ class TrackingData:
             merged_tracks_df = sort_and_generate_repeat(merged_tracks_df)
             merged_tracks_df['Unique_ID'] = merged_tracks_df['File_name'] + "_" + merged_tracks_df['TRACK_ID'].astype(
                 str)
-            save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+            save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv.gz'),
                                          desc="Saving Tracks")
 
         # Load the spots data info in memory
@@ -587,9 +586,9 @@ class TrackingData:
         metadata_columns = ['Condition', 'experiment_nb', 'Repeat']
         check_metadata(merged_tracks_df, df_name="Tracks Dataframe", metadata_columns=metadata_columns)
         check_metadata(merged_spots_df, df_name="Spots Dataframe", metadata_columns=metadata_columns)
-        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        save_dataframe_with_progress(merged_spots_df, os.path.join(self.Results_Folder, 'merged_Spots.csv.gz'),
                                      desc="Saving Spots")
-        save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+        save_dataframe_with_progress(merged_tracks_df, os.path.join(self.Results_Folder, 'merged_Tracks.csv.gz'),
                                      desc="Saving Tracks")
         # Store the values
         self.spots_data = merged_spots_df
@@ -687,7 +686,7 @@ class TrackingData:
         self.spots_data = merged_spots_df
         self.tracks_data = merged_tracks_df
         # Save the DataFrame with the selected columns merged
-        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv'),
+        save_dataframe_with_progress(self.spots_data, os.path.join(self.Results_Folder, 'merged_Spots.csv.gz'),
                                      desc="Saving Spots")
-        save_dataframe_with_progress(self.tracks_data, os.path.join(self.Results_Folder, 'merged_Tracks.csv'),
+        save_dataframe_with_progress(self.tracks_data, os.path.join(self.Results_Folder, 'merged_Tracks.csv.gz'),
                                      desc="Saving Tracks")
