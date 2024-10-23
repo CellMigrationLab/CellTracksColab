@@ -32,8 +32,9 @@ def replace_inf_with_nan(df, df_name):
             inf_count = ((df[col] == np.inf) | (df[col] == -np.inf)).sum()
             print(f"Column '{col}' in {df_name} contains {inf_count} infinity values. Replacing with NaN.")
     
-    # Replace inf and -inf with NaN
-    return df.replace([np.inf, -np.inf], np.nan)
+    # Replace inf and -inf with NaN and update the DataFrame in place
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    return df  # Return the modified DataFrame
 
 def check_for_nans(df, df_name):
     """
