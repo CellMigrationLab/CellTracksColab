@@ -11,14 +11,42 @@ import gzip
 from .xml_loader import load_and_populate_from_TM_XML
 
 
+def replace_inf_with_nan(df, df_name):
+    """
+    Replaces all infinite values (positive or negative infinity) in the DataFrame with NaN
+    and prints a message for each column where infinities are found.
+
+    Args:
+    df (pd.DataFrame): DataFrame to replace inf values.
+    df_name (str): The name of the DataFrame as a string, used for printing.
+    
+    Returns:
+    pd.DataFrame: DataFrame with infinity values replaced by NaN.
+    """
+    # Check for positive and negative infinity
+    inf_columns = df.columns[(df == np.inf).any() | (df == -np.inf).any()].tolist()
+    
+    # Print message for each column that contains infinity values
+    if inf_columns:
+        for col in inf_columns:
+            inf_count = ((df[col] == np.inf) | (df[col] == -np.inf)).sum()
+            print(f"Column '{col}' in {df_name} contains {inf_count} infinity values. Replacing with NaN.")
+    
+    # Replace inf and -inf with NaN
+    return df.replace([np.inf, -np.inf], np.nan)
+
 def check_for_nans(df, df_name):
     """
     Checks the given DataFrame for NaN values and prints the count for each column containing NaNs.
+    It first converts infinite values to NaNs before the check.
 
     Args:
     df (pd.DataFrame): DataFrame to be checked for NaN values.
     df_name (str): The name of the DataFrame as a string, used for printing.
     """
+    # Replace infinity with NaN before checking for NaN values
+    df = replace_inf_with_nan(df, df_name)
+    
     # Check if the DataFrame has any NaN values and print a warning if it does.
     nan_columns = df.columns[df.isna().any()].tolist()
 
