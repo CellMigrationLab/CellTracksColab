@@ -474,6 +474,43 @@ def count_tracks_by_condition_and_repeat(df, Results_Folder, condition_col='Cond
     return track_counts_df        
 
 
+def handle_nans_in_selected_columns(selected_df, selected_columns, df_name='DataFrame', nan_threshold=30):
+    """
+    Handles NaN values in the selected columns of the DataFrame.
+    If a column contains more NaN values than the defined threshold, the column is dropped.
+    After column removal, any remaining rows with NaN values across the DataFrame are dropped.
+
+    Args:
+    selected_df (pd.DataFrame): The DataFrame to handle.
+    selected_columns (list): List of columns to check for NaN values.
+    df_name (str): The name of the DataFrame for reporting purposes.
+    nan_threshold (float): Threshold percentage for NaN values to drop the column. Default is 60%.
+    
+    Returns:
+    pd.DataFrame: The updated DataFrame with NaN values handled.
+    """
+   
+    # First pass: handle columns with too many NaN values
+    for column in selected_columns:
+        if selected_df[column].isna().any():
+            nan_percentage = selected_df[column].isna().mean() * 100
+            print(f"Warning: NaN values found in {df_name}.")
+            print(f"{column}: {nan_percentage:.2f}% NaN")
+
+            if nan_percentage > nan_threshold:
+                # If NaN percentage exceeds the threshold, drop the column
+                print(f"Column '{column}' contains more than {nan_threshold}% NaN values. Dropping the column.")
+                selected_df = selected_df.drop(columns=[column])
+
+    print(f"Proceeding to drop any remaining rows with NaN values in {df_name}.")
+    
+    print(f"Rows before drop: {len(selected_df)}")
+    selected_df = selected_df.dropna()
+    print(f"Rows after drop: {len(selected_df)}") 
+
+    return selected_df
+
+
 def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', variables_per_page=40):
     # Get all the selectable columns
     variables_to_plot = get_selectable_columns(df)
@@ -482,7 +519,10 @@ def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', v
     df_mod = df.copy()
     
     # Drop rows where all elements are NaNs in the variables_to_plot columns
-    df_mod = df_mod.dropna(subset=variables_to_plot)
+
+    handle_nans_in_selected_columns(df_mod, variables_to_plot, 'df_mod', nan_threshold=30)
+
+    #df_mod = df_mod.dropna(subset=variables_to_plot)
 
     # Normalize the entire dataset for each variable
     if normalization == 'zscore':
@@ -527,7 +567,6 @@ def heatmap_comparison(df, Results_Folder, Conditions, normalization='zscore', v
 
     print(f"Heatmaps saved to {Results_Folder}/Heatmaps_Normalized_Median_Values_by_Condition.pdf")
     print(f"All data saved to {Results_Folder}/Normalized_Median_Values_by_Condition.csv")
-
 
 
 def balance_dataset(df, condition_col='Condition', repeat_col='Repeat', track_id_col='Unique_ID', random_seed=None):
