@@ -22,6 +22,7 @@ dependencies:
   - jupyter
   - umap-learn==0.5.5
   - jupyter_core==5.7.2
-  - jupyterlab=4.1.5
-  - jupyterlab_widgets=3.0.10
-  - pip=24.0
+  - jupyterlab==4.1.5
+  - jupyterlab_widgets==3.0.10
+  - pip==24.0
+  - zarr==2.18.3
