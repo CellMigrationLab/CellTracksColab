@@ -1,7 +1,7 @@
 Notebook,Version
 TrackMate,1.0.3
 TrackMate_Plate,1.0.2
-Viewer,1.0.2
+Viewer,1.0.3
 Main,1.0.2
 Dimensionality_Reduction,1.0.2
 Track_Clustering,1.0.2

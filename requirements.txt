@@ -14,3 +14,4 @@ seaborn==0.13.1
 umap-learn==0.5.5
 jupyter_core==5.7.2
 lxml==5.1.0
+zarr==2.18.3
