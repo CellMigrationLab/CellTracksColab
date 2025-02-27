@@ -30,7 +30,7 @@ def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_pl
         print("No valid filename selected")
 
 
-def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Folder, display_plots=True):
+def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True):
     if filename:
         # Filter the DataFrame based on the selected filename
         filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
@@ -53,6 +53,13 @@ def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Fo
         plt.xlabel('Normalized POSITION_X')
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for {filename}')
+
+        # Set custom x and y scales if non-zero; otherwise, let matplotlib decide
+        if x_scale != 0:
+            plt.xlim(-x_scale, x_scale)
+        if y_scale != 0:
+            plt.ylim(-y_scale, y_scale)
+
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{filename}.pdf")
         
         if display_plots:  # Only display plots if explicitly requested
@@ -63,7 +70,7 @@ def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Fo
         print("No valid filename selected")
 
 
-def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, Results_Folder,
+def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, 
                                                         display_plots=True):
     # Filter the DataFrame based on the selected condition and repeat
     filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition) &
@@ -88,6 +95,14 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
         plt.xlabel('Normalized POSITION_X')
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for Condition: {condition}, Repeat: {repeat}')
+
+        # Set custom x and y scales if non-zero; otherwise, let matplotlib decide
+        if x_scale != 0:
+            plt.xlim(-x_scale, x_scale)
+        if y_scale != 0:
+            plt.ylim(-y_scale, y_scale)
+
+
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}_{repeat}.pdf")
 	
         if display_plots:
@@ -99,7 +114,7 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
         print("No data available for the selected condition and repeat.")
 
 
-def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Results_Folder, display_plots=True):
+def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True):
     # Filter the DataFrame based on the selected condition
     filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition)]
 
@@ -122,6 +137,13 @@ def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Res
         plt.xlabel('Normalized POSITION_X')
         plt.ylabel('Normalized POSITION_Y')
         plt.title(f'Origin-Normalized Tracks for Condition: {condition}')
+
+         # Set custom x and y scales if non-zero; otherwise, let matplotlib decide
+        if x_scale != 0:
+            plt.xlim(-x_scale, x_scale)
+        if y_scale != 0:
+            plt.ylim(-y_scale, y_scale)
+
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}.pdf")
 
         if display_plots:
