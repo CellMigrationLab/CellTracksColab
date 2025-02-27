@@ -53,27 +53,42 @@ May also be compatible with other tracking software exporting tracking results t
 ## 📹 **Video Tutorials**
 
 <table>
-<tr>
-<td>
-<a href="https://youtu.be/BzE_YPkgzSM" target="_blank">
-<img src="https://img.youtube.com/vi/BzE_YPkgzSM/0.jpg" alt="CellTracksColab in Goolgle drive">
-</a>
-<p style="text-align: center;">Tutorial 1: Getting Started with CellTracksColab using Google Colab</p>
-</td>
-<td>
-<a href="https://youtu.be/9vU8vjgTKqI" target="_blank">
-<img src="https://img.youtube.com/vi/9vU8vjgTKqI/0.jpg" alt="CellTracksColab in Jupyter lab">
-</a>
-<p style="text-align: center;">Tutorial 2: Using CellTracksColab locally using Jupyter</p>
-</td>
-<td>
-<a href="https://youtu.be/xZyVT2w15_c" target="_blank">
-<img src="https://img.youtube.com/vi/xZyVT2w15_c/0.jpg" alt="CellTracksColab in locally with Google Colab">
-</a>
-<p style="text-align: center;">Tutorial 3: Using CellTracksColab locally using Google Colab</p>
-</td>
-</tr>
+  <tr>
+    <td>
+      <a href="https://youtu.be/BzE_YPkgzSM" target="_blank">
+        <img src="https://img.youtube.com/vi/BzE_YPkgzSM/0.jpg" alt="CellTracksColab in Google Drive">
+      </a>
+      <p style="text-align: center;">
+        <strong>Tutorial 1:</strong> Getting Started with CellTracksColab using Google Colab
+      </p>
+    </td>
+    <td>
+      <a href="https://youtu.be/9vU8vjgTKqI" target="_blank">
+        <img src="https://img.youtube.com/vi/9vU8vjgTKqI/0.jpg" alt="CellTracksColab in Jupyter Lab">
+      </a>
+      <p style="text-align: center;">
+        <strong>Tutorial 2:</strong> Using CellTracksColab locally using Jupyter
+      </p>
+    </td>
+    <td>
+      <a href="https://youtu.be/xZyVT2w15_c" target="_blank">
+        <img src="https://img.youtube.com/vi/xZyVT2w15_c/0.jpg" alt="CellTracksColab locally with Google Colab">
+      </a>
+      <p style="text-align: center;">
+        <strong>Tutorial 3:</strong> Using CellTracksColab locally using Google Colab
+      </p>
+    </td>
+    <td>
+      <a href="https://youtu.be/fIE4i3G7L9Y" target="_blank">
+        <img src="https://img.youtube.com/vi/fIE4i3G7L9Y/0.jpg" alt="I2K 2024">
+      </a>
+      <p style="text-align: center;">
+        <strong>I2K 2024:</strong> CellTracksColab tutorial
+      </p>
+    </td>
+  </tr>
 </table>
+
 
 
 ## 🛠️ **Quick Start**
