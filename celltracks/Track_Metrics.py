@@ -411,6 +411,41 @@ def calculate_rolling_spatial_coverage(group, window_size=5):
     average_spatial_coverage = np.nanmean(spatial_coverages) if spatial_coverages else 0
     return pd.Series({'Spatial Coverage Rolling': average_spatial_coverage})
 
+def calculate_fmi(group):
+    # Ensure the group is sorted by time
+    group = group.sort_values('POSITION_T')
+    
+    # Calculate the differences for x and y coordinates
+    dx = group['POSITION_X'].diff().fillna(0)
+    dy = group['POSITION_Y'].diff().fillna(0)
+    
+    # Calculate the Euclidean distance for each step
+    deltas = np.sqrt(dx**2 + dy**2)
+    total_path_length = deltas.sum()
+    
+    # If the path length is zero, return zeros for all FMI values
+    if total_path_length == 0:
+        return pd.Series({
+            'FMI_x_plus': 0, 
+            'FMI_x_minus': 0, 
+            'FMI_y_plus': 0, 
+            'FMI_y_minus': 0
+        })
+    
+    # Compute FMI for positive and negative displacements in x and y directions
+    FMI_x_plus = dx[dx > 0].sum() / total_path_length
+    FMI_x_minus = abs(dx[dx < 0].sum()) / total_path_length
+    FMI_y_plus = dy[dy > 0].sum() / total_path_length
+    FMI_y_minus = abs(dy[dy < 0].sum()) / total_path_length
+
+    return pd.Series({
+        'FMI_x_plus': FMI_x_plus, 
+        'FMI_x_minus': FMI_x_minus, 
+        'FMI_y_plus': FMI_y_plus, 
+        'FMI_y_minus': FMI_y_minus
+    })
+
+
 def compute_morphological_metrics(spots_df, metrics):
     # Compute mean, median, std, min, and max for each metric
     mean_df = spots_df.groupby('Unique_ID')[metrics].mean(numeric_only=True).add_prefix('MEAN_')
