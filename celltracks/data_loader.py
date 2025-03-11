@@ -234,7 +234,7 @@ def frame_estimation(df, col_file = "File_name", t_col="POSITION_T"):
     return new_df
 
 def remove_suffix(filename):
-    suffixes_to_remove = ["-tracks", "-spots"]
+    suffixes_to_remove = ["-tracks", "-spots", "_tracks", "_spots"]
     for suffix in suffixes_to_remove:
         if filename.endswith(suffix):
             filename = filename[:-len(suffix)]
