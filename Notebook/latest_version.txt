@@ -1,5 +1,5 @@
 Notebook,Version
-TrackMate,1.0.3
+TrackMate,1.0.5
 TrackMate_Plate,1.0.2
 Viewer,1.0.2
 Main,1.0.5
