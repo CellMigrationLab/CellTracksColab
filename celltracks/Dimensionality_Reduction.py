@@ -173,7 +173,18 @@ def plot_selected_vars_cluster(button, checkboxes_dict, df, Conditions, Cluster,
 
     # Plotting
         sns.boxplot(x=Conditions, y=var, data=filtered_df, ax=ax_box, color='lightgray')  # Boxplot
-        sns.stripplot(x=Conditions, y=var, data=filtered_df, ax=ax_box, hue='Repeat', dodge=True, jitter=True, alpha=0.2)  # Individual data points
+        sns.stripplot(
+            x=Conditions,
+            y=var,
+            data=filtered_df,
+            ax=ax_box,
+            hue='Repeat',
+            dodge=True,
+            jitter=True,
+            alpha=0.2,
+            # Use a categorical palette for clear repeat distinction
+            palette='tab10'
+        )  # Individual data points
         ax_box.set_ylim([max(min(filtered_df[var]), lower_bound), min(max(filtered_df[var]), upper_bound)])
         ax_box.set_title(f"{var} for Cluster {selected_cluster}")
         ax_box.set_xlabel('Condition')

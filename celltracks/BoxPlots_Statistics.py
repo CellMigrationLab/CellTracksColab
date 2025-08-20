@@ -392,7 +392,18 @@ def plot_selected_vars(button, checkboxes_dict, df, Conditions, Results_Folder, 
 
         # Plotting
         sns.boxplot(x=Conditions, y=var, data=filtered_df, ax=ax_box, color='lightgray')  # Boxplot
-        sns.stripplot(x=Conditions, y=var, data=filtered_df, ax=ax_box, hue='Repeat', dodge=True, jitter=True, alpha=0.2)  # Individual data points
+        sns.stripplot(
+            x=Conditions,
+            y=var,
+            data=filtered_df,
+            ax=ax_box,
+            hue='Repeat',
+            dodge=True,
+            jitter=True,
+            alpha=0.2,
+            # Use a discrete palette so repeats are easy to tell apart
+            palette='tab10'
+        )  # Individual data points
         ax_box.set_ylim([max(min(filtered_df[var]), lower_bound), min(max(filtered_df[var]), upper_bound)])
         ax_box.set_title(f"{var}")
         ax_box.set_xlabel('Condition')
