@@ -5,218 +5,263 @@ import os
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
 
-
 def plot_track_coordinates(filename, merged_spots_df, Results_Folder, display_plots=True):
-    if filename:
-        # Filter the DataFrame based on the selected filename
-        filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
-
-        plt.figure(figsize=(10, 8))
-        for unique_id in filtered_df['Unique_ID'].unique():
-            unique_df = filtered_df[filtered_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
-            plt.plot(unique_df['POSITION_X'], unique_df['POSITION_Y'], marker='o', linestyle='-', markersize=2)
-
-        plt.xlabel('POSITION_X')
-        plt.ylabel('POSITION_Y')
-        plt.title(f'Coordinates for {filename}')
-        plt.gca().invert_yaxis()
-        plt.savefig(f"{Results_Folder}/Tracks/Tracks_{filename}.pdf")
-        
-        if display_plots:  # Only display plots if explicitly requested
-            plt.show()
-        else:
-            plt.close()  # Close the plot to prevent it from displaying
-    else:
+    if not filename:
         print("No valid filename selected")
+        return
 
+    tracks_dir = os.path.join(Results_Folder, "Tracks")
+    os.makedirs(tracks_dir, exist_ok=True)
 
-def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True):
-    if filename:
-        # Filter the DataFrame based on the selected filename
-        filtered_df = merged_spots_df[merged_spots_df['File_name'] == filename]
+    filtered_df = merged_spots_df[merged_spots_df["File_name"] == filename]
+    if filtered_df.empty:
+        print(f"No data available for filename: {filename}")
+        return
 
-        plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(10, 8))
+    for unique_id in filtered_df["Unique_ID"].unique():
+        unique_df = filtered_df[filtered_df["Unique_ID"] == unique_id].sort_values(by="POSITION_T")
+        if unique_df.empty:
+            continue
+        plt.plot(unique_df["POSITION_X"], unique_df["POSITION_Y"], marker="o", linestyle="-", markersize=2)
 
-        # Group by Unique_ID to work with each track individually
-        for unique_id in filtered_df['Unique_ID'].unique():
-            unique_df = filtered_df[filtered_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
+    plt.xlabel("POSITION_X")
+    plt.ylabel("POSITION_Y")
+    plt.title(f"Coordinates for {filename}")
 
-            # Normalize starting point to (0, 0)
-            start_x = unique_df.iloc[0]['POSITION_X']
-            start_y = unique_df.iloc[0]['POSITION_Y']
-            normalized_x = unique_df['POSITION_X'] - start_x
-            normalized_y = unique_df['POSITION_Y'] - start_y
+    ax = plt.gca()
+    ax.set_aspect("equal", adjustable="box")
+    ax.invert_yaxis()
 
-            # Plot the normalized track without adding to the legend
-            plt.plot(normalized_x, normalized_y, marker='o', linestyle='-', markersize=2)
+    plt.savefig(os.path.join(tracks_dir, f"Tracks_{filename}.pdf"))
 
-        plt.xlabel('Normalized POSITION_X')
-        plt.ylabel('Normalized POSITION_Y')
-        plt.title(f'Origin-Normalized Tracks for {filename}')
-
-        # Set custom x and y scales if non-zero; otherwise, let matplotlib decide
-        if x_scale != 0:
-            plt.xlim(-x_scale, x_scale)
-        if y_scale != 0:
-            plt.ylim(-y_scale, y_scale)
-			
-        ax = plt.gca()
-        ax.invert_yaxis()		
-		
-        plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{filename}.pdf")
-        
-        if display_plots:  # Only display plots if explicitly requested
-            plt.show()
-        else:
-            plt.close()  # Close the plot to prevent it from displaying
+    if display_plots:
+        plt.show()
     else:
+        plt.close()
+
+
+def plot_origin_normalized_coordinates_FOV(
+    filename, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True
+):
+    if not filename:
         print("No valid filename selected")
+        return
 
+    tracks_dir = os.path.join(Results_Folder, "Tracks")
+    os.makedirs(tracks_dir, exist_ok=True)
 
-def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, 
-                                                        display_plots=True):
-    # Filter the DataFrame based on the selected condition and repeat
-    filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition) &
-                                  (merged_spots_df['Repeat'] == repeat)]
+    filtered_df = merged_spots_df[merged_spots_df["File_name"] == filename]
+    if filtered_df.empty:
+        print(f"No data available for filename: {filename}")
+        return
 
-    if not filtered_df.empty:
-        plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(10, 8))
 
-        # Iterate over each unique track ID in the filtered DataFrame
-        for unique_id in filtered_df['Unique_ID'].unique():
-            track_df = filtered_df[filtered_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
+    for unique_id in filtered_df["Unique_ID"].unique():
+        unique_df = filtered_df[filtered_df["Unique_ID"] == unique_id].sort_values(by="POSITION_T")
+        if unique_df.empty:
+            continue
 
-            # Normalize starting point to (0, 0)
-            start_x = track_df.iloc[0]['POSITION_X']
-            start_y = track_df.iloc[0]['POSITION_Y']
-            normalized_x = track_df['POSITION_X'] - start_x
-            normalized_y = track_df['POSITION_Y'] - start_y
+        start_x = unique_df.iloc[0]["POSITION_X"]
+        start_y = unique_df.iloc[0]["POSITION_Y"]
+        normalized_x = unique_df["POSITION_X"] - start_x
+        normalized_y = unique_df["POSITION_Y"] - start_y
 
-            # Plot the normalized track
-            plt.plot(normalized_x, normalized_y, marker='o', linestyle='-', markersize=2)
-            
-        plt.xlabel('Normalized POSITION_X')
-        plt.ylabel('Normalized POSITION_Y')
-        plt.title(f'Origin-Normalized Tracks for Condition: {condition}, Repeat: {repeat}')
+        plt.plot(normalized_x, normalized_y, marker="o", linestyle="-", markersize=2)
 
-        # Set custom x and y scales if non-zero; otherwise, let matplotlib decide
-        if x_scale != 0:
-            plt.xlim(-x_scale, x_scale)
-        if y_scale != 0:
-            plt.ylim(-y_scale, y_scale)
-			
-        ax = plt.gca()
-        ax.invert_yaxis()
+    plt.xlabel("Normalized POSITION_X")
+    plt.ylabel("Normalized POSITION_Y")
+    plt.title(f"Origin-Normalized Tracks for {filename}")
 
-        plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}_{repeat}.pdf")
-	
-        if display_plots:
-            plt.show()
-        else:
-            plt.close()
+    if x_scale != 0:
+        plt.xlim(-x_scale, x_scale)
+    if y_scale != 0:
+        plt.ylim(-y_scale, y_scale)
 
+    ax = plt.gca()
+    ax.set_aspect("equal", adjustable="box")
+    ax.invert_yaxis()
+
+    plt.savefig(os.path.join(tracks_dir, f"Origin_Normalized_Tracks_{filename}.pdf"))
+
+    if display_plots:
+        plt.show()
     else:
+        plt.close()
+
+
+def plot_origin_normalized_coordinates_condition_repeat(
+    condition, repeat, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True
+):
+    tracks_dir = os.path.join(Results_Folder, "Tracks")
+    os.makedirs(tracks_dir, exist_ok=True)
+
+    filtered_df = merged_spots_df[
+        (merged_spots_df["Condition"] == condition) & (merged_spots_df["Repeat"] == repeat)
+    ]
+    if filtered_df.empty:
         print("No data available for the selected condition and repeat.")
+        return
 
+    plt.figure(figsize=(10, 8))
 
-def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True):
-    # Filter the DataFrame based on the selected condition
-    filtered_df = merged_spots_df[(merged_spots_df['Condition'] == condition)]
+    for unique_id in filtered_df["Unique_ID"].unique():
+        track_df = filtered_df[filtered_df["Unique_ID"] == unique_id].sort_values(by="POSITION_T")
+        if track_df.empty:
+            continue
 
-    if not filtered_df.empty:
-        plt.figure(figsize=(10, 8))
+        start_x = track_df.iloc[0]["POSITION_X"]
+        start_y = track_df.iloc[0]["POSITION_Y"]
+        normalized_x = track_df["POSITION_X"] - start_x
+        normalized_y = track_df["POSITION_Y"] - start_y
 
-        # Iterate over each unique track ID in the filtered DataFrame
-        for unique_id in filtered_df['Unique_ID'].unique():
-            track_df = filtered_df[filtered_df['Unique_ID'] == unique_id].sort_values(by='POSITION_T')
+        plt.plot(normalized_x, normalized_y, marker="o", linestyle="-", markersize=2)
 
-            # Normalize starting point to (0, 0)
-            start_x = track_df.iloc[0]['POSITION_X']
-            start_y = track_df.iloc[0]['POSITION_Y']
-            normalized_x = track_df['POSITION_X'] - start_x
-            normalized_y = track_df['POSITION_Y'] - start_y
+    plt.xlabel("Normalized POSITION_X")
+    plt.ylabel("Normalized POSITION_Y")
+    plt.title(f"Origin-Normalized Tracks for Condition: {condition}, Repeat: {repeat}")
 
-            # Plot the normalized track
-            plt.plot(normalized_x, normalized_y, marker='o', linestyle='-', markersize=2)
+    if x_scale != 0:
+        plt.xlim(-x_scale, x_scale)
+    if y_scale != 0:
+        plt.ylim(-y_scale, y_scale)
 
-        plt.xlabel('Normalized POSITION_X')
-        plt.ylabel('Normalized POSITION_Y')
-        plt.title(f'Origin-Normalized Tracks for Condition: {condition}')
+    ax = plt.gca()
+    ax.set_aspect("equal", adjustable="box")
+    ax.invert_yaxis()
 
-         # Set custom x and y scales if non-zero; otherwise, let matplotlib decide
-        if x_scale != 0:
-            plt.xlim(-x_scale, x_scale)
-        if y_scale != 0:
-            plt.ylim(-y_scale, y_scale)
+    plt.savefig(os.path.join(tracks_dir, f"Origin_Normalized_Tracks_{condition}_{repeat}.pdf"))
 
-        ax = plt.gca()
-        ax.invert_yaxis()
-		
-        plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}.pdf")
-
-        if display_plots:
-            plt.show()
-        else:
-            plt.close()
-
+    if display_plots:
+        plt.show()
     else:
+        plt.close()
+
+
+def plot_origin_normalized_coordinates_condition(
+    condition, merged_spots_df, Results_Folder, x_scale=0, y_scale=0, display_plots=True
+):
+    tracks_dir = os.path.join(Results_Folder, "Tracks")
+    os.makedirs(tracks_dir, exist_ok=True)
+
+    filtered_df = merged_spots_df[merged_spots_df["Condition"] == condition]
+    if filtered_df.empty:
         print("No data available for the selected condition.")
+        return
+
+    plt.figure(figsize=(10, 8))
+
+    for unique_id in filtered_df["Unique_ID"].unique():
+        track_df = filtered_df[filtered_df["Unique_ID"] == unique_id].sort_values(by="POSITION_T")
+        if track_df.empty:
+            continue
+
+        start_x = track_df.iloc[0]["POSITION_X"]
+        start_y = track_df.iloc[0]["POSITION_Y"]
+        normalized_x = track_df["POSITION_X"] - start_x
+        normalized_y = track_df["POSITION_Y"] - start_y
+
+        plt.plot(normalized_x, normalized_y, marker="o", linestyle="-", markersize=2)
+
+    plt.xlabel("Normalized POSITION_X")
+    plt.ylabel("Normalized POSITION_Y")
+    plt.title(f"Origin-Normalized Tracks for Condition: {condition}")
+
+    if x_scale != 0:
+        plt.xlim(-x_scale, x_scale)
+    if y_scale != 0:
+        plt.ylim(-y_scale, y_scale)
+
+    ax = plt.gca()
+    ax.set_aspect("equal", adjustable="box")
+    ax.invert_yaxis()
+
+    plt.savefig(os.path.join(tracks_dir, f"Origin_Normalized_Tracks_{condition}.pdf"))
+
+    if display_plots:
+        plt.show()
+    else:
+        plt.close()
 
 
 def plot_migration_vectors(filename, merged_spots_df, Results_Folder, display_plots):
-    # Filter data for the selected field of view
-    fov_df = merged_spots_df[merged_spots_df['File_name'] == filename]
+    if not filename:
+        print("No valid filename selected")
+        return
 
-    # Set up the plot
+    tracks_dir = os.path.join(Results_Folder, "Tracks")
+    os.makedirs(tracks_dir, exist_ok=True)
+
+    fov_df = merged_spots_df[merged_spots_df["File_name"] == filename]
+    if fov_df.empty:
+        print(f"No data available for filename: {filename}")
+        return
+
     plt.figure(figsize=(10, 8))
     ax = plt.gca()
 
-    # Initialize list to store vector magnitudes for color coding
     magnitudes = []
     coordinates = []
 
-    # Collect data for all vectors
-    for unique_id in fov_df['Unique_ID'].unique():
-        track_df = fov_df[fov_df['Unique_ID'] == unique_id]
-        track_df = track_df.sort_values(by='POSITION_T')
+    for unique_id in fov_df["Unique_ID"].unique():
+        track_df = fov_df[fov_df["Unique_ID"] == unique_id].sort_values(by="POSITION_T")
+        if track_df.empty:
+            continue
 
-        start_x = track_df.iloc[0]['POSITION_X']
-        start_y = track_df.iloc[0]['POSITION_Y']
-        end_x = track_df.iloc[-1]['POSITION_X']
-        end_y = track_df.iloc[-1]['POSITION_Y']
+        start_x = track_df.iloc[0]["POSITION_X"]
+        start_y = track_df.iloc[0]["POSITION_Y"]
+        end_x = track_df.iloc[-1]["POSITION_X"]
+        end_y = track_df.iloc[-1]["POSITION_Y"]
 
         vector_x = end_x - start_x
         vector_y = end_y - start_y
-        magnitude = np.sqrt(vector_x ** 2 + vector_y ** 2)
+        magnitude = float(np.sqrt(vector_x**2 + vector_y**2))
 
         magnitudes.append(magnitude)
         coordinates.append((start_x, start_y, vector_x, vector_y))
 
-    # Normalize magnitude for color mapping and determine arrow size scaling
-    norm = mcolors.Normalize(vmin=min(magnitudes), vmax=max(magnitudes))
-    cmap = cm.magma  # Choose a colormap
-    scale_factor = np.mean(magnitudes) * 0.08  # Scale factor for arrow size
+    if len(magnitudes) == 0:
+        print(f"No tracks available for filename: {filename}")
+        plt.close()
+        return
 
-    # Plot each vector with color coding and scaled arrow size
+    mean_mag = float(np.mean(magnitudes))
+    if mean_mag == 0:
+        mean_mag = 1e-12
+
+    vmin, vmax = float(min(magnitudes)), float(max(magnitudes))
+    if vmin == vmax:
+        # Avoid degenerate normalization
+        eps = 1e-12 if vmin == 0 else abs(vmin) * 1e-12
+        vmin -= eps
+        vmax += eps
+
+    norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    cmap = cm.magma
+    scale_factor = mean_mag * 0.08
+
     for (start_x, start_y, vector_x, vector_y), magnitude in zip(coordinates, magnitudes):
         color = cmap(norm(magnitude))
-        ax.arrow(start_x, start_y, vector_x, vector_y,
-                 head_width=scale_factor * magnitude / np.mean(magnitudes),
-                 head_length=scale_factor * magnitude / np.mean(magnitudes) * 2,  # Twice the width for visibility
-                 fc=color, ec=color)
+        hw = scale_factor * (magnitude / mean_mag)
+        hl = scale_factor * (magnitude / mean_mag) * 2
+        ax.arrow(start_x, start_y, vector_x, vector_y, head_width=hw, head_length=hl, fc=color, ec=color)
 
-    plt.title(f'Migration Vectors for {filename}')
-    plt.xlabel('POSITION_X')
-    plt.ylabel('POSITION_Y')
+    plt.title(f"Migration Vectors for {filename}")
+    plt.xlabel("POSITION_X")
+    plt.ylabel("POSITION_Y")
     plt.grid(True)
-    plt.axis('equal')
-    plt.gca().invert_yaxis()
-    plt.savefig(f"{Results_Folder}/Tracks/Vectors_Tracks_{filename}.pdf")
-    
-    if display_plots:  # Only display plots if explicitly requested
+    plt.axis("equal")
+
+    ax.invert_yaxis()
+
+    plt.savefig(os.path.join(tracks_dir, f"Vectors_Tracks_{filename}.pdf"))
+
+    if display_plots:
         plt.show()
     else:
-        plt.close()  # Close the plot to prevent it from displaying
+        plt.close()
+
         
 def plot_coordinates_side_by_side(filename, merged_spots_df, filtered_and_smoothed_df, Results_Folder):
     if not filename:
