@@ -59,7 +59,10 @@ def plot_origin_normalized_coordinates_FOV(filename, merged_spots_df, Results_Fo
             plt.xlim(-x_scale, x_scale)
         if y_scale != 0:
             plt.ylim(-y_scale, y_scale)
-
+			
+        ax = plt.gca()
+        ax.invert_yaxis()		
+		
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{filename}.pdf")
         
         if display_plots:  # Only display plots if explicitly requested
@@ -101,7 +104,9 @@ def plot_origin_normalized_coordinates_condition_repeat(condition, repeat, merge
             plt.xlim(-x_scale, x_scale)
         if y_scale != 0:
             plt.ylim(-y_scale, y_scale)
-
+			
+        ax = plt.gca()
+        ax.invert_yaxis()
 
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}_{repeat}.pdf")
 	
@@ -144,6 +149,9 @@ def plot_origin_normalized_coordinates_condition(condition, merged_spots_df, Res
         if y_scale != 0:
             plt.ylim(-y_scale, y_scale)
 
+        ax = plt.gca()
+        ax.invert_yaxis()
+		
         plt.savefig(f"{Results_Folder}/Tracks/Origin_Normalized_Tracks_{condition}.pdf")
 
         if display_plots:
