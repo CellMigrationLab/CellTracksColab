@@ -37,7 +37,7 @@
     <th><a href="https://github.com/CellProfiler/CellProfiler"><img src="https://avatars.githubusercontent.com/u/710590?s=280&v=4" alt="CellProfiler Logo" width="100"></a></th>
     <th><a href="http://icy.bioimageanalysis.org/"><img src="https://icy.bioimageanalysis.org/wp-content/uploads/2018/07/logo_full_notext600px.png" alt="Icy Logo" width="100"></a></th>
     <th><a href="https://www.ilastik.org/"><img src="https://www.ilastik.org/assets/ilastik-logo.png" alt="ilastik Logo" width="100"></a></th>
-    <th><a href="https://imagej.net/Fiji"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/FIJI_%28software%29_Logo.svg/1200px-FIJI_%28software%29_Logo.svg.png" alt="Fiji Logo" width="100"></a></th>
+    <th><a href="https://imagej.net/Fiji"><img src="https://upload.wikimedia.org/wikipedia/commons/5/55/FIJI_%28software%29_Logo.svg" alt="Fiji Logo" width="100"></a></th>
   </tr>
   <tr>
     <td style="text-align: center;"><a href="http://imagej.net/TrackMate">TrackMate</a></td>
