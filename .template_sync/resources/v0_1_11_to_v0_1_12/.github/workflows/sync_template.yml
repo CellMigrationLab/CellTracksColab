@@ -1,0 +1,170 @@
+name: Sync with Template Repository
+
+on:
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+# This enables only one template synchronization workflow at a time.
+concurrency:
+  group: template-sync-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-template:
+    name: Sync with template repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # Do not leave the default GITHUB_TOKEN in the local Git configuration.
+          # The pull-request step authenticates separately with the repository-scoped
+          # LABCONSTRICTOR_SYNC_TOKEN secret.
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/CellMigrationLab/LabConstrictor.git
+
+      - name: Fetch upstream changes
+        run: |
+          git fetch upstream main
+
+      - name: Read local template version
+        id: local-version
+        run: |
+          local_version=$(python3 - <<'PY'
+          from pathlib import Path
+
+          manifest = Path(".template_sync/manifest.yaml")
+          if not manifest.exists():
+              print("0.0.0")
+              raise SystemExit
+
+          for line in manifest.read_text(encoding="utf-8").splitlines():
+              stripped = line.strip()
+              if stripped.startswith("template_version:"):
+                  print(stripped.split(":", 1)[1].strip())
+                  break
+          else:
+              raise SystemExit("template_version not found in .template_sync/manifest.yaml")
+          PY
+          )
+          echo "version=$local_version" >> "$GITHUB_OUTPUT"
+
+      - name: Read upstream template version
+        id: upstream-version
+        run: |
+          upstream_version=$(python3 - <<'PY'
+          import subprocess
+
+          manifest = subprocess.run(
+              ["git", "show", "upstream/main:.template_sync/manifest.yaml"],
+              check=True,
+              capture_output=True,
+              text=True,
+          ).stdout
+          for line in manifest.splitlines():
+              stripped = line.strip()
+              if stripped.startswith("template_version:"):
+                  print(stripped.split(":", 1)[1].strip())
+                  break
+          else:
+              raise SystemExit(
+                  "template_version not found in upstream .template_sync/manifest.yaml"
+              )
+          PY
+          )
+          echo "version=$upstream_version" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether template sync is needed
+        id: version-check
+        env:
+          LOCAL_VERSION: ${{ steps.local-version.outputs.version }}
+          UPSTREAM_VERSION: ${{ steps.upstream-version.outputs.version }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          def parse_version(version: str) -> tuple[int, ...]:
+              return tuple(int(part) for part in version.split("."))
+
+          local_version = os.environ["LOCAL_VERSION"]
+          upstream_version = os.environ["UPSTREAM_VERSION"]
+          sync_required = parse_version(upstream_version) > parse_version(local_version)
+
+          output_path = Path(os.environ["GITHUB_OUTPUT"])
+          with output_path.open("a", encoding="utf-8") as fh:
+              fh.write(f"sync_required={'true' if sync_required else 'false'}\n")
+          PY
+
+      - name: Check synchronization token setup
+        if: steps.version-check.outputs.sync_required == 'true'
+        env:
+          LABCONSTRICTOR_SYNC_TOKEN: ${{ secrets.LABCONSTRICTOR_SYNC_TOKEN }}
+        run: |
+          if [[ -z "$LABCONSTRICTOR_SYNC_TOKEN" ]]; then
+            {
+              echo "## One-time LabConstrictor setup required"
+              echo
+              echo "A template update is available, but this repository does not have the"
+              echo '`LABCONSTRICTOR_SYNC_TOKEN` repository secret configured.'
+              echo
+              echo "Follow the beginner-friendly guide in:"
+              echo
+              echo '`.tools/docs/template_synchronization.md`'
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "::error title=Synchronization setup required::Configure the LABCONSTRICTOR_SYNC_TOKEN repository secret by following .tools/docs/template_synchronization.md."
+            exit 1
+          fi
+
+      - name: Fetch template sync bootstrap
+        if: steps.version-check.outputs.sync_required == 'true'
+        run: |
+          git checkout upstream/main -- .template_sync
+
+      - name: Run template migrations
+        if: steps.version-check.outputs.sync_required == 'true'
+        run: |
+          python3 .template_sync/sync.py \
+            --from-version "${{ steps.local-version.outputs.version }}" \
+            --to-version "${{ steps.upstream-version.outputs.version }}" \
+            --repository-root "$GITHUB_WORKSPACE"
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [[ -n "$(git status --short)" ]]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.LABCONSTRICTOR_SYNC_TOKEN }}
+          branch: template-sync-${{ steps.local-version.outputs.version }}-to-${{ steps.upstream-version.outputs.version }}
+          delete-branch: true
+          commit-message: Sync template to version ${{ steps.upstream-version.outputs.version }}
+          title: Sync template to version ${{ steps.upstream-version.outputs.version }}
+          body: |
+            This PR updates `.template_sync` from the template repository and applies the migrations needed to move this repository from template version `${{ steps.local-version.outputs.version }}` to `${{ steps.upstream-version.outputs.version }}`.
+
+            The branch is created with the repository-scoped `LABCONSTRICTOR_SYNC_TOKEN` secret so that updates to GitHub workflow files can be included safely.

@@ -1,0 +1,41 @@
+name: Updates on external code change
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+# This enables to run a single workflow at a time
+concurrency:
+  group: notebooks-global-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  updates-version_change:
+    name: Upon external code update the code version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+          
+      - name: Update src change file
+        run: |
+          cat > .tools/meta/src_change.yaml <<EOF
+          src_last_modified: "$(date -u +'%Y-%m-%d_%H:%M:%S')"
+          EOF
+
+      - name: Commit updated files
+        id: auto-commit
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: GitHub Action - Updated src change file
+
+          file_pattern: .tools/meta/src_change.yaml
+

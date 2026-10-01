@@ -1,0 +1,47 @@
+name: CellTracksColab
+version: 1.0.7
+environment_file: environment.yaml
+installer_type: all
+license_file: LICENSE
+icon_image: app/logo/CellTracksColab_logo.png
+conclusion_text: Thank you! You have successfully installed CellTracksColab 1.0.7.
+keep_pkgs: false
+register_python: false
+initialize_conda: false
+extra_files:
+- .tools/meta/src_change.yaml: CellTracksColab/src_change.yaml
+- app/bash_bat_scripts/pre_uninstall.sh: pre_uninstall.sh
+- app/bash_bat_scripts/uninstall.sh: uninstall.sh
+- app/logo/CellTracksColab_logo.icns: CellTracksColab/CellTracksColab_logo.icns
+- app/logo/CellTracksColab_logo.ico: CellTracksColab/CellTracksColab_logo.ico
+- app/logo/CellTracksColab_logo.png: CellTracksColab/CellTracksColab_logo.png
+- app/menuinst/Welcome.ipynb: CellTracksColab/notebooks/Welcome.ipynb
+- app/menuinst/notebook_launcher.json: CellTracksColab/notebook_launcher.json
+- app/python_scripts/hide_code_cells.py: CellTracksColab/hide_code_cells.py
+- app/python_scripts/include_path.py: CellTracksColab/include_path.py
+- app/python_scripts/launch_jupyter.py: CellTracksColab/launch_jupyter.py
+- construct.yaml: CellTracksColab/construct.yaml
+- notebooks/CellTracksColab_Custom/CellTracksColab_Custom.ipynb: CellTracksColab/notebooks/CellTracksColab_Custom/CellTracksColab_Custom.ipynb
+- notebooks/CellTracksColab_Dimensionality_Reduction/CellTracksColab_Dimensionality_Reduction.ipynb: CellTracksColab/notebooks/CellTracksColab_Dimensionality_Reduction/CellTracksColab_Dimensionality_Reduction.ipynb
+- notebooks/CellTracksColab_Distance_to_ROI/CellTracksColab_Distance_to_ROI.ipynb: CellTracksColab/notebooks/CellTracksColab_Distance_to_ROI/CellTracksColab_Distance_to_ROI.ipynb
+- notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb: CellTracksColab/notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb
+- notebooks/CellTracksColab_TrackMate_Plate/CellTracksColab_TrackMate_Plate.ipynb: CellTracksColab/notebooks/CellTracksColab_TrackMate_Plate/CellTracksColab_TrackMate_Plate.ipynb
+- notebooks/CellTracksColab_Track_Clustering/CellTracksColab_Track_Clustering.ipynb: CellTracksColab/notebooks/CellTracksColab_Track_Clustering/CellTracksColab_Track_Clustering.ipynb
+- notebooks/CellTracksColab_Viewer/CellTracksColab_Viewer.ipynb: CellTracksColab/notebooks/CellTracksColab_Viewer/CellTracksColab_Viewer.ipynb
+- notebooks/notebook_latest_versions.yaml: CellTracksColab/notebook_latest_versions.yaml
+- requirements.txt: CellTracksColab/requirements.txt
+- requirements_gpu.txt: CellTracksColab/requirements_gpu.txt
+- setup.py: CellTracksColab/setup.py
+- src/celltracks/BoxPlots_Statistics.py: CellTracksColab/src/celltracks/BoxPlots_Statistics.py
+- src/celltracks/Dimensionality_Reduction.py: CellTracksColab/src/celltracks/Dimensionality_Reduction.py
+- src/celltracks/Distance_to_ROI.py: CellTracksColab/src/celltracks/Distance_to_ROI.py
+- src/celltracks/Track_Clustering.py: CellTracksColab/src/celltracks/Track_Clustering.py
+- src/celltracks/Track_Metrics.py: CellTracksColab/src/celltracks/Track_Metrics.py
+- src/celltracks/Track_Plots.py: CellTracksColab/src/celltracks/Track_Plots.py
+- src/celltracks/__init__.py: CellTracksColab/src/celltracks/__init__.py
+- src/celltracks/data_loader.py: CellTracksColab/src/celltracks/data_loader.py
+- src/celltracks/xml_loader.py: CellTracksColab/src/celltracks/xml_loader.py
+post_install: app/bash_bat_scripts/post_install.bat # [win]
+post_install: app/bash_bat_scripts/post_install.sh # [unix]
+pre_uninstall: app/bash_bat_scripts/pre_uninstall.bat # [win]
+pre_uninstall: app/bash_bat_scripts/pre_uninstall.sh # [unix]

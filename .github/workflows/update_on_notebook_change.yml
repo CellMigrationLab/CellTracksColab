@@ -1,0 +1,154 @@
+name: Updates on notebook change
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'notebooks/**/*.ipynb'
+      - 'notebooks/notebook_latest_versions.yaml'
+      - 'notebooks/**/requirements.yaml'
+  workflow_dispatch:
+
+# This enables to run a single workflow at a time
+concurrency:
+  group: notebooks-global-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  updates-version_change:
+    name: Upon notebook change, update manifests and changelogs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install requirements
+        run: pip install -r .tools/requirements.txt
+          
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          separator: ","
+          files: |
+            notebooks/**/*.ipynb
+            notebooks/notebook_latest_versions.yaml
+            notebooks/**/requirements.yaml
+          
+      - name: Syncronize notebook versions
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "sync_notebook_versions.py" \
+            .tools/python/sync_notebook_versions.py \
+            python .tools/python/sync_notebook_versions.py
+            
+      - name: Update CHANGELOG
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "update_changelog.py" \
+            .tools/python/update_changelog.py \
+            python .tools/python/update_changelog.py notebooks/notebook_latest_versions.yaml
+           
+      - name: Update last commit in notebook_latest_versions.yaml
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "update_version_last_commit.py" \
+            .tools/python/update_version_last_commit.py \
+            python .tools/python/update_version_last_commit.py notebooks/notebook_latest_versions.yaml
+           
+      - name: Hide code cells in notebooks
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "hide_code_cells.py" \
+            app/python_scripts/hide_code_cells.py \
+            python app/python_scripts/hide_code_cells.py .
+           
+      - name: Index notebooks 
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "bump_notebook_README.py" \
+            .tools/python/bump_notebook_README.py \
+            python .tools/python/bump_notebook_README.py
+
+      - name: Run merge script
+        if: github.event_name == 'workflow_dispatch' || contains(steps.changed-files.outputs.all_changed_files, 'requirements.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "merge_requirements.py" \
+            .tools/python/merge_requirements.py \
+            python .tools/python/merge_requirements.py --source-dir notebooks --output requirements.txt
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Miniconda for requirements test
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate: true
+          miniforge-version: latest
+          use-mamba: true
+
+      - name: Verify merged requirements inside conda
+        id: test-conda-env
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          SKIP_CONDA_ENV_TEST: ${{ vars.SKIP_CONDA_ENV_TEST }}
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "test_conda_environment.sh" \
+            .tools/bash/test_conda_environment.sh \
+            bash .tools/bash/test_conda_environment.sh
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: notebook-debug-bundle
+          path: artifacts/error_log_document.log
+          archive: false
+
+      - name: Commit updated files
+        id: auto-commit
+        if: steps.check-changes.outputs.has_changes == 'true' && steps.test-conda-env.outcome == 'success'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: GitHub Action - Updated files because of notebook and/or requirements changes
+          file_pattern: requirements*.txt environment.yaml notebooks/* setup.py
+
+      - name: Revert user commit that broke requirements
+        if: failure() && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git reset --hard
+          git clean -fd
+          git revert "${{ github.sha }}" -m 1 --no-edit
+          git push origin HEAD:${{ github.ref_name }}

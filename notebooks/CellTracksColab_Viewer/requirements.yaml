@@ -1,0 +1,20 @@
+dependencies:
+- ipywidgets==8.1.7
+- matplotlib==3.10.0
+- seaborn==0.13.2
+- pandas==2.2.2
+- requests==2.32.4
+- PyYAML==6.0.3
+- scipy==1.16.3
+- tqdm==4.67.3
+- numpy==2.0.2
+- scikit-learn==1.6.1
+- tifffile==2026.4.11
+- ImageIO==2.37.3
+- scikit-image==0.25.2
+- lxml==6.1.1
+description: This notebook 'CellTracksColab_Viewer.ipynb' is for ...
+linux_dependencies: []
+macos_dependencies: []
+python_version: 3.12.13
+windows_dependencies: []

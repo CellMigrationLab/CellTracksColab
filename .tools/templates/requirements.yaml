@@ -1,0 +1,6 @@
+dependencies:
+- pandas==2.2.2
+- ipython==7.34.0
+- tqdm==4.67.1
+description: This notebook is for ...
+python_version: 3.11.1

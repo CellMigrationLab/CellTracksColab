@@ -1,0 +1,188 @@
+name: Build Release Installers
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to package (e.g. 0.0.4). Defaults to release tag when empty."
+        required: false
+
+# This enables to run a single workflow at a time
+concurrency:
+  group: notebooks-global-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    name: Bump version on main branch
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine release version
+        id: version
+        run: |
+          set -euxo pipefail
+          RAW="${{ github.event.release.tag_name }}"
+          RAW="${RAW#v}"
+          echo "release_version=$RAW" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_VERSION=$RAW" >> "$GITHUB_ENV"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install requirements
+        run: pip install -r .tools/requirements.txt
+
+      - name: Sync versioned files
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "bump_version.py" \
+            .tools/python/bump_version.py \
+            python .tools/python/bump_version.py "${RELEASE_VERSION}"
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "bump_constructor.py" \
+            .tools/python/bump_constructor.py \
+            python .tools/python/bump_constructor.py
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "bump_Welcome_notebook.py" \
+            .tools/python/bump_Welcome_notebook.py \
+            python .tools/python/bump_Welcome_notebook.py "${{ github.repository_owner }}" "${{ github.event.repository.name }}"
+
+
+      - name: Commit updated versioned files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: main
+          commit_message: GitHub Action - Update version to ${{ github.event.release.tag_name }}
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-bump-version-logs
+          path: artifacts/error_log_document.log
+          if-no-files-found: ignore
+          archive: false
+
+  build-installers:
+    name: Build installers (${{ matrix.os_name }})
+    runs-on: ${{ matrix.runner }}
+    needs: bump-version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os_name: linux
+            runner: ubuntu-latest
+          - os_name: macos-arm64
+            runner: macos-15
+          - os_name: macos-intel
+            runner: macos-15-intel
+          - os_name: windows
+            runner: windows-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      CONSTRUCTOR_ENV: constructor-env
+      OUTPUT_DIR: dist/${{ matrix.os_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine release version
+        id: version
+        run: |
+          set -euxo pipefail
+          if [ "${{ github.event_name }}" = "release" ]; then
+            RAW="${{ github.event.release.tag_name }}"
+          else
+            RAW="${{ inputs.version }}"
+          fi
+
+          if [ -z "$RAW" ]; then
+            echo "Version is required when running manually." >&2
+            exit 1
+          fi
+
+          RAW="${RAW#v}"
+          echo "release_version=$RAW" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_VERSION=$RAW" >> "$GITHUB_ENV"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install requirements
+        run: pip install -r .tools/requirements.txt
+        
+      - name: Sync versioned files and populate Welcome notebook
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            "artifacts/error_log_document.log" \
+            "bump_version.py" \
+            .tools/python/bump_version.py \
+            python .tools/python/bump_version.py "${RELEASE_VERSION}"
+          bash .tools/bash/run_with_context.sh \
+            "artifacts/error_log_document.log" \
+            "bump_constructor.py" \
+            .tools/python/bump_constructor.py \
+            python .tools/python/bump_constructor.py
+          bash .tools/bash/run_with_context.sh \
+            "artifacts/error_log_document.log" \
+            "bump_Welcome_notebook.py" \
+            .tools/python/bump_Welcome_notebook.py \
+            python .tools/python/bump_Welcome_notebook.py "${{ github.repository_owner }}" "${{ github.event.repository.name }}"
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate: true
+          miniforge-version: latest
+          use-mamba: true
+
+      - name: Create constructor environment
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            "artifacts/error_log_document_${{ matrix.os_name }}.log" \
+            "create_constructor_environment.sh" \
+            .tools/bash/create_constructor_environment.sh \
+            bash .tools/bash/create_constructor_environment.sh
+
+      - name: Build installer with constructor
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            "artifacts/error_log_document_${{ matrix.os_name }}.log" \
+            "build_installer_with_constructor.sh" \
+            .tools/bash/build_installer_with_constructor.sh \
+            bash .tools/bash/build_installer_with_constructor.sh
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-installers-${{ matrix.os_name }}-logs
+          path: artifacts/error_log_document_${{ matrix.os_name }}.log
+          if-no-files-found: ignore
+          archive: false
+
+      - name: Upload installers to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ matrix.os_name }}/*
+          fail_on_unmatched_files: true
