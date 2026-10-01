@@ -13,7 +13,7 @@ dependencies:
 - ImageIO==2.37.3
 - scikit-image==0.25.2
 - lxml==6.1.1
-description: This notebook 'CellTracksColab_Viewer.ipynb' is for ...
+description: Load, explore and share a dataset already saved in the CellTracksColab format.
 linux_dependencies: []
 macos_dependencies: []
 python_version: 3.12.13

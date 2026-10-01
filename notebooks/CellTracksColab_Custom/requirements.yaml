@@ -12,7 +12,7 @@ dependencies:
 - ImageIO==2.37.3
 - scikit-image==0.25.2
 - lxml==6.1.1
-description: This notebook 'CellTracksColab_Custom.ipynb' is for ...
+description: Load and analyse CSV tracking results from CellProfiler, Icy, ilastik, Fiji Manual Tracking or other compatible software.
 linux_dependencies: []
 macos_dependencies: []
 python_version: 3.12.13

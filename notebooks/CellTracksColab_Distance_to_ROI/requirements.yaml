@@ -13,7 +13,7 @@ dependencies:
 - scikit-learn==1.6.1
 - ImageIO==2.37.3
 - lxml==6.1.1
-description: This notebook 'CellTracksColab_Distance_to_ROI.ipynb' is for ...
+description: Measure how tracks move relative to regions of interest (ROIs) in a CellTracksColab-format dataset.
 linux_dependencies: []
 macos_dependencies: []
 python_version: 3.12.13

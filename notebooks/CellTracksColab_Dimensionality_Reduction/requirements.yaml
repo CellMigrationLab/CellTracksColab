@@ -15,8 +15,7 @@ dependencies:
 - lxml==6.1.1
 - umap-learn==0.5.12
 - hdbscan==0.8.44
-description: This notebook 'CellTracksColab_Dimensionality_Reduction.ipynb' is for
-  ...
+description: Explore a CellTracksColab-format dataset with UMAP, t-SNE and HDBSCAN clustering.
 linux_dependencies: []
 macos_dependencies: []
 python_version: 3.12.13

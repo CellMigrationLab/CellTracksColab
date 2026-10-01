@@ -12,7 +12,7 @@ dependencies:
 - ImageIO==2.37.3
 - scikit-image==0.25.2
 - lxml==6.1.1
-description: This notebook 'CellTracksColab_Track_Clustering.ipynb' is for ...
+description: Test whether tracks in a CellTracksColab-format dataset are spatially clustered (Ripley's L analysis).
 linux_dependencies: []
 macos_dependencies: []
 python_version: 3.12.13

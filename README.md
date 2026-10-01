@@ -2,7 +2,7 @@
 <tr>
 <td valign="top">
 
-<img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/CellTracksColab_logo.png" width="800">
+<img src="Wiki/CellTracksColab_logo.png" width="800">
 
 </td>
 <td>
@@ -89,20 +89,62 @@ May also be compatible with other tracking software exporting tracking results t
   </tr>
 </table>
 
+> ℹ️ Tutorials 2 and 3 show the **previous** way of running CellTracksColab locally (manual Anaconda/Jupyter setup). The recommended local option is now the [CellTracksColab desktop app](#option-b-desktop-app-on-your-computer); see the Quick Start below.
 
-
+<a id="quick-start"></a>
 ## 🛠️ **Quick Start**
 
-CellTracksColab can be used either in **Google Colab** or **locally on your computer**. Choose the option that best fits your workflow:
+CellTracksColab notebooks can run in two ways. The notebooks and analyses are the same in both; only where they run changes.
 
-| Run mode | Best for | Start here |
+| | ☁️ **Google Colab** | 🖥️ **Desktop app (local)** |
 |---|---|---|
-| ☁️ **Google Colab** | Running CellTracksColab in the browser without installing anything locally | Open one of the Colab notebooks below |
-| 🖥️ **LabConstrictor desktop app** | **Recommended local option.** Run CellTracksColab as an installed desktop application without manually configuring Python, Conda, or Jupyter | [Install CellTracksColab locally](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/.tools/docs/download_executable.md) · [Using the notebooks after installation](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/.tools/docs/notebook_usage.md) · [Troubleshooting](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/.tools/docs/troubleshooting.md) |
+| **Installation** | None. You need a web browser and a Google account | One-time installer for Windows, macOS or Linux (about 6–8 minutes) |
+| **Your data** | Uploaded to your Google Drive, which the notebook connects to | Stays on your computer |
+| **Computing** | Google's cloud machines (free tier, with session time limits) | Your own computer |
+| **How to start** | Click an **Open in Colab** badge in the tables below | Install the app, launch **CellTracksColab**, and open a notebook from the Welcome dashboard |
 
+### Option A: Google Colab (in your browser)
+
+1. Pick a notebook from the tables below and click its <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" height="16"> badge.
+2. *(Recommended)* Save your own copy with `File > Save a copy in Drive`.
+3. Run the **Load key dependencies** cell (section 1.1). In Colab it downloads CellTracksColab into the session and asks for permission to connect your Google Drive.
+4. Point the notebook at your data on Drive (paths start with `/content/gdrive/MyDrive/`), or use the test dataset where the notebook offers one.
+
+More details: [Running CellTracksColab using Google Colab](https://github.com/CellMigrationLab/CellTracksColab/wiki/Running-CellTracksColab-using-Google-Colab).
+
+### Option B: Desktop app (on your computer)
+
+The desktop app is built with [LabConstrictor](https://github.com/CellMigrationLab/LabConstrictor). It bundles Python, JupyterLab and every dependency, so you don't need to set up Conda or Python yourself.
+
+1. **Install:** follow the [installation guide](.tools/docs/download_executable.md) for your operating system. Installers are also on the [Releases page](https://github.com/CellMigrationLab/CellTracksColab/releases).
+2. **Launch:** open **CellTracksColab** from the Start Menu (Windows), the Applications folder (macOS) or your applications menu (Linux). A terminal window opens (keep it open while you work) and JupyterLab starts in your browser with the **Welcome** notebook.
+3. **Open a notebook:** in the Welcome dashboard, click **Open the Notebook** next to the analysis you want. The Welcome notebook can also check for notebook updates.
+4. **Run it:** your data stays on your computer. Paste the path of a local folder into the text box (on Windows and Linux you can also pick it with the folder selector). See [how to run notebooks in the desktop app](.tools/docs/code_hiding.md) to learn how to run cells when the code is hidden and how to show it with **Show/Hide Code**.
+
+More details: [Using the notebooks after installation](.tools/docs/notebook_usage.md) · [Troubleshooting the desktop app](.tools/docs/troubleshooting.md).
+
+<details>
+<summary><b>Advanced: run from source in your own Python environment</b></summary>
+
+If you prefer to manage your own environment (for example, to develop new analyses):
+
+```bash
+git clone https://github.com/CellMigrationLab/CellTracksColab.git
+cd CellTracksColab
+pip install -r requirements.txt   # needs Python 3.12.13 or newer; NVIDIA GPU users can use requirements_gpu.txt
+pip install -e .                  # makes the `celltracks` package (in src/) importable
+pip install jupyterlab
+jupyter lab
+```
+
+Then open the notebooks in the `notebooks/` folder.
+
+</details>
+
+> 📂 **Looking for the old `Notebook/` folder?** Since the move to the LabConstrictor structure, each notebook lives in its own folder under [`notebooks/`](notebooks/README.md) (for example `notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb`), and the `celltracks` Python package is in `src/celltracks/`. Older links to `Notebook/...` no longer work, so please use the links on this page.
 
 ### 1. **Load and Plot Your Data**
-We provide three notebooks for loading and analyzing your data depending on its format:
+We provide three notebooks for loading and analyzing your data depending on its format. The **Link** column opens each notebook in Google Colab. In the desktop app, all notebooks are listed in the Welcome dashboard.
 
 <table>
   <tr>
@@ -116,7 +158,7 @@ We provide three notebooks for loading and analyzing your data depending on its 
     <td>Load and analyze TrackMate data. More info <a href="https://github.com/CellMigrationLab/CellTracksColab/wiki/The-TrackMate-notebook">here</a>.</td>
     <td>CSV or XML files</td>
     <td>
-      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb">
+      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb">
         <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
       </a>
     </td>
@@ -126,7 +168,7 @@ We provide three notebooks for loading and analyzing your data depending on its 
     <td>Analyze data from CellProfiler, ICY, ilastik, or Fiji Manual Tracker. More info <a href="https://github.com/CellMigrationLab/CellTracksColab/wiki/The-Custom-notebook">here</a>.</td>
     <td>CSV files</td>
     <td>
-      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_Custom/CellTracksColab_Custom.ipynb">
+      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Custom/CellTracksColab_Custom.ipynb">
         <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
       </a>
     </td>
@@ -136,7 +178,7 @@ We provide three notebooks for loading and analyzing your data depending on its 
     <td>Load and share data in the CellTracksColab format.</td>
     <td>CellTracksColab format</td>
     <td>
-      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_Viewer/CellTracksColab_Viewer.ipynb">
+      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Viewer/CellTracksColab_Viewer.ipynb">
         <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
       </a>
     </td>
@@ -159,7 +201,7 @@ These notebooks require your dataset to be in the CellTracksColab format.
     <td>Utilize advanced dimensionality reduction techniques.</td>
     <td>CellTracksColab format</td>
     <td>
-      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_Dimensionality_Reduction/CellTracksColab_Dimensionality_Reduction.ipynb">
+      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Dimensionality_Reduction/CellTracksColab_Dimensionality_Reduction.ipynb">
         <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
       </a>
     </td>
@@ -169,7 +211,7 @@ These notebooks require your dataset to be in the CellTracksColab format.
     <td>Dive deeper into your dataset with track clustering analysis.</td>
     <td>CellTracksColab format</td>
     <td>
-      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_Track_Clustering/CellTracksColab_Track_Clustering.ipynb">
+      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Track_Clustering/CellTracksColab_Track_Clustering.ipynb">
         <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
       </a>
     </td>
@@ -179,7 +221,7 @@ These notebooks require your dataset to be in the CellTracksColab format.
     <td>Analyze movement tracks in relation to designated ROIs.</td>
     <td>CellTracksColab format</td>
     <td>
-      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_Distance_to_ROI/CellTracksColab_Distance_to_ROI.ipynb">
+      <a href="https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Distance_to_ROI/CellTracksColab_Distance_to_ROI.ipynb">
         <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
       </a>
     </td>
@@ -192,7 +234,7 @@ More to come
 
 #### CellTracksColab - TrackMate - Plate:
   - Handle TrackMate CSV files structured in a plate format, such as file names commonly produced by incubator microscopes like Incucytes.
-  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/notebooks/CellTracksColab_TrackMate_Plate/CellTracksColab_TrackMate_Plate.ipynb)
+  - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_TrackMate_Plate/CellTracksColab_TrackMate_Plate.ipynb)
     
 ---
 
@@ -203,7 +245,7 @@ CellTracksColab is inspired by several key projects in cell tracking and analysi
 ---
 ## 📦 **Resources**
 - **Test Dataset**: Start exploring with our test datasets in [CellTracksColab CSV format](https://zenodo.org/records/8420011), or [TrackMate CSV format](https://zenodo.org/records/8413510).
-- **Data Structure**: Organize with our two-tiered folder hierarchy. [Details here](https://github.com/CellMigrationLab/CellTracksColab/wiki/Prepare-the-Session-and-Load-Your-Data#3-navigating-to-your-dataset-on-google-drive).
+- **Data Structure**: Organize with our two-tiered folder hierarchy. [Details here](https://github.com/CellMigrationLab/CellTracksColab/wiki/Data-requirements-and-supported-software).
 - **Data Requirements**: Note that **CellTracksColab** does not yet support track merging or splitting.
 
 ---
@@ -211,11 +253,10 @@ CellTracksColab is inspired by several key projects in cell tracking and analysi
 ## 📚 **Documentation**
 
 - 📖 **CellTracksColab analysis documentation:** [Visit the comprehensive wiki](https://github.com/CellMigrationLab/CellTracksColab/wiki).
-- 🖥️ **Local installation with LabConstrictor:** [Installation guide](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/.tools/docs/download_executable.md).
-- 📓 **Using notebooks in the desktop app:** [Notebook usage guide](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/.tools/docs/notebook_usage.md).
-- 🛠️ **Problems with the local app:** [LabConstrictor troubleshooting guide](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/blob/main/.tools/docs/troubleshooting.md).
-
-The LabConstrictor links point directly to the maintained `.tools/docs` documentation so installation and application-specific instructions only need to be updated in one place.
+- ☁️ **Running in Google Colab:** [Colab guide](https://github.com/CellMigrationLab/CellTracksColab/wiki/Running-CellTracksColab-using-Google-Colab).
+- 🖥️ **Installing the desktop app:** [Installation guide](.tools/docs/download_executable.md) (Windows, macOS and Linux, including how to uninstall).
+- 📓 **Using notebooks in the desktop app:** [Notebook usage guide](.tools/docs/notebook_usage.md) · [Running cells with hidden code](.tools/docs/code_hiding.md).
+- 🛠️ **Problems with the desktop app:** [Troubleshooting guide](.tools/docs/troubleshooting.md).
 
 ---
 
@@ -236,7 +277,7 @@ The LabConstrictor links point directly to the maintained `.tools/docs` document
 We welcome your insights and improvements! There are several ways you can contribute to the CellTracksColab project:
 
 ### Issues
-If you encounter any bugs, have suggestions for improvements, or want to discuss new features, please raise an issue on our [GitHub Issues page](https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/issues).
+If you encounter any bugs, have suggestions for improvements, or want to discuss new features, please raise an issue on our [GitHub Issues page](https://github.com/CellMigrationLab/CellTracksColab/issues).
 
 ### New Analysis Notebooks
 We are excited to see new analysis notebooks built on the CellTracksColab platform. If you have developed a new notebook, please submit it via a pull request. All submitted notebooks should include a test dataset to showcase their functionality. Each notebook will be tested by a member of the team before being released.
@@ -257,7 +298,7 @@ Thank you for contributing to CellTracksColab! Your support and contributions he
 ---
 
 ## **License**
-Licensed under the MIT License. [Details here](https://opensource.org/licenses/MIT).
+Licensed under the MIT License. [Details here](LICENSE).
 
 ---
 
@@ -276,48 +317,48 @@ Gómez-de-Mariscal, E., Grobe, H., Pylvänäinen, J. W., Xénard, L., Henriques,
 <table>
 <tr>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot1.png" alt="Screenshot 1" width="400"/>
+        <img src="Wiki/Screenshot1.png" alt="Screenshot 1" width="400"/>
         <br>
         <em>Figure 1: Compile your data</em>
     </td>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot2.png" alt="Screenshot 2" width="400"/>
+        <img src="Wiki/Screenshot2.png" alt="Screenshot 2" width="400"/>
         <br>
         <em>Figure 2: Visualise your tracks</em>
     </td>
 </tr>
 <tr>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot3.png" alt="Screenshot 3" width="400"/>
+        <img src="Wiki/Screenshot3.png" alt="Screenshot 3" width="400"/>
         <br>
         <em>Figure 3: Compute additional metrics</em>
     </td>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot4.png" alt="Screenshot 4" width="400"/>
+        <img src="Wiki/Screenshot4.png" alt="Screenshot 4" width="400"/>
         <br>
         <em>Figure 4: Plot track parameters</em>
     </td>
 </tr>
 <tr>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot5.png" alt="Screenshot 5" width="400"/>
+        <img src="Wiki/Screenshot5.png" alt="Screenshot 5" width="400"/>
         <br>
         <em>Figure 5: Compute Similarity Metrics between Field of Views and between Conditions and Repeats</em>
     </td>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot6.png" alt="Screenshot 6" width="400"/>
+        <img src="Wiki/Screenshot6.png" alt="Screenshot 6" width="400"/>
         <br>
         <em>Figure 6: Perform UMAP</em>
     </td>
 </tr>
 <tr>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot7.png" alt="Screenshot 7" width="400"/>
+        <img src="Wiki/Screenshot7.png" alt="Screenshot 7" width="400"/>
         <br>
         <em>Figure 7: Identify clusters using HDBSCAN</em>
     </td>
     <td align="center" valign="middle">
-        <img src="https://github.com/guijacquemet/CellTracksColab/blob/main/Wiki/Screenshot8.png" alt="Screenshot 8" width="400"/>
+        <img src="Wiki/Screenshot8.png" alt="Screenshot 8" width="400"/>
         <br>
         <em>Figure 8: Understand your clusters using a heatmap</em>
     </td>
