@@ -142,8 +142,6 @@ Then open the notebooks in the `notebooks/` folder. Step-by-step instructions (i
 
 </details>
 
-> 📂 **Looking for the old `Notebook/` folder?** Since the move to the LabConstrictor structure, each notebook lives in its own folder under [`notebooks/`](notebooks/README.md) (for example `notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb`), and the `celltracks` Python package is in `src/celltracks/`. Older links to `Notebook/...` now open a placeholder that points to the new notebook, so please use the links on this page.
-
 ### 1. **Load and Plot Your Data**
 We provide three notebooks for loading and analyzing your data depending on its format. The **Link** column opens each notebook in Google Colab. In the desktop app, all notebooks are listed in the Welcome dashboard.
 

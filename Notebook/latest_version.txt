@@ -1,8 +1,0 @@
-Notebook,Version
-TrackMate,1.1.8
-TrackMate_Plate,1.1.8
-Viewer,1.1.8
-Main,1.1.8
-Dimensionality_Reduction,1.1.10
-Track_Clustering,1.1.8
-Distance_to_ROI,1.1.8
