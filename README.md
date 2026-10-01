@@ -126,22 +126,23 @@ More details: [Using the notebooks after installation](.tools/docs/notebook_usag
 <details>
 <summary><b>Advanced: run from source in your own Python environment</b></summary>
 
-If you prefer to manage your own environment (for example, to develop new analyses):
+If you prefer to manage your own environment (for example, to develop new analyses), create a conda environment ([Miniforge](https://conda-forge.org/download/) recommended) from this repository:
 
 ```bash
 git clone https://github.com/CellMigrationLab/CellTracksColab.git
 cd CellTracksColab
-pip install -r requirements.txt   # needs Python 3.12.13 or newer; NVIDIA GPU users can use requirements_gpu.txt
-pip install -e .                  # makes the `celltracks` package (in src/) importable
-pip install jupyterlab
+conda env create -f environment.yaml   # Python 3.12 + JupyterLab, environment "celltrackscolab"
+conda activate celltrackscolab
+pip install -r requirements.txt        # NVIDIA GPU users can use requirements_gpu.txt instead
+pip install -e .                       # makes the `celltracks` package (in src/) importable
 jupyter lab
 ```
 
-Then open the notebooks in the `notebooks/` folder.
+Then open the notebooks in the `notebooks/` folder. Step-by-step instructions (including Google Colab with a local runtime) are on the wiki page [Running CellTracksColab locally](https://github.com/CellMigrationLab/CellTracksColab/wiki/Running-CellTracksColab-locally).
 
 </details>
 
-> 📂 **Looking for the old `Notebook/` folder?** Since the move to the LabConstrictor structure, each notebook lives in its own folder under [`notebooks/`](notebooks/README.md) (for example `notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb`), and the `celltracks` Python package is in `src/celltracks/`. Older links to `Notebook/...` no longer work, so please use the links on this page.
+> 📂 **Looking for the old `Notebook/` folder?** Since the move to the LabConstrictor structure, each notebook lives in its own folder under [`notebooks/`](notebooks/README.md) (for example `notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb`), and the `celltracks` Python package is in `src/celltracks/`. Older links to `Notebook/...` now open a placeholder that points to the new notebook, so please use the links on this page.
 
 ### 1. **Load and Plot Your Data**
 We provide three notebooks for loading and analyzing your data depending on its format. The **Link** column opens each notebook in Google Colab. In the desktop app, all notebooks are listed in the Welcome dashboard.
