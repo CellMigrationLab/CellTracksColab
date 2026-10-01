@@ -13,7 +13,7 @@ dependencies:
 - ImageIO==2.37.3
 - scikit-image==0.25.2
 - lxml==6.1.1
-description: This notebook 'CellTracksColab_TrackMate_Plate.ipynb' is for ...
+description: Load and analyse TrackMate CSV files organised in a plate format (e.g. file names produced by Incucyte-type incubator microscopes).
 linux_dependencies: []
 macos_dependencies: []
 python_version: 3.12.13

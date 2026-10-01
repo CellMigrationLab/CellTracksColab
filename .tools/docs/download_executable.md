@@ -3,6 +3,10 @@
 
 Choose your operating system and follow the instructions below to install CellTracksColab on your computer.
 
+> Prefer not to install anything? Every CellTracksColab notebook can also run in your browser with Google Colab. See the [Quick Start in the main README](../../README.md#quick-start).
+>
+> All installers are also listed on the [Releases page](https://github.com/CellMigrationLab/CellTracksColab/releases).
+
 <details>
 <summary>
     <big>🪟 CLICK HERE TO DISPLAY WINDOWS GUIDELINES</big>
@@ -10,7 +14,7 @@ Choose your operating system and follow the instructions below to install CellTr
 
 ## 1. Click the button to download CellTracksColab executable
 
-<a href="https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/releases/download/1.0.7/CellTracksColab-1.0.7-Windows-x86_64.exe">
+<a href="https://github.com/CellMigrationLab/CellTracksColab/releases/download/1.0.7/CellTracksColab-1.0.7-Windows-x86_64.exe">
     <img src="https://img.shields.io/badge/Download%20for%20Windows-Latest-blue?logo=windows&style=for-the-badge" alt="Download for Windows" width="250">
 </a>
 
@@ -48,7 +52,7 @@ Then, start using it following the instructions on the [Usage of Notebooks After
 
 ## 1. Click the button to download CellTracksColab executable
 
-<a href="https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/releases/download/1.0.7/CellTracksColab-1.0.7-Linux-x86_64.sh">
+<a href="https://github.com/CellMigrationLab/CellTracksColab/releases/download/1.0.7/CellTracksColab-1.0.7-Linux-x86_64.sh">
     <img src="https://img.shields.io/badge/Download%20for%20Linux-Latest-green?logo=linux&style=for-the-badge" alt="Download for Linux" width="250">
 </a>
 
@@ -108,13 +112,13 @@ First of all, you will need to choose whether you want to install it with **(A) 
 > 2. Select About This Mac.
 > 3. A window will pop up displaying your Mac’s information. Look into the `Chip` or `Processor` field. If `Intel` is mentioned, then download the Intel option. Otherwise, if `Mx` (e.g. M1 or M2) is mentioned, then download the ARM64 option. 
 
-<a href="https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-arm64.pkg">
+<a href="https://github.com/CellMigrationLab/CellTracksColab/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-arm64.pkg">
     <img src="https://img.shields.io/badge/Download%20for%20Mac%20(ARM64)-Latest-lightgrey?logo=apple&style=for-the-badge" alt="Download for Mac ARM64" width="250">
 </a>
 
 or 
     
-<a href="https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-x86_64.pkg">
+<a href="https://github.com/CellMigrationLab/CellTracksColab/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-x86_64.pkg">
     <img src="https://img.shields.io/badge/Download%20for%20Mac%20(Intel)-Latest-lightgrey?logo=apple&style=for-the-badge" alt="Download for Mac Intel" width="250">
 </a>
 
@@ -149,13 +153,13 @@ After installation, you can launch CellTracksColab from your Applications folder
 > 2. Select About This Mac.
 > 3. A window will pop up displaying your Mac’s information. Look into the `Chip` or `Processor` field. If `Intel` is mentioned, then download the Intel option. Otherwise, if `Mx` (e.g. M1 or M2) is mentioned, then download the ARM64 option. 
 
-<a href="https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-arm64.sh">
+<a href="https://github.com/CellMigrationLab/CellTracksColab/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-arm64.sh">
     <img src="https://img.shields.io/badge/Download%20for%20Mac%20(ARM64)-Latest-lightgrey?logo=apple&style=for-the-badge" alt="Download for Mac ARM64" width="250">
 </a>
 
 or 
     
-<a href="https://github.com/CellMigrationLab/CellTracksColab_LabConstrictor/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-x86_64.sh">
+<a href="https://github.com/CellMigrationLab/CellTracksColab/releases/download/1.0.7/CellTracksColab-1.0.7-MacOSX-x86_64.sh">
     <img src="https://img.shields.io/badge/Download%20for%20Mac%20(Intel)-Latest-lightgrey?logo=apple&style=for-the-badge" alt="Download for Mac Intel" width="250">
 </a>
 
@@ -220,7 +224,7 @@ Once there, search for `CellTracksColab` and click the three dots on the right a
 The default installation folder is:
 
 ```
-~/celltrackscolab`
+~/celltrackscolab
 ```
 
 You can navigate to this folder using your file explorer or terminal.
