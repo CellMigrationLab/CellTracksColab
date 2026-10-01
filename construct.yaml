@@ -1,15 +1,14 @@
 name: CellTracksColab
-version: 1.0.7
+version: 1.1.0
 environment_file: environment.yaml
 installer_type: all
 license_file: LICENSE
 icon_image: app/logo/CellTracksColab_logo.png
-conclusion_text: Thank you! You have successfully installed CellTracksColab 1.0.7.
+conclusion_text: Thank you! You have successfully installed CellTracksColab 1.1.0.
 keep_pkgs: false
 register_python: false
 initialize_conda: false
 extra_files:
-- .tools/meta/src_change.yaml: CellTracksColab/src_change.yaml
 - app/bash_bat_scripts/pre_uninstall.sh: pre_uninstall.sh
 - app/bash_bat_scripts/uninstall.sh: uninstall.sh
 - app/logo/CellTracksColab_logo.icns: CellTracksColab/CellTracksColab_logo.icns
