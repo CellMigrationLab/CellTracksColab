@@ -107,11 +107,13 @@ REM Optional: expose the app's tools to Napari, Fiji and the command line (LabCo
 REM If the app's package ships a module named <package>_lc_tools, install labconstrictor-tools and register that module.
 REM This step must never fail the installation. LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
 IF NOT DEFINED LC_TOOLS_SPEC SET "LC_TOOLS_SPEC=labconstrictor-tools"
+SET "LC_APP_VERSION=0"
+IF EXIST "%PROJECT_ROOT%\construct.yaml" FOR /F "usebackq tokens=1,* delims=: " %%A IN (`findstr /B /C:"version:" "%PROJECT_ROOT%\construct.yaml"`) DO SET "LC_APP_VERSION=%%~B"
 "%PYTHON_EXE%" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('celltracks_lc_tools') else 1)" >> "%LOG_FILE%" 2>&1
 IF NOT ERRORLEVEL 1 (
     echo Found celltracks_lc_tools: registering the tools of CellTracksColab for Napari and Fiji. >> "%LOG_FILE%"
     "%PYTHON_EXE%" -m pip install "%LC_TOOLS_SPEC%" >> "%LOG_FILE%" 2>&1
-    IF NOT ERRORLEVEL 1 "%PYTHON_EXE%" -m labconstrictor_tools register --name "CellTracksColab" --prefix "%PREFIX%" --module celltracks_lc_tools --display-name "CellTracksColab" >> "%LOG_FILE%" 2>&1
+    IF NOT ERRORLEVEL 1 "%PYTHON_EXE%" -m labconstrictor_tools register --name "CellTracksColab" --prefix "%PREFIX%" --module celltracks_lc_tools --version "%LC_APP_VERSION%" --display-name "CellTracksColab" >> "%LOG_FILE%" 2>&1
     IF ERRORLEVEL 1 echo WARNING: tool registration failed - see the pip and register output above in this file; CellTracksColab itself is installed. >> "%LOG_FILE%"
 )
 
