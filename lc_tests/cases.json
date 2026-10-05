@@ -1,0 +1,12 @@
+[
+  {
+    "tool": "calculate_metrics",
+    "inputs": {"tracks": "fixtures/tracks.csv"},
+    "expect": {"results": {"table": {"columns": ["Unique_ID", "Track Duration", "Mean Speed", "Total Distance Traveled", "Directionality"], "rows": 2}}}
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {"tracks": "fixtures/tracks_missing_columns.csv"},
+    "expect": {"status": "FAILED", "code": "missing_columns", "message_contains": "POSITION_Z"}
+  }
+]

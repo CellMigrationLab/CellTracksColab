@@ -103,6 +103,18 @@ IF EXIST "%PROJECT_ROOT%\setup.py" (
     echo No setup.py detected; this project does not bundle an optional Python package. >> "%LOG_FILE%"
 )
 
+REM Optional: expose the app's tools to Napari, Fiji and the command line (LabConstrictor tools bridge).
+REM If the app's package ships a module named <package>_lc_tools, install labconstrictor-tools and register that module.
+REM This step must never fail the installation. LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
+IF NOT DEFINED LC_TOOLS_SPEC SET "LC_TOOLS_SPEC=labconstrictor-tools"
+"%PYTHON_EXE%" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('celltracks_lc_tools') else 1)" >> "%LOG_FILE%" 2>&1
+IF NOT ERRORLEVEL 1 (
+    echo Found celltracks_lc_tools: registering the tools of CellTracksColab for Napari and Fiji. >> "%LOG_FILE%"
+    "%PYTHON_EXE%" -m pip install "%LC_TOOLS_SPEC%" >> "%LOG_FILE%" 2>&1
+    IF NOT ERRORLEVEL 1 "%PYTHON_EXE%" -m labconstrictor_tools register --name "CellTracksColab" --prefix "%PREFIX%" --module celltracks_lc_tools --display-name "CellTracksColab" >> "%LOG_FILE%" 2>&1
+    IF ERRORLEVEL 1 echo WARNING: tool registration failed; CellTracksColab itself is installed. Run "labconstrictor-tools doctor" for details. >> "%LOG_FILE%"
+)
+
 "%PYTHON_EXE%" "%PROJECT_ROOT%\include_path.py" --path "%PREFIX%" --files "%PROJECT_ROOT%\notebook_launcher.json" --keyword "BASE_PATH_KEYWORD" >> "%LOG_FILE%" 2>&1
 IF ERRORLEVEL 1 (
     SET "FAILURE_MESSAGE=Launcher path preparation failed."

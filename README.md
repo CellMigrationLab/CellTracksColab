@@ -237,6 +237,16 @@ More to come
     
 ---
 
+## 🧩 **Napari and Fiji (experimental, branch `bridge-test`)**
+
+The installer registers the **Calculate Track Metrics** tool (`src/celltracks_lc_tools`) so that it appears in the generic
+[napari-labconstrictor](https://github.com/CellMigrationLab/napari-labconstrictor) widget and the
+[LabConstrictor-Fiji](https://github.com/CellMigrationLab/LabConstrictor-Fiji) command: choose a tracks CSV, get the per-track metrics
+table. The tool runs in CellTracksColab's own environment. Details and tests: [`lc_tests/README.md`](lc_tests/README.md) and
+[LabConstrictor-Tools](https://github.com/CellMigrationLab/LabConstrictor-Tools).
+
+---
+
 ## ⭐️ **Acknowledgments**
 
 CellTracksColab is inspired by several key projects in cell tracking and analysis. We acknowledge the influential contributions of **[Traject3d](https://www.nature.com/articles/s41467-022-32958-x)**, **[CellPhe](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10070448/)**, **[CelltrackR](https://www.sciencedirect.com/science/article/pii/S2667119021000033)**, the **[MotilityLab website](https://www.motilitylab.net/)**, and **[Cellplato on Zenodo](https://zenodo.org/records/8096717)**. The innovative use of UMAP and HDBSCAN for analyzing tracking data, as featured in CellTracksColab, was first introduced in **[CellPlato](https://github.com/Michael-shannon/cellPLATO)**.

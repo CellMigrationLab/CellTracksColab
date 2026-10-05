@@ -70,6 +70,22 @@ else
     echo "No setup.py detected; this project does not bundle an optional Python package." >> "$LOG_FILE"
 fi
 
+# --- Optional: expose the app's tools to Napari, Fiji and the command line (LabConstrictor tools bridge) -------------------
+# If the app's package ships a module named <package>_lc_tools, install labconstrictor-tools and register that module.
+# This step must never fail the installation. LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
+LC_TOOLS_MODULE="celltracks_lc_tools"
+if [ -f "$PROJECT_ROOT/setup.py" ] && "$PYTHON_EXE" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('$LC_TOOLS_MODULE') else 1)" >> "$LOG_FILE" 2>&1; then
+    echo "Found $LC_TOOLS_MODULE: registering the tools of CellTracksColab for Napari and Fiji" >> "$LOG_FILE"
+    LC_APP_VERSION="$(sed -n 's/^version: *//p' "$PROJECT_ROOT/construct.yaml" 2>/dev/null | head -1)"
+    if "$PYTHON_EXE" -m pip install "${LC_TOOLS_SPEC:-labconstrictor-tools}" >> "$LOG_FILE" 2>&1 \
+        && "$PYTHON_EXE" -m labconstrictor_tools register --name "CellTracksColab" --prefix "$PREFIX" \
+            --module "$LC_TOOLS_MODULE" --version "${LC_APP_VERSION:-0}" --display-name "CellTracksColab" >> "$LOG_FILE" 2>&1; then
+        echo "Tools registered (labconstrictor-tools list shows them)." >> "$LOG_FILE"
+    else
+        echo "WARNING: tool registration failed; CellTracksColab itself is installed. Run 'labconstrictor-tools doctor' for details." >> "$LOG_FILE"
+    fi
+fi
+
 "$PYTHON_EXE" "$PROJECT_ROOT/include_path.py" --path "$PREFIX" --files "$PROJECT_ROOT/notebook_launcher.json" --keyword "BASE_PATH_KEYWORD" >> "$LOG_FILE" 2>&1
 "$PYTHON_EXE" "$PROJECT_ROOT/include_path.py" --path "$PREFIX" --files "$PREFIX/pre_uninstall.sh" --keyword "BASE_PATH" >> "$LOG_FILE" 2>&1
 "$PYTHON_EXE" "$PROJECT_ROOT/include_path.py" --path "$PREFIX" --files "$PREFIX/uninstall.sh" --keyword "BASE_PATH" >> "$LOG_FILE" 2>&1

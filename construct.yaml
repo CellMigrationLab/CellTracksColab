@@ -40,6 +40,7 @@ extra_files:
 - src/celltracks/__init__.py: CellTracksColab/src/celltracks/__init__.py
 - src/celltracks/data_loader.py: CellTracksColab/src/celltracks/data_loader.py
 - src/celltracks/xml_loader.py: CellTracksColab/src/celltracks/xml_loader.py
+- src/celltracks_lc_tools/__init__.py: CellTracksColab/src/celltracks_lc_tools/__init__.py
 post_install: app/bash_bat_scripts/post_install.bat # [win]
 post_install: app/bash_bat_scripts/post_install.sh # [unix]
 pre_uninstall: app/bash_bat_scripts/pre_uninstall.bat # [win]
