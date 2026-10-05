@@ -76,13 +76,13 @@ fi
 LC_TOOLS_MODULE="celltracks_lc_tools"
 if [ -f "$PROJECT_ROOT/setup.py" ] && "$PYTHON_EXE" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('$LC_TOOLS_MODULE') else 1)" >> "$LOG_FILE" 2>&1; then
     echo "Found $LC_TOOLS_MODULE: registering the tools of CellTracksColab for Napari and Fiji" >> "$LOG_FILE"
-    LC_APP_VERSION="$(sed -n 's/^version: *//p' "$PROJECT_ROOT/construct.yaml" 2>/dev/null | head -1)"
+    LC_APP_VERSION="$(sed -n 's/^version: *//p' "$PROJECT_ROOT/construct.yaml" 2>/dev/null | head -1 | tr -d "\"'\r" || true)"
     if "$PYTHON_EXE" -m pip install "${LC_TOOLS_SPEC:-labconstrictor-tools}" >> "$LOG_FILE" 2>&1 \
         && "$PYTHON_EXE" -m labconstrictor_tools register --name "CellTracksColab" --prefix "$PREFIX" \
             --module "$LC_TOOLS_MODULE" --version "${LC_APP_VERSION:-0}" --display-name "CellTracksColab" >> "$LOG_FILE" 2>&1; then
         echo "Tools registered (labconstrictor-tools list shows them)." >> "$LOG_FILE"
     else
-        echo "WARNING: tool registration failed; CellTracksColab itself is installed. Run 'labconstrictor-tools doctor' for details." >> "$LOG_FILE"
+        echo "WARNING: tool registration failed - see the pip and register output above in this file; CellTracksColab itself is installed." >> "$LOG_FILE"
     fi
 fi
 

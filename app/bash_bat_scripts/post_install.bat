@@ -112,7 +112,7 @@ IF NOT ERRORLEVEL 1 (
     echo Found celltracks_lc_tools: registering the tools of CellTracksColab for Napari and Fiji. >> "%LOG_FILE%"
     "%PYTHON_EXE%" -m pip install "%LC_TOOLS_SPEC%" >> "%LOG_FILE%" 2>&1
     IF NOT ERRORLEVEL 1 "%PYTHON_EXE%" -m labconstrictor_tools register --name "CellTracksColab" --prefix "%PREFIX%" --module celltracks_lc_tools --display-name "CellTracksColab" >> "%LOG_FILE%" 2>&1
-    IF ERRORLEVEL 1 echo WARNING: tool registration failed; CellTracksColab itself is installed. Run "labconstrictor-tools doctor" for details. >> "%LOG_FILE%"
+    IF ERRORLEVEL 1 echo WARNING: tool registration failed - see the pip and register output above in this file; CellTracksColab itself is installed. >> "%LOG_FILE%"
 )
 
 "%PYTHON_EXE%" "%PROJECT_ROOT%\include_path.py" --path "%PREFIX%" --files "%PROJECT_ROOT%\notebook_launcher.json" --keyword "BASE_PATH_KEYWORD" >> "%LOG_FILE%" 2>&1
