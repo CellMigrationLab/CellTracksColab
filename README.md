@@ -242,7 +242,7 @@ More to come
 The installer registers the **Calculate Track Metrics** tool (`src/celltracks_lc_tools`) so that it appears in the generic
 [napari-labconstrictor](https://github.com/CellMigrationLab/napari-labconstrictor) widget and the
 [LabConstrictor-Fiji](https://github.com/CellMigrationLab/LabConstrictor-Fiji) command: choose a tracks CSV, get the per-track metrics
-table. The tool runs in CellTracksColab's own environment. Details and tests: [`lc_tests/README.md`](lc_tests/README.md) and
+table. The tool runs in CellTracksColab's own environment. To try it by hand on your computer follow the [human test protocol](https://github.com/CellMigrationLab/LabConstrictor-Tools/blob/main/docs/HUMAN_TEST_PROTOCOL.md). Details and tests: [`lc_tests/README.md`](lc_tests/README.md) and
 [LabConstrictor-Tools](https://github.com/CellMigrationLab/LabConstrictor-Tools).
 
 ---
