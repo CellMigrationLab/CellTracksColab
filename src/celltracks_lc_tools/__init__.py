@@ -27,5 +27,12 @@ def calculate_metrics(
     ]
     if missing:
         raise ToolError("missing_columns", "CSV is missing columns: " + ", ".join(missing))
+    unlabelled = tracks["Unique_ID"].isna()
+    if unlabelled.any():  # groupby would drop these rows without a word: their tracks would be missing from the result
+        raise ToolError(
+            "missing_track_id",
+            "%d row(s) have an empty Unique_ID (first data rows: %s). Give every row a track id or remove those rows."
+            % (int(unlabelled.sum()), ", ".join(str(i + 1) for i in tracks.index[unlabelled][:5])),
+        )
     grouped = tracks.groupby("Unique_ID")
     return grouped.apply(calculate_track_metrics).join(grouped.apply(calculate_directionality)).reset_index()

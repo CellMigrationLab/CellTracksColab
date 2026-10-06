@@ -1,12 +1,54 @@
 [
   {
     "tool": "calculate_metrics",
-    "inputs": {"tracks": "fixtures/tracks.csv"},
-    "expect": {"results": {"table": {"columns": ["Unique_ID", "Track Duration", "Mean Speed", "Total Distance Traveled", "Directionality"], "rows": 2}}}
+    "inputs": {
+      "tracks": "fixtures/tracks.csv"
+    },
+    "expect": {
+      "results": {
+        "table": {
+          "columns": [
+            "Unique_ID",
+            "Track Duration",
+            "Mean Speed",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 2,
+          "cells": {
+            "Track Duration[0]": 2,
+            "Mean Speed[0]": 1.0,
+            "Total Distance Traveled[0]": 2.0,
+            "Directionality[0]": 1.0,
+            "Track Duration[1]": 2,
+            "Mean Speed[1]": 8.5,
+            "Total Distance Traveled[1]": 17.0,
+            "Directionality[1]": 0.7647058823529411
+          }
+        }
+      }
+    }
   },
   {
     "tool": "calculate_metrics",
-    "inputs": {"tracks": "fixtures/tracks_missing_columns.csv"},
-    "expect": {"status": "FAILED", "code": "missing_columns", "message_contains": "POSITION_Z"}
+    "inputs": {
+      "tracks": "fixtures/tracks_missing_columns.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "missing_columns",
+      "message_contains": "POSITION_Z"
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_empty_id.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "missing_track_id",
+      "message_contains": "empty Unique_ID"
+    }
   }
 ]
