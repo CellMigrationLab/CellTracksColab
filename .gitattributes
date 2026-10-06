@@ -1,2 +1,3 @@
-# cmd.exe needs CRLF in batch files (labels and GOTO misbehave in LF-only .bat files)
-*.bat text eol=crlf
+# cmd.exe needs CRLF in the installer batch files (labels and GOTO misbehave in LF-only .bat files).
+# Only this folder: other copies (e.g. under .template_sync/) must stay byte-for-byte as stored.
+/app/bash_bat_scripts/*.bat text eol=crlf
