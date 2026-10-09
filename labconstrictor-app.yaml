@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://labconstrictor.cellmig.org/schema/labconstrictor-app.schema.json
+schema: 1
+name: CellTracksColab
+summary: Compile, visualise and analyse cell tracking data across fields of view, biological repeats and conditions.
+description: |-
+  CellTracksColab bridges the gap between tracking and analysis. It compiles tracking results (for example from TrackMate) and lets you explore track metrics, check experimental variability with hierarchical clustering, and compare conditions.
+
+  Use it as a desktop app, or open the notebooks in Google Colab.
+kind: analysis
+hosts: [notebook]
+distribution:
+  installer: true
+  colab:
+    - label: TrackMate
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb
+    - label: TrackMate (plate)
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_TrackMate_Plate/CellTracksColab_TrackMate_Plate.ipynb
+license: MIT
+categories: [cell tracking, TrackMate]
+doi: 10.1371/journal.pbio.3002740
+icon: app/logo/CellTracksColab_logo.png
