@@ -19,3 +19,24 @@ license: MIT
 categories: [cell tracking, TrackMate]
 doi: 10.1371/journal.pbio.3002740
 icon: app/logo/CellTracksColab_logo.png
+docs_url: https://github.com/CellMigrationLab/CellTracksColab/wiki
+inputs:
+  - "TrackMate results: CSV or XML files (TrackMate notebook); TrackMate CSV files in a plate format (TrackMate - Plate)"
+  - "CSV files from CellProfiler, ICY, ilastik or Fiji Manual Tracker (Custom notebook)"
+  - "Data in the CellTracksColab format (Viewer and the advanced analysis notebooks)"
+  - "Data organised in a two-tiered folder hierarchy"
+limitations:
+  - "Does not yet support track merging or splitting"
+quickstart:
+  - "Desktop app: install it with the installation guide for your operating system, then launch CellTracksColab"
+  - "Desktop app: in the Welcome dashboard, click Open the Notebook next to the analysis you want"
+  - "Desktop app: paste the path of a local folder with your data into the text box"
+  - "Google Colab: click Open in Colab on a notebook, then run the Load key dependencies cell (section 1.1)"
+  - "Google Colab: point the notebook at your data on Drive (paths start with /content/gdrive/MyDrive/)"
+screenshots:
+  - path: Wiki/Screenshot1.png
+    caption: Compile your data
+  - path: Wiki/Screenshot2.png
+    caption: Visualise your tracks
+  - path: Wiki/Screenshot4.png
+    caption: Plot track parameters
