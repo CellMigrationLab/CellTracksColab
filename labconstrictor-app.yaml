@@ -3,36 +3,58 @@ schema: 1
 name: CellTracksColab
 summary: Compile, visualise and analyse cell tracking data across fields of view, biological repeats and conditions.
 description: |-
-  CellTracksColab bridges the gap between tracking and analysis. It compiles tracking results (for example from TrackMate) and lets you explore track metrics, check experimental variability with hierarchical clustering, and compare conditions.
+  Import and compile cell tracking data from TrackMate (CSV or XML), multiwell plate exports, or other compatible CSV files. Explore trajectories and track metrics, filter tracks, and inspect variability across fields of view, biological repeats and conditions.
 
-  Use it as a desktop app, or open the notebooks in Google Colab.
+  Separate notebooks visualise compiled data, explore movement phenotypes with UMAP, t-SNE and HDBSCAN, analyse spatial clustering with Ripley's L, and measure distances to regions of interest. Use the notebooks in Google Colab or through the desktop app.
 kind: analysis
 hosts: [notebook]
 distribution:
   installer: true
   colab:
-    - label: TrackMate
+    - label: TrackMate (CSV or XML)
       url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_TrackMate/CellTracksColab_TrackMate.ipynb
-    - label: TrackMate (plate)
+    - label: TrackMate Plate (multiwell CSV)
       url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_TrackMate_Plate/CellTracksColab_TrackMate_Plate.ipynb
+    - label: Custom (other tracking CSV files)
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Custom/CellTracksColab_Custom.ipynb
+    - label: Viewer (compiled tracks)
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Viewer/CellTracksColab_Viewer.ipynb
+    - label: Dimensionality Reduction (UMAP, t-SNE)
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Dimensionality_Reduction/CellTracksColab_Dimensionality_Reduction.ipynb
+    - label: Track Clustering (Ripley's L)
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Track_Clustering/CellTracksColab_Track_Clustering.ipynb
+    - label: Distance to ROI (requires masks)
+      url: https://colab.research.google.com/github/CellMigrationLab/CellTracksColab/blob/main/notebooks/CellTracksColab_Distance_to_ROI/CellTracksColab_Distance_to_ROI.ipynb
 license: MIT
-categories: [cell tracking, TrackMate]
+categories: [cell tracking, cell migration, trajectory analysis, TrackMate]
 doi: 10.1371/journal.pbio.3002740
 icon: app/logo/CellTracksColab_logo.png
 docs_url: https://github.com/CellMigrationLab/CellTracksColab/wiki
 inputs:
-  - "TrackMate results: CSV or XML files (TrackMate notebook); TrackMate CSV files in a plate format (TrackMate - Plate)"
-  - "CSV files from CellProfiler, ICY, ilastik or Fiji Manual Tracker (Custom notebook)"
-  - "Data in the CellTracksColab format (Viewer and the advanced analysis notebooks)"
-  - "Data organised in a two-tiered folder hierarchy"
+  - "TrackMate CSV (spots and tracks) or XML exports, organised by condition and biological repeat (TrackMate)"
+  - "TrackMate CSV exports from multiwell or plate-based experiments (TrackMate Plate)"
+  - "Compatible tracking CSV files from CellProfiler, Icy, ilastik or Fiji Manual Tracker; column mapping may be required (Custom)"
+  - "Compiled CellTracksColab spots and tracks tables (CSV or CSV.gz) for Viewer and advanced notebooks"
+  - "TIFF ROI masks matched to tracked fields of view for Distance to ROI"
+outputs:
+  - "Compiled spot and track tables (CSV/CSV.gz), identified by field of view, biological repeat and condition"
+  - "Trajectory plots, track metrics (speed, directionality and more), quality-control plots and condition comparisons"
+  - "UMAP and t-SNE embeddings, HDBSCAN clusters and representative trajectories (Dimensionality Reduction)"
+  - "Ripley's L spatial clustering curves and Monte Carlo comparisons (Track Clustering)"
+  - "Distances from tracks to ROI masks, derived metrics and visual checks (Distance to ROI)"
 limitations:
   - "Does not yet support track merging or splitting"
+  - "Viewer, Dimensionality Reduction, Track Clustering and Distance to ROI require compiled CellTracksColab tables"
+  - "Custom imports need correct column mapping and spatial/time calibration"
+  - "ROI analysis needs masks matched to each field of view and consistent coordinate calibration"
+  - "Dimensionality reduction and clustering are exploratory; results depend on the selected features and parameters"
 quickstart:
-  - "Desktop app: install it with the installation guide for your operating system, then launch CellTracksColab"
-  - "Desktop app: in the Welcome dashboard, click Open the Notebook next to the analysis you want"
-  - "Desktop app: paste the path of a local folder with your data into the text box"
-  - "Google Colab: click Open in Colab on a notebook, then run the Load key dependencies cell (section 1.1)"
-  - "Google Colab: point the notebook at your data on Drive (paths start with /content/gdrive/MyDrive/)"
+  - "Choose TrackMate, TrackMate Plate or Custom to import data; Viewer and advanced analyses need compiled CellTracksColab tables"
+  - "Desktop: install CellTracksColab, launch it and choose your notebook from the Welcome dashboard"
+  - "Google Colab: open a notebook below, run Load key dependencies and connect Google Drive when prompted"
+  - "Select the input folder or compiled spot/track files and choose a results folder"
+  - "For Distance to ROI, check the matching TIFF masks and the track-to-image calibration"
+  - "Inspect plots and field-of-view/repeat quality control before comparing conditions"
 screenshots:
   - path: Wiki/Screenshot1.png
     caption: Compile your data
