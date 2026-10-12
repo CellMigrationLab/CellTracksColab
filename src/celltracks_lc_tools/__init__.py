@@ -104,7 +104,7 @@ def calculate_metrics(
         progress(k / n_tracks, "track %d of %d" % (k, n_tracks))
     result = pd.DataFrame(rows)
 
-    message = "%d tracks, %d skipped, %d rows dropped" % (n_tracks, skipped, dropped)
+    message = "%d tracks, %d skipped (fewer than 2 spots), %d rows dropped (NaN)" % (n_tracks, skipped, dropped)
     if not has_z:
         message += ". No POSITION_Z: treated as 2D (Z = 0)"
     return result, message
