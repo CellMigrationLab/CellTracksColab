@@ -1,0 +1,46 @@
+name: Check App Centre manifest
+
+# Checks labconstrictor-app.yaml (the description of the app for the LabConstrictor App Centre).
+# A missing file is a warning, an invalid file fails this check. It never blocks building installers:
+# it runs on its own, also when a release is published.
+on:
+  pull_request:
+    paths:
+      - labconstrictor-app.yaml
+      - .tools/schema/**
+      - .tools/python/check_app_manifest.py
+      - .github/workflows/check_app_manifest.yml
+  push:
+    branches:
+      - main
+    paths:
+      - labconstrictor-app.yaml
+      - .tools/schema/**
+      - .tools/python/check_app_manifest.py
+      - .github/workflows/check_app_manifest.yml
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check labconstrictor-app.yaml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install requirements
+        run: pip install pyyaml==6.0.2 jsonschema==4.23.0
+
+      - name: Check the manifest
+        run: python .tools/python/check_app_manifest.py

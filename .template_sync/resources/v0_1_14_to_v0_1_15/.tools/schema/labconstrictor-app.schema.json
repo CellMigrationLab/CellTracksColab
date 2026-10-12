@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labconstrictor.cellmig.org/schema/labconstrictor-app.schema.json",
+  "title": "labconstrictor-app.yaml",
+  "description": "Manifest that an app keeps in the root of its own repository so that it can be listed in the LabConstrictor App Centre. Edit it with schema support: add `# yaml-language-server: $schema=https://labconstrictor.cellmig.org/schema/labconstrictor-app.schema.json` as the first line.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "name", "summary", "kind", "distribution"],
+  "properties": {
+    "schema": {"const": 1, "description": "Manifest format version."},
+    "name": {"type": "string", "minLength": 2, "maxLength": 60, "description": "Display name, as users know the app."},
+    "summary": {"type": "string", "minLength": 20, "maxLength": 200, "description": "One sentence shown on the app card. Plain text."},
+    "description": {"type": "string", "maxLength": 2000, "description": "A few plain-text paragraphs shown on the app page; separate paragraphs with a blank line. No HTML or Markdown."},
+    "quickstart": {
+      "type": "array", "minItems": 1, "maxItems": 6, "items": {"type": "string", "minLength": 5, "maxLength": 200},
+      "description": "Up to six short plain-text steps for a first run, shown on the app page. Link to fuller documentation with docs_url."
+    },
+    "kind": {"enum": ["analysis", "segmentation", "simulation", "game", "training", "utility"], "description": "What the app is for; drives the filter on the App Centre."},
+    "hosts": {
+      "type": "array", "uniqueItems": true,
+      "items": {"enum": ["notebook", "napari", "fiji", "qupath"]},
+      "description": "Where the app's tools can be used besides its own window (the LabConstrictor-Tools bridge)."
+    },
+    "distribution": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "description": "How people get the app. At least one route is required.",
+      "properties": {
+        "installer": {"const": true, "description": "The latest GitHub release carries LabConstrictor installers (Name-version-OS-arch.ext)."},
+        "colab": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/link"}, "description": "Google Colab notebooks."},
+        "pip": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$", "description": "Name of the package on PyPI."}
+      }
+    },
+    "authors": {"type": "array", "items": {"$ref": "#/$defs/author"}},
+    "license": {"type": "string", "description": "SPDX identifier, for example MIT."},
+    "categories": {"type": "array", "uniqueItems": true, "maxItems": 6, "items": {"type": "string", "maxLength": 30}},
+    "doi": {"type": "string", "pattern": "^10\\.\\d{4,9}/\\S+$", "description": "DOI of the paper or archive to cite."},
+    "homepage": {"$ref": "#/$defs/https"},
+    "docs_url": {"$ref": "#/$defs/https"},
+    "icon": {"$ref": "#/$defs/repoPath", "description": "Square PNG in the repository (SVG is not accepted: it can carry scripts)."},
+    "screenshots": {
+      "type": "array", "maxItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["path", "caption"],
+        "properties": {"path": {"$ref": "#/$defs/repoPath"}, "caption": {"type": "string", "minLength": 3, "maxLength": 140}}
+      },
+      "description": "Images in the repository; captions double as alt text."
+    }
+  },
+  "$defs": {
+    "https": {"type": "string", "pattern": "^https://[^\\s]+$"},
+    "repoPath": {"type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9_./ -]+\\.(png|jpg|jpeg|gif)$", "description": "Path inside the repository, no leading slash."},
+    "link": {
+      "type": "object", "additionalProperties": false, "required": ["label", "url"],
+      "properties": {"label": {"type": "string", "minLength": 2, "maxLength": 60}, "url": {"type": "string", "pattern": "^https://colab\\.research\\.google\\.com/[^\\s]+$"}}
+    },
+    "author": {
+      "type": "object", "additionalProperties": false, "required": ["name"],
+      "properties": {"name": {"type": "string", "minLength": 2}, "orcid": {"type": "string", "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"}}
+    }
+  }
+}
