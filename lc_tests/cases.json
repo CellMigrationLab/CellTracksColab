@@ -1,0 +1,236 @@
+[
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks.csv"
+    },
+    "expect": {
+      "results": {
+        "table": {
+          "columns": [
+            "Unique_ID",
+            "Track Duration",
+            "Mean Speed",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 2,
+          "cells": {
+            "Track Duration[0]": 2,
+            "Mean Speed[0]": 1.0,
+            "Total Distance Traveled[0]": 2.0,
+            "Directionality[0]": 1.0,
+            "Track Duration[1]": 2,
+            "Mean Speed[1]": 8.5,
+            "Total Distance Traveled[1]": 17.0,
+            "Directionality[1]": 0.7647058823529411
+          }
+        },
+        "summary": {
+          "contains": "2 tracks, 0 skipped (fewer than 2 spots), 0 rows dropped (NaN)"
+        }
+      }
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_missing_columns.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "missing_columns",
+      "message_contains": "POSITION_Y"
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_empty_id.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "missing_track_id",
+      "message_contains": "empty Unique_ID"
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_single_spot.csv"
+    },
+    "expect": {
+      "progress_events_min": 1,
+      "results": {
+        "table": {
+          "columns": [
+            "Unique_ID",
+            "Track Duration",
+            "Median Speed",
+            "Mean Speed",
+            "Max Speed",
+            "Min Speed",
+            "Speed Standard Deviation",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 2,
+          "cells": {
+            "Mean Speed[0]": 1.0,
+            "Total Distance Traveled[1]": 5.0,
+            "Mean Speed[1]": 5.0
+          }
+        },
+        "summary": {
+          "contains": "2 tracks, 1 skipped (fewer than 2 spots), 0 rows dropped (NaN)"
+        }
+      }
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_nan.csv"
+    },
+    "expect": {
+      "progress_events_min": 1,
+      "results": {
+        "table": {
+          "columns": [
+            "Unique_ID",
+            "Track Duration",
+            "Median Speed",
+            "Mean Speed",
+            "Max Speed",
+            "Min Speed",
+            "Speed Standard Deviation",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 2,
+          "cells": {
+            "Track Duration[0]": 3,
+            "Mean Speed[0]": 1.0,
+            "Total Distance Traveled[0]": 3.0,
+            "Total Distance Traveled[1]": 5.0
+          }
+        },
+        "summary": {
+          "contains": "2 tracks, 1 skipped (fewer than 2 spots), 2 rows dropped (NaN)"
+        }
+      }
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_2d.csv"
+    },
+    "expect": {
+      "progress_events_min": 1,
+      "results": {
+        "table": {
+          "columns": [
+            "Unique_ID",
+            "Track Duration",
+            "Median Speed",
+            "Mean Speed",
+            "Max Speed",
+            "Min Speed",
+            "Speed Standard Deviation",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 2,
+          "cells": {
+            "Mean Speed[0]": 5.0,
+            "Total Distance Traveled[0]": 10.0,
+            "Directionality[0]": 1.0,
+            "Mean Speed[1]": 3.0,
+            "Track Duration[1]": 2
+          }
+        },
+        "summary": {
+          "contains": "Z = 0"
+        }
+      }
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_unsorted.csv"
+    },
+    "expect": {
+      "progress_events_min": 1,
+      "results": {
+        "table": {
+          "columns": [
+            "Unique_ID",
+            "Track Duration",
+            "Median Speed",
+            "Mean Speed",
+            "Max Speed",
+            "Min Speed",
+            "Speed Standard Deviation",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 1,
+          "cells": {
+            "Track Duration[0]": 2,
+            "Mean Speed[0]": 1.0,
+            "Total Distance Traveled[0]": 2.0,
+            "Directionality[0]": 1.0
+          }
+        },
+        "summary": {
+          "contains": "1 tracks, 0 skipped"
+        }
+      }
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_raw_trackid.csv",
+      "track_id_column": "TRACK_ID"
+    },
+    "expect": {
+      "progress_events_min": 1,
+      "results": {
+        "table": {
+          "columns": [
+            "TRACK_ID",
+            "Track Duration",
+            "Median Speed",
+            "Mean Speed",
+            "Max Speed",
+            "Min Speed",
+            "Speed Standard Deviation",
+            "Total Distance Traveled",
+            "Directionality"
+          ],
+          "rows": 1,
+          "cells": {
+            "Mean Speed[0]": 5.0
+          }
+        },
+        "summary": {
+          "contains": "1 tracks, 1 skipped"
+        }
+      }
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_raw_trackid.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "missing_columns",
+      "message_contains": "track_id_column"
+    }
+  }
+]
