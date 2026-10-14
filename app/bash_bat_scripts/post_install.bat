@@ -1,5 +1,5 @@
 @ECHO OFF
-SETLOCAL EnableExtensions
+SETLOCAL EnableExtensions DisableDelayedExpansion
 
 SET "LOG_FILE=%PREFIX%\menuinst_debug.log"
 SET "PYTHON_EXE=%PREFIX%\python.exe"
@@ -94,6 +94,10 @@ IF EXIST "%PROJECT_ROOT%\setup.py" (
         GOTO :fail
     )
 
+    REM Tools first, only for an app whose package ships a tools module: the package may import labconstrictor_tools at module level,
+    REM so labconstrictor-tools is installed BEFORE the import check below. A failed install is only a WARNING, see :install_lc_tools at the end of this file.
+    CALL :install_lc_tools
+
     "%PYTHON_EXE%" -c "import celltracks; print('CellTracksColab import successful:', celltracks.__file__)" >> "%LOG_FILE%" 2>&1
     IF ERRORLEVEL 1 (
         SET "FAILURE_MESSAGE=Installed CellTracksColab package could not be imported as celltracks."
@@ -101,6 +105,34 @@ IF EXIST "%PROJECT_ROOT%\setup.py" (
     )
 ) ELSE (
     echo No setup.py detected; this project does not bundle an optional Python package. >> "%LOG_FILE%"
+)
+
+REM Optional: expose the app's tools to Napari, Fiji and the command line (LabConstrictor tools bridge).
+REM If the app's package ships a module named <package>_lc_tools, install labconstrictor-tools and register that module.
+REM This step must never fail the installation. LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
+REM labconstrictor-tools is installed by :install_lc_tools, called above before the import check of the package (it sets LC_TOOLS_PIN, LC_TOOLS_SPEC and LC_TOOLS_READY).
+SET "LC_APP_VERSION="
+IF EXIST "%PROJECT_ROOT%\construct.yaml" FOR /F "usebackq tokens=1,* delims=: " %%A IN (`findstr /B /C:"version:" "%PROJECT_ROOT%\construct.yaml"`) DO SET "LC_APP_VERSION=%%~B"
+IF NOT DEFINED LC_APP_VERSION (
+    SET "LC_APP_VERSION=0"
+    echo WARNING: no version: line at the start of a line in construct.yaml - registering the tools with version 0. >> "%LOG_FILE%"
+)
+REM Hosts of the app: the app's labconstrictor-app.yaml (bundled by construct.yaml extra_files) goes to Tools with --app-manifest, so that
+REM Napari, Fiji and QuPath list the app only in the hosts its hosts: line names. Without the file the app is
+REM registered without hosts (every host lists it) and the log says so (see the lines after "Found ... registering" below).
+SET "LC_APP_MANIFEST="
+IF EXIST "%PROJECT_ROOT%\labconstrictor-app.yaml" SET "LC_APP_MANIFEST=%PROJECT_ROOT%\labconstrictor-app.yaml"
+"%PYTHON_EXE%" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('celltracks_lc_tools') else 1)" >> "%LOG_FILE%" 2>&1
+IF NOT ERRORLEVEL 1 (
+    echo Found celltracks_lc_tools: registering the tools of CellTracksColab for Napari and Fiji. >> "%LOG_FILE%"
+    REM Which hosts list the app (the sentence is the one Tools uses for an app without hosts). Logged before the READY check, which sets the errorlevel.
+    IF NOT DEFINED LC_APP_MANIFEST echo WARNING: labconstrictor-app.yaml was not found in "%PROJECT_ROOT%" ^(add it to extra_files in construct.yaml^), so CellTracksColab is registered without hosts. 'CellTracksColab' declares no hosts, so it is listed in every host; register it with --app-manifest ^(or --hosts^) to choose >> "%LOG_FILE%"
+    IF DEFINED LC_APP_MANIFEST echo Passing the hosts of "%LC_APP_MANIFEST%" to Tools ^(--app-manifest^); Tools logs the same sentence if the file declares no hosts. >> "%LOG_FILE%"
+    REM labconstrictor-tools was installed before the import check (:install_lc_tools): register only if that worked (errorlevel 1 otherwise).
+    "%PYTHON_EXE%" -c "import sys; sys.exit(0 if sys.argv[1] == '1' else 1)" "%LC_TOOLS_READY%" >> "%LOG_FILE%" 2>&1
+    IF NOT ERRORLEVEL 1 IF DEFINED LC_APP_MANIFEST "%PYTHON_EXE%" -m labconstrictor_tools register --name "CellTracksColab" --prefix "%PREFIX%" --module celltracks_lc_tools --version "%LC_APP_VERSION%" --display-name "CellTracksColab" --app-manifest "%LC_APP_MANIFEST%" >> "%LOG_FILE%" 2>&1
+    IF NOT ERRORLEVEL 1 IF NOT DEFINED LC_APP_MANIFEST "%PYTHON_EXE%" -m labconstrictor_tools register --name "CellTracksColab" --prefix "%PREFIX%" --module celltracks_lc_tools --version "%LC_APP_VERSION%" --display-name "CellTracksColab" >> "%LOG_FILE%" 2>&1
+    IF ERRORLEVEL 1 echo WARNING: tool registration failed - see the pip and register output above in this file; CellTracksColab itself is installed. >> "%LOG_FILE%"
 )
 
 "%PYTHON_EXE%" "%PROJECT_ROOT%\include_path.py" --path "%PREFIX%" --files "%PROJECT_ROOT%\notebook_launcher.json" --keyword "BASE_PATH_KEYWORD" >> "%LOG_FILE%" 2>&1
@@ -188,4 +220,26 @@ IF DEFINED NVIDIA_SMI GOTO :EOF
 FOR /F "delims=" %%I IN ('where.exe nvidia-smi.exe 2^>NUL') DO (
     IF NOT DEFINED NVIDIA_SMI SET "NVIDIA_SMI=%%~fI"
 )
+GOTO :EOF
+
+:install_lc_tools
+REM Optional (LabConstrictor tools bridge): install labconstrictor-tools when the app's package ships a module named <package>_lc_tools.
+REM Called before the import check of the package, which may import labconstrictor_tools at module level.
+REM This step must never fail the installation: a failure is logged as a WARNING and LC_TOOLS_READY stays 0 (no registration later).
+REM LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
+REM Default source: the GitHub archive of the labconstrictor-tools release TAG below (a plain zip: no git needed on the user's computer),
+REM because the package is not on PyPI yet. Once it is, use "labconstrictor-tools" here. To move the pin, change only this tag.
+SET "LC_TOOLS_PIN=v0.3.0-alpha.1"
+IF NOT DEFINED LC_TOOLS_SPEC SET "LC_TOOLS_SPEC=https://github.com/CellMigrationLab/LabConstrictor-Tools/archive/refs/tags/%LC_TOOLS_PIN%.zip"
+SET "LC_TOOLS_READY=0"
+"%PYTHON_EXE%" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('celltracks_lc_tools') else 1)" >> "%LOG_FILE%" 2>&1
+IF ERRORLEVEL 1 GOTO :EOF
+echo Found celltracks_lc_tools: installing labconstrictor-tools before the import check of CellTracksColab. >> "%LOG_FILE%"
+REM LC_TOOLS_SPEC goes to pip as one argument through Python: cmd.exe never re-parses it (a quote or & in it cannot run anything).
+"%PYTHON_EXE%" -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, '-m', 'pip', 'install', os.environ['LC_TOOLS_SPEC']]))" >> "%LOG_FILE%" 2>&1
+IF ERRORLEVEL 1 (
+    echo WARNING: labconstrictor-tools could not be installed - see the pip output above in this file; the tools of CellTracksColab will not be registered ^(the import check fails only if the package needs labconstrictor-tools at import time^). >> "%LOG_FILE%"
+    GOTO :EOF
+)
+SET "LC_TOOLS_READY=1"
 GOTO :EOF
