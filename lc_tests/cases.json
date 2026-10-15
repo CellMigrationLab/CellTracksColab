@@ -232,5 +232,27 @@
       "code": "missing_columns",
       "message_contains": "track_id_column"
     }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_infinite.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "non_finite_position",
+      "message_contains": "infinite"
+    }
+  },
+  {
+    "tool": "calculate_metrics",
+    "inputs": {
+      "tracks": "fixtures/tracks_same_time.csv"
+    },
+    "expect": {
+      "status": "FAILED",
+      "code": "same_time_twice",
+      "message_contains": "different times"
+    }
   }
 ]

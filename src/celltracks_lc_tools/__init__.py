@@ -43,13 +43,15 @@ def calculate_metrics(
 
     Rules, the same as the CellTracksColab notebooks and loader: rows with an empty POSITION_T/X/Y/Z are dropped
     first (empty POSITION_Z only when the column exists and is not empty everywhere), then tracks with fewer than 2
-    spots are skipped (a speed needs two spots). Spots are ordered by POSITION_T inside each track. A file without
+    spots are skipped (a speed needs two spots). An infinite position or time, or two spots of one track at the same time, is refused
+    with a sentence (the speeds would be infinite or absurd). Spots are ordered by POSITION_T inside each track. A file without
     POSITION_Z (2D) is processed with Z = 0. The summary says how many tracks, skipped tracks and dropped rows there were.
 
     Args:
         tracks: The spots table.
         track_id_column: Column holding the track id of each spot.
     """
+    import numpy as np
     import pandas as pd
     from celltracks.Track_Metrics import calculate_directionality, calculate_track_metrics
 
@@ -80,6 +82,14 @@ def calculate_metrics(
         data["POSITION_Z"] = 0.0
     for c in coords:  # text that is not a number counts as empty
         data[c] = pd.to_numeric(data[c], errors="coerce")
+    infinite = ~np.isfinite(data[coords].to_numpy(dtype=float)) & ~data[coords].isna().to_numpy()  # NaN is an empty value (dropped below); infinity is a wrong value
+    if infinite.any():
+        first = ", ".join(str(i + 1) for i in data.index[infinite.any(axis=1)][:5])
+        raise ToolError(
+            "non_finite_position",
+            "%d row(s) have an infinite position or time (first data rows: %s): the speeds would be infinite. Correct or remove those rows."
+            % (int(infinite.any(axis=1).sum()), first),
+        )
     before = len(data)
     data = data.dropna(subset=coords)
     dropped = before - len(data)
@@ -93,6 +103,16 @@ def calculate_metrics(
             "no_result",
             "No track has 2 or more spots with complete positions (%d track(s) skipped, %d row(s) dropped because of empty values)."
             % (skipped, dropped),
+        )
+
+    twice = data.duplicated(subset=[id_col, "POSITION_T"], keep=False)
+    if twice.any():  # the library would divide by a time difference of 0 (replaced by 1e-10): an absurd speed, not a measurement
+        clash = data[twice].iloc[0]
+        raise ToolError(
+            "same_time_twice",
+            "%d spot(s) share a time with another spot of the same track (for example track %s at time %s): a speed needs different times. "
+            "Remove the duplicate spots; tracks that split or merge are not supported by these statistics."
+            % (int(twice.sum()), clash[id_col], clash["POSITION_T"]),
         )
 
     rows = []
