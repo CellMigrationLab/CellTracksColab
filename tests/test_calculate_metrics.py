@@ -104,3 +104,26 @@ def test_progress_and_cancel_per_track(monkeypatch):
     with pytest.raises(KeyboardInterrupt):
         run(HEADER + "A,0,0,0,0\nA,1,1,0,0\nB,0,0,0,0\nB,1,1,0,0\nC,0,0,0,0\nC,1,1,0,0\n")
     assert calls == [1 / 3]
+
+
+def test_an_infinite_position_is_refused_not_turned_into_infinite_speeds():
+    with pytest.raises(ToolError) as e:
+        run(HEADER + "A,0,0,0,0\nA,1,inf,0,0\nA,2,2,0,0\n")
+    assert e.value.code == "non_finite_position" and "infinite" in str(e.value) and "2" in str(e.value)
+
+
+def test_an_infinite_time_is_refused_too():
+    with pytest.raises(ToolError) as e:
+        run(HEADER + "A,0,0,0,0\nA,-inf,1,0,0\n")
+    assert e.value.code == "non_finite_position"
+
+
+def test_two_spots_of_a_track_at_the_same_time_are_refused_not_a_speed_of_1e10():
+    with pytest.raises(ToolError) as e:
+        run(HEADER + "A,0,0,0,0\nA,1,1,0,0\nA,1,2,0,0\nB,0,0,0,0\nB,1,1,0,0\n")
+    assert e.value.code == "same_time_twice" and "track A" in str(e.value)
+
+
+def test_the_same_time_in_two_different_tracks_is_fine():
+    table, message = run(HEADER + "A,0,0,0,0\nA,1,1,0,0\nB,0,5,5,0\nB,1,6,5,0\n")
+    assert list(table["Unique_ID"]) == ["A", "B"] and message.startswith("2 tracks")
