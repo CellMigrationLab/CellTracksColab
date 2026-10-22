@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.9] - 2026-10-22
+
+### Changed
+- Version updated from 1.1.8 to 1.1.9
+
+**Commit Details:**
+- Hash: [`bc6c9310`](https://github.com/CellMigrationLab/CellTracksColab/commit/bc6c9310e366a09eb88fb4127da46ca7a67d4154)
+- Author: guijacquemet
+- Date: 2026-10-22 09:39:26 +0300
+- Message: Merge pull request #65 from CellMigrationLab/claude/eager-brown-v6th6x
+
+Bump TrackMate, TrackMate_Plate, Custom and Viewer notebooks to 1.1.9
+
+---
 ## [1.1.8] - 2026-10-01
 
 ### Changed
