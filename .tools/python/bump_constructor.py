@@ -223,13 +223,12 @@ def ensure_extra_files(construct_data: dict, notebooks_root: Path, src_root: Pat
         # Include the external code change tracking file if it exists
         src_change_file = ".tools/meta/src_change.yaml"
         if Path(src_change_file).exists():
+            # The mapping was removed from normalized_items above, so always re-add it here;
+            # checking existing_sources would drop it on every other release.
             src_change_dst = f"{project_folder}/src_change.yaml"
-            if src_change_file not in existing_sources and src_change_dst not in existing_dests:
-                normalized_items.append({src_change_file: src_change_dst})
-                src_added += 1
-                debug(f"Included src change marker: {src_change_file} -> {src_change_dst}")
-            else:
-                debug("src change marker mapping already present")
+            normalized_items.append({src_change_file: src_change_dst})
+            src_added += 1
+            debug(f"Included src change marker: {src_change_file} -> {src_change_dst}")
         else:
             debug("src change marker not found, skipping")
     else:
