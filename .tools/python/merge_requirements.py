@@ -487,10 +487,14 @@ def main():
     setup_path = Path("setup.py")
     if setup_path.exists() and python_version:
         setup_text = setup_path.read_text(encoding="utf-8")
+        # Require only the major.minor series: environment.yaml pins the exact
+        # patch release for the installer, but a source install should accept
+        # any patch release of that series (e.g. 3.12.3 for 3.12.13).
+        python_series = ".".join(str(python_version).split(".")[:2])
         pattern = r'python_requires\s*=\s*["\'][><=\.0-9 ]+(PYTHON\_VERSION)?["\']'
-        new_setup_text = re.sub(pattern, f'python_requires=">={python_version}"', setup_text)
+        new_setup_text = re.sub(pattern, f'python_requires=">={python_series}"', setup_text)
         setup_path.write_text(new_setup_text, encoding="utf-8")
-        print(f"Updated {setup_path} with python_requires>={python_version}")
+        print(f"Updated {setup_path} with python_requires>={python_series}")
 
     return 0
 
