@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.11] - 2026-10-22
+
+### Changed
+- Version updated from 1.1.10 to 1.1.11
+
+**Commit Details:**
+- Hash: [`bb599952`](https://github.com/CellMigrationLab/CellTracksColab/commit/bb5999527cbdd27167974170c456dea83de429da)
+- Author: guijacquemet
+- Date: 2026-10-22 13:29:28 +0300
+- Message: Merge pull request #67 from CellMigrationLab/claude/eager-brown-v6th6x
+
+Keep notebooks usable offline; keep src_change.yaml in every installer
+
+---
 ## [1.1.10] - 2026-10-01
 
 ### Changed
