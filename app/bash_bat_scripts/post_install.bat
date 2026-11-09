@@ -67,6 +67,10 @@ IF EXIST "%GPU_REQUIREMENTS%" (
     echo GPU requirements file not found, installing CPU requirements from "%BASE_REQUIREMENTS%" >> "%LOG_FILE%"
 )
 
+REM A lock file (requirements*.lock.txt next to the requirements file: every package with its exact version, written by
+REM .tools/python/lock_requirements.py) is installed instead of the requirements file when the installer bundles one.
+SET "SELECTED_LOCK=%SELECTED_REQUIREMENTS:~0,-4%.lock.txt"
+IF EXIST "%SELECTED_LOCK%" SET "SELECTED_REQUIREMENTS=%SELECTED_LOCK%"
 echo Installing requirements from "%SELECTED_REQUIREMENTS%" >> "%LOG_FILE%"
 "%PYTHON_EXE%" -m pip install -r "%SELECTED_REQUIREMENTS%" >> "%LOG_FILE%" 2>&1
 IF ERRORLEVEL 1 (
@@ -74,9 +78,11 @@ IF ERRORLEVEL 1 (
     GOTO :fail
 )
 
+SET "WINDOWS_REQUIREMENTS=%PROJECT_ROOT%\requirements-windows.txt"
+IF EXIST "%PROJECT_ROOT%\requirements-windows.lock.txt" SET "WINDOWS_REQUIREMENTS=%PROJECT_ROOT%\requirements-windows.lock.txt"
 IF EXIST "%PROJECT_ROOT%\requirements-windows.txt" (
-    echo Installing Windows-specific requirements. >> "%LOG_FILE%"
-    "%PYTHON_EXE%" -m pip install -r "%PROJECT_ROOT%\requirements-windows.txt" >> "%LOG_FILE%" 2>&1
+    echo Installing Windows-specific requirements from "%WINDOWS_REQUIREMENTS%". >> "%LOG_FILE%"
+    "%PYTHON_EXE%" -m pip install -r "%WINDOWS_REQUIREMENTS%" >> "%LOG_FILE%" 2>&1
     IF ERRORLEVEL 1 (
         SET "FAILURE_MESSAGE=Windows-specific requirements installation failed."
         GOTO :fail

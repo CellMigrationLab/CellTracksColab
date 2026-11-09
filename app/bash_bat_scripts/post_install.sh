@@ -43,18 +43,24 @@ else
     echo "GPU requirements file not found, installing CPU requirements from $BASE_REQUIREMENTS" >> "$LOG_FILE"
 fi
 
+# A lock file (requirements*.lock.txt next to the requirements file: every package with its exact version, written by
+# .tools/python/lock_requirements.py) is installed instead of the requirements file when the installer bundles one.
+locked_requirements() {
+    if [ -f "${1%.txt}.lock.txt" ]; then echo "${1%.txt}.lock.txt"; else echo "$1"; fi
+}
+SELECTED_REQUIREMENTS="$(locked_requirements "$SELECTED_REQUIREMENTS")"
 echo "Installing requirements from $SELECTED_REQUIREMENTS" >> "$LOG_FILE"
 "$PYTHON_EXE" -m pip install -r "$SELECTED_REQUIREMENTS" >> "$LOG_FILE" 2>&1
 
 if [[ "${OSTYPE:-}" == "darwin"* ]]; then
     echo "Detected macOS platform" >> "$LOG_FILE"
     if [ -f "$PROJECT_ROOT/requirements-macos.txt" ]; then
-        "$PYTHON_EXE" -m pip install -r "$PROJECT_ROOT/requirements-macos.txt" >> "$LOG_FILE" 2>&1
+        "$PYTHON_EXE" -m pip install -r "$(locked_requirements "$PROJECT_ROOT/requirements-macos.txt")" >> "$LOG_FILE" 2>&1
     fi
 elif [[ "${OSTYPE:-}" == "linux-gnu"* ]]; then
     echo "Detected Linux platform" >> "$LOG_FILE"
     if [ -f "$PROJECT_ROOT/requirements-linux.txt" ]; then
-        "$PYTHON_EXE" -m pip install -r "$PROJECT_ROOT/requirements-linux.txt" >> "$LOG_FILE" 2>&1
+        "$PYTHON_EXE" -m pip install -r "$(locked_requirements "$PROJECT_ROOT/requirements-linux.txt")" >> "$LOG_FILE" 2>&1
     fi
 else
     echo "Unknown platform: ${OSTYPE:-unset}" >> "$LOG_FILE"

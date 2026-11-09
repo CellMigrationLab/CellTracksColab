@@ -15,7 +15,14 @@
       ],
       "platforms": {
         "win": {
-          "icon": "BASE_PATH_KEYWORD/CellTracksColab/CellTracksColab_logo.ico"
+          "icon": "BASE_PATH_KEYWORD/CellTracksColab/CellTracksColab_logo.ico",
+          "command": [
+            "{{ PYTHON }}",
+            "{{ PREFIX }}/CellTracksColab/launch_jupyter.py",
+            "{{ PREFIX }}/CellTracksColab/notebooks/Welcome.ipynb",
+            "&",
+            "exit"
+          ]
         },
         "linux": {
           "icon": "BASE_PATH_KEYWORD/CellTracksColab/CellTracksColab_logo.png"

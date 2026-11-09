@@ -1,0 +1,66 @@
+name: Updates on external code change
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+# One run of this workflow at a time per branch. The notebook workflow has its own group: the two can run at the same time,
+# because each one rebases its commit onto the latest branch before it pushes (a shared group kept only one waiting run, so a
+# third push cancelled the waiting run of the other workflow).
+concurrency:
+  group: src-change-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  updates-version_change:
+    name: Upon external code update the code version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Update src change file
+        run: |
+          cat > .tools/meta/src_change.yaml <<EOF
+          src_last_modified: "$(date -u +'%Y-%m-%d_%H:%M:%S')"
+          EOF
+
+      - name: Commit updated files
+        id: auto-commit
+        env:
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_MESSAGE: GitHub Action - Updated src change file
+        # The run checked out the commit that triggered it; the branch may have moved since (another workflow committed, or a new push).
+        # A rejected push is therefore retried after a rebase onto the latest branch.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- .tools/meta/src_change.yaml
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "$COMMIT_MESSAGE"
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:refs/heads/$BRANCH"; then
+              exit 0
+            fi
+            echo "The push was rejected (attempt $attempt of 5): rebasing onto the latest $BRANCH."
+            sleep $((attempt * 5))
+            git fetch origin "$BRANCH"
+            if ! git rebase --autostash "origin/$BRANCH"; then
+              git rebase --abort || true
+              echo "::error::The commit of this run conflicts with the latest $BRANCH; run this workflow again (Actions > Run workflow)."
+              exit 1
+            fi
+          done
+          echo "::error::The push was rejected 5 times; run this workflow again (Actions > Run workflow)."
+          exit 1

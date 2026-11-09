@@ -1,0 +1,211 @@
+name: Updates on notebook change
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'notebooks/**/*.ipynb'
+      - 'notebooks/notebook_latest_versions.yaml'
+      - 'notebooks/**/requirements.yaml'
+  workflow_dispatch:
+
+# One run of this workflow at a time per branch. The src workflow has its own group: the two can run at the same time,
+# because each one rebases its commit onto the latest branch before it pushes (a shared group kept only one waiting run, so a
+# third push cancelled the waiting run of the other workflow).
+concurrency:
+  group: notebooks-global-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  updates-version_change:
+    name: Upon notebook change, update manifests and changelogs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+          
+      - name: Set up Python
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install requirements
+        run: pip install -r .tools/requirements.txt
+          
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@2d756ea4c53f7f6b397767d8723b3a10a9f35bf2 # v44
+        with:
+          separator: ","
+          files: |
+            notebooks/**/*.ipynb
+            notebooks/notebook_latest_versions.yaml
+            notebooks/**/requirements.yaml
+          
+      - name: Syncronize notebook versions
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "sync_notebook_versions.py" \
+            .tools/python/sync_notebook_versions.py \
+            python .tools/python/sync_notebook_versions.py
+            
+      - name: Update CHANGELOG
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "update_changelog.py" \
+            .tools/python/update_changelog.py \
+            python .tools/python/update_changelog.py notebooks/notebook_latest_versions.yaml
+           
+      - name: Update last commit in notebook_latest_versions.yaml
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "update_version_last_commit.py" \
+            .tools/python/update_version_last_commit.py \
+            python .tools/python/update_version_last_commit.py notebooks/notebook_latest_versions.yaml
+           
+      - name: Hide code cells in notebooks
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "hide_code_cells.py" \
+            app/python_scripts/hide_code_cells.py \
+            python app/python_scripts/hide_code_cells.py .
+           
+      - name: Index notebooks 
+        if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "bump_notebook_README.py" \
+            .tools/python/bump_notebook_README.py \
+            python .tools/python/bump_notebook_README.py
+
+      - name: Run merge script
+        if: github.event_name == 'workflow_dispatch' || contains(steps.changed-files.outputs.all_changed_files, 'requirements.yaml')
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "merge_requirements.py" \
+            .tools/python/merge_requirements.py \
+            python .tools/python/merge_requirements.py --source-dir notebooks --output requirements.txt
+
+      # requirements*.txt -> requirements*.lock.txt: every package the installer installs with pip, with its exact version (uv, valid on
+      # Windows, macOS and Linux). A lock file is rewritten only when its requirements file, Python or JupyterLab version changed.
+      - name: Lock requirements
+        run: |
+          bash .tools/bash/run_with_context.sh             artifacts/error_log_document.log             "lock_requirements.py"             .tools/python/lock_requirements.py             python .tools/python/lock_requirements.py
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Miniconda for requirements test
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: conda-incubator/setup-miniconda@fc2d68f6413eb2d87b895e92f8584b5b94a10167 # v3
+        with:
+          auto-activate: true
+          miniforge-version: latest
+          use-mamba: true
+
+      - name: Verify merged requirements inside conda
+        id: test-conda-env
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          SKIP_CONDA_ENV_TEST: ${{ vars.SKIP_CONDA_ENV_TEST }}
+        run: |
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "test_conda_environment.sh" \
+            .tools/bash/test_conda_environment.sh \
+            bash .tools/bash/test_conda_environment.sh
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: notebook-debug-bundle
+          path: artifacts/error_log_document.log
+          archive: false
+
+      - name: Commit updated files
+        id: auto-commit
+        if: steps.check-changes.outputs.has_changes == 'true' && steps.test-conda-env.outcome == 'success'
+        env:
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_MESSAGE: GitHub Action - Updated files because of notebook and/or requirements changes
+        # The run checked out the commit that triggered it (the scripts above compare it with its parent); the branch may have moved
+        # since (another workflow committed, or a new push). A rejected push is therefore retried after a rebase onto the latest branch.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git ls-files -z --modified --deleted --others --exclude-standard -- 'requirements*.txt' environment.yaml 'notebooks/*' setup.py             | xargs -0 -r git add -A --
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "$COMMIT_MESSAGE"
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:refs/heads/$BRANCH"; then
+              exit 0
+            fi
+            echo "The push was rejected (attempt $attempt of 5): rebasing onto the latest $BRANCH."
+            sleep $((attempt * 5))
+            git fetch origin "$BRANCH"
+            if ! git rebase --autostash "origin/$BRANCH"; then
+              git rebase --abort || true
+              echo "::error::The commit of this run conflicts with the latest $BRANCH; run this workflow again (Actions > Run workflow)."
+              exit 1
+            fi
+          done
+          echo "::error::The push was rejected 5 times; run this workflow again (Actions > Run workflow)."
+          exit 1
+
+      # Only when the merged requirements could not be installed: a failure of any other step (a script, the push) never reverts a commit.
+      - name: Revert user commit that broke requirements
+        if: failure() && github.event_name == 'push' && steps.test-conda-env.outcome == 'failure'
+        env:
+          BRANCH: ${{ github.ref_name }}
+          BAD_COMMIT: ${{ github.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git reset --hard
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            # A merge commit is reverted against its first parent (-m 1); any other commit is reverted as it is.
+            if [ "$(git rev-list --parents -n 1 "$BAD_COMMIT" | wc -w)" -gt 2 ]; then
+              REVERT_ARGS=(-m 1)
+            else
+              REVERT_ARGS=()
+            fi
+            if ! git revert --no-edit "${REVERT_ARGS[@]}" "$BAD_COMMIT"; then
+              git revert --abort || true
+              echo "::error::$BAD_COMMIT broke the requirements but could not be reverted automatically (later commits change the same lines): revert it by hand."
+              exit 1
+            fi
+            if git push origin "HEAD:refs/heads/$BRANCH"; then
+              exit 0
+            fi
+            echo "The push of the revert was rejected (attempt $attempt of 5): retrying on the latest $BRANCH."
+            sleep $((attempt * 5))
+          done
+          echo "::error::The revert of $BAD_COMMIT could not be pushed: revert it by hand."
+          exit 1

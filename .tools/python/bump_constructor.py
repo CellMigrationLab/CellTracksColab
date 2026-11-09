@@ -116,6 +116,37 @@ def ensure_requirements_in_extra_files(construct_data: dict):
     # Update the construct data with the modified extra_files
     construct_data["extra_files"] = extra_files
 
+LOCK_FILES = (
+    "requirements.lock.txt",
+    "requirements_gpu.lock.txt",
+    "requirements-linux.lock.txt",
+    "requirements-windows.lock.txt",
+    "requirements-macos.lock.txt",
+)
+
+
+def ensure_lock_files_in_extra_files(construct_data: dict) -> None:
+    """Bundle the lock files (requirements*.lock.txt, written by lock_requirements.py) next to their requirements files.
+
+    post_install installs a lock file instead of its requirements file when the installer bundles one. A mapping whose lock file is gone
+    (the requirements could not be locked) is removed, because constructor fails on a missing file.
+    """
+    extra_files = construct_data.setdefault("extra_files", [])
+    project_folder = extract_project_folder(extra_files)
+    for lock_file in LOCK_FILES:
+        mapped = [item for item in extra_files if isinstance(item, dict) and lock_file in item]
+        if Path(lock_file).exists():
+            if not mapped:
+                extra_files.append({lock_file: f"{project_folder}/{lock_file}"})
+                debug(f"Added mapping for {lock_file}")
+            else:
+                debug(f"{lock_file} mapping already present")
+        elif mapped:
+            for item in mapped:
+                extra_files.remove(item)
+            debug(f"Removed the mapping of {lock_file}: the file does not exist (the installer installs the requirements file instead)")
+
+
 def ensure_extra_files(construct_data: dict, notebooks_root: Path, src_root: Path) -> int:
     extra_files = construct_data.get("extra_files")
     if extra_files is None:
@@ -273,6 +304,7 @@ def main():
     data = load_construct(construct_path)
     # Check if the requirements files are included in extra_files, if not, add them
     ensure_requirements_in_extra_files(data)
+    ensure_lock_files_in_extra_files(data)
 
     # Update extra_files with notebooks and src files
     ntbk_added, src_added = ensure_extra_files(data, notebooks_root, src_root)

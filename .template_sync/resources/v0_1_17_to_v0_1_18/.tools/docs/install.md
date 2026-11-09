@@ -33,7 +33,7 @@ Installing takes about 6-8 minutes and you only do it once. You need an internet
 
 ## Update an installed app
 
-- **macOS and Windows.** On macOS and Windows, update an app by uninstalling the old version first and then installing the new one: the installer does not install over an existing install.
+- **macOS and Windows.** On macOS and Windows, update an app by uninstalling the old version first and then installing the new one: the installer does not install over an existing install. On macOS, if you already ran the new installer over the old version and it stopped or reported a failure at the end, move only the old app shortcut (for example `~/Applications/MyApp.app`) to the Bin, keep the app's folder in your home folder, and run the installer again ([known issue](https://github.com/CellMigrationLab/LabConstrictor/issues/34)).
 - **Linux.** On Linux, running the installer with `-u` updates in place only if the previous install finished; otherwise delete `<prefix>/pkgs` or uninstall the app and install it again.
 
 ## Where the app is listed
