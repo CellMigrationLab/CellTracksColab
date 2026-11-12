@@ -13,8 +13,9 @@ outputs for each platform containing only the entries from their OS-specific
 lists, in addition to the common file.
 
 Alongside the common requirements file, it emits a GPU-targeted variant. The
-GPU file rewrites `tensorflow` to `tensorflow[and-cuda]` and adds the PyTorch
-CUDA wheel index when `torch`, `torchvision`, or `torchaudio` are present.
+GPU file rewrites `tensorflow` to `tensorflow[and-cuda]` on Linux only (TensorFlow's CUDA
+wheels exist only for Linux; other systems keep plain `tensorflow`) and adds the
+PyTorch CUDA wheel index when `torch`, `torchvision`, or `torchaudio` are present.
 
 It resolves simple version conflicts by choosing the newest version seen for a
 given package (and emits a pinned `pkg==<newest>`). It still preserves
@@ -336,6 +337,44 @@ def rewrite_tensorflow_for_gpu(line: str) -> str:
     return line
 
 
+# TensorFlow's `and-cuda` extra pulls nvidia-* wheels that exist only for Linux (nvidia-nccl-cu12 has never had a Windows or macOS
+# wheel), and the extra itself carries no platform marker. Without a marker the universal lock of requirements_gpu.txt pins them for
+# every system, so `pip install` fails on a Windows computer with an NVIDIA driver (the installer picks the GPU file there). TensorFlow
+# has had no native Windows GPU build since 2.10, so Windows and macOS keep plain `tensorflow` in the GPU file.
+GPU_TENSORFLOW_PLATFORM = 'sys_platform == "linux"'
+NON_GPU_TENSORFLOW_PLATFORM = 'sys_platform != "linux"'
+
+
+def _with_platform(marker: str, platform: str) -> str:
+    """Return ` ; <platform>`, combined with the line's own marker (`; <marker>`) when it has one."""
+    existing = marker.split(";", 1)[1].strip() if ";" in marker else ""
+    return f" ; ({existing}) and {platform}" if existing else f" ; {platform}"
+
+
+def tensorflow_gpu_lines(line: str) -> list[str]:
+    """Return the GPU-file lines for a tensorflow requirement: `[and-cuda]` on Linux, the plain requirement elsewhere.
+
+    A line that is not a tensorflow requirement is returned unchanged (as a one-item list).
+    """
+    match = pkg_re.match(line)
+    if match:
+        if match.group("name").lower() != "tensorflow":
+            return [line]
+        name, extras = match.group("name"), match.group("extras") or ""
+        spec = f"{match.group('op')}{match.group('ver')}"
+    else:
+        match = PLAIN_PKG_RE.match(line)
+        if not match or match.group("name").lower() != "tensorflow":
+            return [line]
+        name, extras, spec = match.group("name"), match.group("extras") or "", ""
+    marker = match.group("marker") or ""
+    cuda_extras = merge_requirement_extras(extras, "and-cuda")
+    return [
+        f"{name}{cuda_extras}{spec}{_with_platform(marker, GPU_TENSORFLOW_PLATFORM)}",
+        f"{name}{extras}{spec}{_with_platform(marker, NON_GPU_TENSORFLOW_PLATFORM)}",
+    ]
+
+
 def build_gpu_lines(final_lines: list[str]) -> list[str]:
     gpu_lines: list[str] = []
     has_torch_package = False
@@ -348,10 +387,11 @@ def build_gpu_lines(final_lines: list[str]) -> list[str]:
         match = pkg_re.match(line) or PLAIN_PKG_RE.match(line)
         if match:
             package_name = match.group("name").lower()
-            if package_name == "tensorflow":
-                line = rewrite_tensorflow_for_gpu(line)
             if package_name in TORCH_GPU_PACKAGES:
                 has_torch_package = True
+            if package_name == "tensorflow":
+                gpu_lines.extend(tensorflow_gpu_lines(line))
+                continue
 
         gpu_lines.append(line)
 
