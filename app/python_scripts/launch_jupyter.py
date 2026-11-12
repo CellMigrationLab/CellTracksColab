@@ -218,6 +218,11 @@ def run_jupyter(notebook: Path) -> int:
     if not notebook.is_file():
         raise FileNotFoundError(f"Welcome notebook not found: {notebook}")
 
+    # The app's own kernel must win over a user-level "python3" kernelspec (`ipykernel install --user`), which Jupyter
+    # otherwise prefers: the notebook would run in another Python and fail with "No module named <app>". Set, not
+    # setdefault: a JUPYTER_PREFER_ENV_PATH=0 of the user would bring the problem back.
+    os.environ["JUPYTER_PREFER_ENV_PATH"] = "1"
+
     # Import only after configure_tls() has completed. Tornado creates SSL
     # contexts during import on some versions.
     from jupyterlab.labapp import main

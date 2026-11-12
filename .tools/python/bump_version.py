@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import pathlib
 import re
 import shutil
@@ -20,22 +21,71 @@ CONCLUSION_LINE_RE = re.compile(
 )
 PKG_VERSION_RE = re.compile(r'^(\s*SET\s+"PKG_VERSION=)(\d+\.\d+\.\d+)("\s*)$', re.MULTILINE)
 POST_INSTALL = ROOT / "app" / "bash_bat_scripts" / "post_install.bat"
+# version="1.2.3" in setup.py: the version of the app's Python package (src/)
+SETUP = ROOT / "setup.py"
+SETUP_VERSION_RE = re.compile(r"^(?P<head>[ \t]*version\s*=\s*)(?P<quote>[\"'])\d+\.\d+\.\d+(?P=quote)", re.MULTILINE)
 
-def replace_version_placeholder(text: str, new_version: str) -> str:
+# The folder of a release in a download link: /releases/download/<tag>/ (the tag is 1.2.3 or v1.2.3).
+DOWNLOAD_PATH_RE = re.compile(r"/releases/download/v?\d+\.\d+\.\d+/")
+# A button of the download page: <a href=".../releases/download/<tag>/<App>-<version>-<System>.<ext>"> <img ...> </a>
+DOWNLOAD_BUTTON_RE = re.compile(r'<a href="[^"]*/releases/download/[^"]*">\s*<img[^>]*>\s*</a>')
+NOT_BUILT_NOTE = "> No installer is built for {label}: this app does not support it."
+
+
+def replace_version_placeholder(text: str, new_version: str, tag: str | None = None) -> str:
     """Render the release version in download documentation.
 
     Handles both pristine templates containing ``VERSION_NUMBER`` and
     initialized repositories where that placeholder was already rendered to an
-    older explicit version such as ``0.0.0``.
+    older explicit version such as ``0.0.0``. The links point to the release
+    tag as it was typed (``v1.2.3`` or ``1.2.3``); the installer names carry
+    the version without ``v`` (CellMigrationLab/LabConstrictor#41).
     """
     explicit_versions = set(
-        re.findall(r"/releases/download/(\d+\.\d+\.\d+)/", text)
+        re.findall(r"/releases/download/v?(\d+\.\d+\.\d+)/", text)
     )
 
     text = text.replace("VERSION_NUMBER", new_version)
     for previous_version in explicit_versions:
         text = text.replace(previous_version, new_version)
-    return text
+    return DOWNLOAD_PATH_RE.sub(f"/releases/download/{tag or new_version}/", text)
+
+
+def drop_unbuilt_buttons(text: str, not_built: list[tuple[tuple[str, ...], str]]) -> str:
+    """Replace the download button of each system the release does not build with a note (CellMigrationLab/LabConstrictor#42).
+
+    ``not_built`` holds (installer name endings, label) pairs, from release_platforms.py. The "or" between
+    two buttons goes when one of them became a note.
+    """
+    if not not_built:
+        return text
+
+    def _button(match: re.Match) -> str:
+        link = match.group(0).split('"', 2)[1]
+        for endings, label in not_built:
+            if link.endswith(endings):
+                return NOT_BUILT_NOTE.format(label=label)
+        return match.group(0)
+
+    lines = DOWNLOAD_BUTTON_RE.sub(_button, text).split("\n")
+    note_start = NOT_BUILT_NOTE.split("{", 1)[0]
+    kept = []
+    for index, line in enumerate(lines):
+        if line.strip() == "or":
+            before = next((other for other in reversed(lines[:index]) if other.strip()), "")
+            after = next((other for other in lines[index + 1 :] if other.strip()), "")
+            if before.startswith(note_start) or after.startswith(note_start):
+                continue
+        kept.append(line)
+    return "\n".join(kept)
+
+
+def not_built_systems() -> list[tuple[tuple[str, ...], str]]:
+    """(installer name endings, label) of each system left out of distribution.platforms in labconstrictor-app.yaml."""
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import release_platforms
+
+    return [(build.files, build.label) for build in release_platforms.skipped_builds(ROOT)]
 
 def replace_version_in_file(file_path: pathlib.Path, old_version: str, new_version: str) -> bool:
     """Replace all occurrences of old_version with new_version in a file.
@@ -142,7 +192,26 @@ def bump_post_install_bat(new_version: str) -> None:
     POST_INSTALL.write_text(updated, encoding="utf-8")
     print(f"Updated post_install.bat PKG_VERSION to {new_version}")
 
-def bump_version_in_download_executable_md(new_version: str) -> None:
+
+def bump_setup_py(new_version: str) -> None:
+    """The version of the app's Python package in setup.py, when it is written there as X.Y.Z.
+
+    The package in the installer and the one publish_pypi.yml publishes on PyPI then carry the release version. The line
+    endings of the file are kept.
+    """
+    if not SETUP.exists():
+        return
+    with SETUP.open(encoding="utf-8", newline="") as handle:
+        text = handle.read()
+    updated = SETUP_VERSION_RE.sub(lambda m: f"{m.group('head')}{m.group('quote')}{new_version}{m.group('quote')}", text, count=1)
+    if updated != text:
+        with SETUP.open("w", encoding="utf-8", newline="") as handle:
+            handle.write(updated)
+        print(f"Updated setup.py version to {new_version}")
+
+def bump_version_in_download_executable_md(
+    new_version: str, tag: str | None = None, not_built: list[tuple[tuple[str, ...], str]] | None = None
+) -> None:
     possible_download_md_paths = [
         ROOT / "docs" / "download_executable.md",
         ROOT / ".tools" / "docs" / "download_executable.md"
@@ -165,7 +234,7 @@ def bump_version_in_download_executable_md(new_version: str) -> None:
             
             # This file contains placeholders, update them with the new version
             text = download_md.read_text(encoding="utf-8")
-            updated_text = replace_version_placeholder(text, new_version)
+            updated_text = drop_unbuilt_buttons(replace_version_placeholder(text, new_version, tag), not_built or [])
             if updated_text != text:
                 download_md.write_text(updated_text, encoding="utf-8")
                 print(f"Updated download_executable.md to version {new_version}")
@@ -190,10 +259,17 @@ def main() -> None:
         nargs="+", 
         help="Additional files to update (e.g., README.md, __init__.py)"
     )
+    parser.add_argument(
+        "--tag",
+        default=os.environ.get("RELEASE_TAG") or None,
+        help="The release tag the download links point to: 0.0.4 or v0.0.4 (default: $RELEASE_TAG, else the version)",
+    )
     args = parser.parse_args()
 
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.new_version):
         sys.exit("Version must look like X.Y.Z")
+    if args.tag and args.tag not in (args.new_version, f"v{args.new_version}"):
+        sys.exit(f"The release tag {args.tag} does not match the version {args.new_version} (expected {args.new_version} or v{args.new_version})")
 
     text, current = read_current_version()
     updated_text = bump_construct_text(text, current, args.new_version)
@@ -210,8 +286,11 @@ def main() -> None:
     # Also bump PKG_VERSION in post_install.bat
     bump_post_install_bat(args.new_version)
 
-    # Update download_executable.md
-    bump_version_in_download_executable_md(args.new_version)
+    # The version of the app's Python package (setup.py), also the version publish_pypi.yml publishes on PyPI
+    bump_setup_py(args.new_version)
+
+    # Update download_executable.md: the links point to the release tag, and a system that is not built has no button
+    bump_version_in_download_executable_md(args.new_version, args.tag, not_built_systems())
 
     # Update additional files if specified
     if args.files:

@@ -15,4 +15,9 @@ if ! command -v conda >/dev/null 2>&1; then
   fi
 fi
 
-conda create -y -n "${CONSTRUCTOR_ENV:?}" -c conda-forge -c defaults python=3.11 constructor
+# conda-standalone (the installer's _conda.exe) older than 26.9.3 writes package
+# records without paths_data when constructor disables conda's safety checks.
+# conda 26.9 and later in the installed app then cannot find the Windows
+# launcher stub, and `conda init --reverse` in the uninstaller asks for admin
+# rights (conda/conda#16856, fixed in conda 26.9.3).
+conda create -y -n "${CONSTRUCTOR_ENV:?}" -c conda-forge -c defaults python=3.11 constructor "conda-standalone>=26.9.3"

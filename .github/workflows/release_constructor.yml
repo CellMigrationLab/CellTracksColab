@@ -32,6 +32,8 @@ jobs:
         run: |
           set -euxo pipefail
           RAW="${{ github.event.release.tag_name }}"
+          # The tag as typed (v1.0.0 or 1.0.0): bump_version.py points the download links to it.
+          echo "RELEASE_TAG=$RAW" >> "$GITHUB_ENV"
           RAW="${RAW#v}"
           echo "release_version=$RAW" >> "$GITHUB_OUTPUT"
           echo "RELEASE_VERSION=$RAW" >> "$GITHUB_ENV"
@@ -61,6 +63,11 @@ jobs:
             "bump_Welcome_notebook.py" \
             .tools/python/bump_Welcome_notebook.py \
             python .tools/python/bump_Welcome_notebook.py "${{ github.repository_owner }}" "${{ github.event.repository.name }}"
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "check_placeholders.py" \
+            .tools/python/check_placeholders.py \
+            python .tools/python/check_placeholders.py
 
 
       - name: Commit updated versioned files
@@ -78,22 +85,35 @@ jobs:
           if-no-files-found: ignore
           archive: false
 
+  platforms:
+    name: Installers to build
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
+        with:
+          python-version: '3.11'
+
+      - name: Install requirements
+        run: pip install -r .tools/requirements.txt
+
+      - name: Read distribution.platforms of labconstrictor-app.yaml
+        id: matrix
+        run: python .tools/python/release_platforms.py --github-output "$GITHUB_OUTPUT"
+
   build-installers:
     name: Build installers (${{ matrix.os_name }})
     runs-on: ${{ matrix.runner }}
-    needs: bump-version
+    needs: [bump-version, platforms]
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - os_name: linux
-            runner: ubuntu-latest
-          - os_name: macos-arm64
-            runner: macos-15
-          - os_name: macos-intel
-            runner: macos-15-intel
-          - os_name: windows
-            runner: windows-latest
+      # One build per system of distribution.platforms in labconstrictor-app.yaml (every system without it), from the platforms job.
+      matrix: ${{ fromJSON(needs.platforms.outputs.matrix) }}
     defaults:
       run:
         shell: bash -l {0}
@@ -119,6 +139,8 @@ jobs:
             exit 1
           fi
 
+          # The tag as typed (v1.0.0 or 1.0.0): bump_version.py points the download links to it.
+          echo "RELEASE_TAG=$RAW" >> "$GITHUB_ENV"
           RAW="${RAW#v}"
           echo "release_version=$RAW" >> "$GITHUB_OUTPUT"
           echo "RELEASE_VERSION=$RAW" >> "$GITHUB_ENV"
@@ -148,6 +170,11 @@ jobs:
             "bump_Welcome_notebook.py" \
             .tools/python/bump_Welcome_notebook.py \
             python .tools/python/bump_Welcome_notebook.py "${{ github.repository_owner }}" "${{ github.event.repository.name }}"
+          bash .tools/bash/run_with_context.sh \
+            "artifacts/error_log_document.log" \
+            "check_placeholders.py" \
+            .tools/python/check_placeholders.py \
+            python .tools/python/check_placeholders.py
 
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@fc2d68f6413eb2d87b895e92f8584b5b94a10167 # v3
