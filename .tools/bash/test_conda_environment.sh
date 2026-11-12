@@ -48,21 +48,34 @@ echo "Activating test environment..."
 # Note: In CI, conda/mamba environments need to be activated via conda run
 # or by sourcing the activation script
 
-# Test pip installation of requirements.txt
-echo ""
-echo "Installing requirements from requirements.txt..."
+# Test pip installation of requirements.txt, or of its lock file (requirements.lock.txt, written by
+# .tools/python/lock_requirements.py) when there is one: the installer installs the lock file, so that is what is tested.
 if [ ! -f "requirements.txt" ]; then
     echo "ERROR: requirements.txt not found!"
     mamba env remove -n "$TEST_ENV_NAME" -y
     exit 1
 fi
+REQUIREMENTS_FILE="requirements.txt"
+if [ -f "requirements.lock.txt" ]; then
+    REQUIREMENTS_FILE="requirements.lock.txt"
+fi
+echo ""
+echo "Installing requirements from $REQUIREMENTS_FILE..."
 
-# Check if requirements.txt is not empty
-if [ ! -s "requirements.txt" ]; then
-    echo "WARNING: requirements.txt is empty, skipping pip install"
+# Check if the requirements file is not empty
+if [ ! -s "$REQUIREMENTS_FILE" ]; then
+    echo "WARNING: $REQUIREMENTS_FILE is empty, skipping pip install"
 else
     echo "Installing packages with pip..."
-    mamba run -n "$TEST_ENV_NAME" pip install --prefer-binary -r requirements.txt
+    mamba run -n "$TEST_ENV_NAME" pip install --prefer-binary -r "$REQUIREMENTS_FILE"
+fi
+
+# Report dependency conflicts between the pip packages and the conda packages of the environment. Only a warning: a conflict
+# among the conda packages themselves must not block the notebooks.
+echo ""
+echo "Checking the installed packages for conflicts (pip check)..."
+if ! mamba run -n "$TEST_ENV_NAME" pip check; then
+    echo "::warning::pip check found dependency conflicts in the test environment (see the step log); the installer may behave differently than expected."
 fi
 
 # Verify installation by checking Python and key packages

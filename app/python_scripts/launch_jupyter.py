@@ -13,8 +13,10 @@ import json
 import os
 import platform
 import re
+import shutil
 import ssl
 import sys
+import tempfile
 import traceback
 from datetime import datetime, timezone
 from importlib import metadata
@@ -197,6 +199,21 @@ def _show_error_dialog(message: str) -> None:
         pass
 
 
+def _wait_for_enter() -> None:
+    """Keep the terminal window open until the user has read it, then let it close.
+
+    The menu shortcut runs the launcher in a terminal window; without this the window
+    closes (or stays open, on Windows) as soon as JupyterLab stops.
+    """
+    stream = sys.stdin
+    if stream is None or not stream.isatty():
+        return
+    try:
+        input("\nPress Enter to close this window...")
+    except (EOFError, KeyboardInterrupt):
+        pass
+
+
 def run_jupyter(notebook: Path) -> int:
     if not notebook.is_file():
         raise FileNotFoundError(f"Welcome notebook not found: {notebook}")
@@ -213,6 +230,12 @@ def run_jupyter(notebook: Path) -> int:
         # All-users installations can live outside the home directory.
         root_dir = PREFIX.resolve()
 
+    # A fresh, empty workspace folder for every launch: JupyterLab restores the open
+    # tabs of its workspaces, and the default folder (~/.jupyter/lab/workspaces) is
+    # shared by every app, so notebooks of other apps (and of earlier sessions) would
+    # open next to the Welcome notebook. Settings and themes are kept: they are stored
+    # in the user settings folder, not in the workspaces.
+    workspaces_dir = Path(tempfile.mkdtemp(prefix="labconstrictor-workspaces-"))
     sys.argv = [
         "jupyter-lab",
         str(notebook.resolve()),
@@ -220,8 +243,12 @@ def run_jupyter(notebook: Path) -> int:
         f"--ServerApp.root_dir={root_dir}",
         "--ServerApp.shutdown_no_activity_timeout=30",
         "--FileContentsManager.always_delete_dir=True",
+        f"--LabApp.workspaces_dir={workspaces_dir}",
     ]
-    result = main()
+    try:
+        result = main()
+    finally:
+        shutil.rmtree(workspaces_dir, ignore_errors=True)
     return int(result or 0)
 
 
@@ -240,8 +267,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Print the selected verified CA bundle path and exit.",
     )
+    parser.add_argument(
+        "--no-wait",
+        action="store_true",
+        help="Exit when JupyterLab stops, without asking to press Enter.",
+    )
     args = parser.parse_args(argv)
+    result = _launch(args)
+    if not (args.no_wait or args.self_test or args.print_ca_bundle):
+        _wait_for_enter()
+    return result
 
+
+def _launch(args: argparse.Namespace) -> int:
     try:
         if args.print_ca_bundle:
             print(_select_ca_bundle(), flush=True)
