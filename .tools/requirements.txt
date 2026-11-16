@@ -3,3 +3,5 @@ pyyaml==6.0.2
 nbformat==5.10.4
 # lock_requirements.py (requirements*.txt -> requirements*.lock.txt)
 uv==0.13.3
+# merge_requirements.py (versions compared as pip compares them)
+packaging==25.0

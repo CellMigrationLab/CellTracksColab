@@ -7,6 +7,7 @@ on:
       - 'notebooks/**/*.ipynb'
       - 'notebooks/notebook_latest_versions.yaml'
       - 'notebooks/**/requirements.yaml'
+      - 'requirements_overrides.yaml'
   workflow_dispatch:
 
 # One run of this workflow at a time per branch. The src workflow has its own group: the two can run at the same time,
@@ -45,6 +46,7 @@ jobs:
             notebooks/**/*.ipynb
             notebooks/notebook_latest_versions.yaml
             notebooks/**/requirements.yaml
+            requirements_overrides.yaml
           
       - name: Syncronize notebook versions
         if: contains(steps.changed-files.outputs.all_changed_files, '.ipynb') || contains(steps.changed-files.outputs.all_changed_files, 'notebook_latest_versions.yaml')
@@ -92,7 +94,7 @@ jobs:
             python .tools/python/bump_notebook_README.py
 
       - name: Run merge script
-        if: github.event_name == 'workflow_dispatch' || contains(steps.changed-files.outputs.all_changed_files, 'requirements.yaml')
+        if: github.event_name == 'workflow_dispatch' || contains(steps.changed-files.outputs.all_changed_files, 'requirements.yaml') || contains(steps.changed-files.outputs.all_changed_files, 'requirements_overrides.yaml')
         run: |
           bash .tools/bash/run_with_context.sh \
             artifacts/error_log_document.log \

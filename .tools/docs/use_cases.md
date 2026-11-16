@@ -6,11 +6,11 @@ Here are some tools that have already been created using LabConstrictor:
 ## VLab4Mic
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HenriquesLab/LabConstrictor-VLab4Mic/main/src/logo/logo.png" alt="VLab4Mic Logo" width="80%">
+  <img src="https://raw.githubusercontent.com/CellMigrationLab/LabConstrictor-VLab4Mic/main/app/logo/logo.png" alt="VLab4Mic Logo" width="80%">
 </p>
 
 [![Original GitHub Repo](https://img.shields.io/badge/GitHub-VLab4Mic-181717?logo=github)](https://github.com/HenriquesLab/VLab4Mic)
-[![LabConstrictor GitHub Repo](https://img.shields.io/badge/GitHub-LabConstrictor--VLab4Mic-181717?logo=github)](https://github.com/HenriquesLab/LabConstrictor-VLab4Mic)
+[![LabConstrictor GitHub Repo](https://img.shields.io/badge/GitHub-LabConstrictor--VLab4Mic-181717?logo=github)](https://github.com/CellMigrationLab/LabConstrictor-VLab4Mic)
 [![bioRxiv Paper](https://img.shields.io/badge/bioRxiv-Paper-B31B1B)](https://www.biorxiv.org/content/10.64898/2026.06.02.729521v2)
 
 **Abstract:**

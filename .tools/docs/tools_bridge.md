@@ -1,11 +1,24 @@
-# Expose your app's tools to Napari and Fiji (optional, experimental)
+# Expose your app's tools to napari, Fiji and QuPath (optional, experimental)
 
 If your repository ships Python code (see [Upload external code](external_code_upload.md)), you can declare some of its functions
-as **tools**. After installation they appear in a generic **Napari** widget and a generic **Fiji** command, and work from the
-command line, with forms generated automatically from the function signatures. Nothing changes for apps that do not declare tools.
+as **tools**. After installation, people can run them in napari, Fiji and QuPath and from the command line, with forms made from the
+function signatures. Nothing changes for apps that do not declare tools.
+
+This page covers what the template does: where you declare the tools and what the installer does with them. Two other guides cover the rest:
+
+- [Writing tools](https://github.com/CellMigrationLab/LabConstrictor-Tools/blob/main/docs/AUTHORING.md), in LabConstrictor-Tools: the inputs
+  and outputs a tool can have, how to lay out its form, what each program supports, and how to test a tool.
+- [Use apps inside napari, Fiji and QuPath](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/image-software/): what the people
+  who install your app do to run its tools, with the install steps of the
+  [napari plugin](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/napari/), the
+  [Fiji plugin](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/fiji/) and the
+  [QuPath extension](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/qupath/).
+
+## Declare your tools
 
 1. Add a module named `<your_package>_lc_tools` next to your package under `src/` (so `src/mytool_lc_tools/__init__.py` for
-   the package `mytool`). Declare tools in it with typed functions, importing your science code **inside** the functions:
+   the package `mytool`). The installer registers tools only from a module with exactly this name. Declare tools in it with typed
+   functions, and import your science code **inside** the functions:
 
    ```python
    from typing import Annotated
@@ -18,41 +31,51 @@ command line, with forms generated automatically from the function signatures. N
    ```
 
    Keep the module light: it is imported to read the tool list, so heavy imports at the top slow every start.
-   **Import `labconstrictor_tools` only in the tools module if you can.** Since template 0.1.17 the installer installs `labconstrictor-tools` *before* it checks that
-   your package can be imported, so a package that imports `labconstrictor_tools` at module level no longer stops the installation. It is still better practice to import it lazily (inside functions)
-   or only in `<your_package>_lc_tools`: the rest of your package then also works where Tools is not installed (a notebook run on Colab, a copy of the package used elsewhere, a failed Tools install).
-2. The installer (`post_install`) detects the module, installs `labconstrictor-tools` and registers the app
-   (`labconstrictor-tools register ...`). `pre_uninstall` unregisters it. A failure in this step is logged to
-   `menuinst_debug.log` and never fails the installation.
-   **Order in `post_install`.** (1) your package is installed, (2) if it ships `<your_package>_lc_tools`, `labconstrictor-tools` is installed, (3) the package import check runs, (4) the app is registered.
-   Installing Tools before the import check is what lets your package import `labconstrictor_tools` at module level. A failed Tools install is a `WARNING` in `menuinst_debug.log`
-   and the registration is skipped; the installation continues, unless your package needs Tools to be imported (then the import check fails, as it should).
-   **Where `labconstrictor-tools` comes from.** It is not on PyPI yet, so by default the installer downloads the GitHub archive of a **pinned release tag**,
-   `https://github.com/CellMigrationLab/LabConstrictor-Tools/archive/refs/tags/v0.3.0-alpha.1.zip` (a plain zip: git is not needed on the user's computer).
-   Set the environment variable `LC_TOOLS_SPEC` when the installer runs to install it from somewhere else (a wheel, a git URL, a mirror, or the
-   name `labconstrictor-tools` once it is published on PyPI); it overrides the pin completely.
-   **Pinned (important).** Two installers built from the same app release get the same version of the tools package, and a change to Tools `main`
-   does not reach new installations until the pin is moved on purpose.
-   **How to move the pin.** The tag name is written in one place per script: the variable `LC_TOOLS_PIN` (`LC_TOOLS_PIN="v0.3.0-alpha.1"` in
-   `app/bash_bat_scripts/post_install.sh`, `SET "LC_TOOLS_PIN=v0.3.0-alpha.1"` in `post_install.bat`). To use a new release: create and test the tag in
-   LabConstrictor-Tools (procedure in its `docs/OPERATIONS.md`), change that string in both scripts and in the copies under
-   `.template_sync/resources/` of the latest migration (the test `test_resources_are_identical_to_the_template_files` fails when they differ),
-   update the tag in this paragraph, and bump `template_version` so apps receive the change. Apps already migrated need a new migration to change the
-   string in their own scripts.
-3. Test your tools before releasing: `labconstrictor-tools check --module mytool_lc_tools` and
-   `labconstrictor-tools test --module mytool_lc_tools --cases lc_tests/cases.json`.
-4. Install the Napari plugin (`napari-labconstrictor`) or the Fiji plugin (`labconstrictor-fiji`) once per machine. Neither is on PyPI or a Fiji update site yet: see the READMEs of
-   [napari-labconstrictor](https://github.com/CellMigrationLab/napari-labconstrictor) and [LabConstrictor-Fiji](https://github.com/CellMigrationLab/LabConstrictor-Fiji) for the install commands.
-5. Optional: make a long form readable and rich with markers (the authoring guide in the Tools repository lists them all):
-   - layout: `Group("...")`, `Advanced()`, `Collapsed()`, `EnabledWhen(...)`;
-   - input widgets: `Widget("slider")` for a bounded number and `Widget("radio")` for a short list of choices;
-   - `PickChannel()` to let the person choose one channel of a multi-channel image (your function receives that channel as a 2D array);
-   - `ChoicesFrom("other_tool")` to fill a dropdown from another tool of yours (for example the available devices);
-   - `RegionOf("image")` (optional labels input) to run on the selection in the host (Napari Shapes layer, Fiji ROI, QuPath annotations);
-   - outputs: `ImageOut`, `LabelsOut`, `TableOut`, `Scalars`, `MessageOut`, `PointsOut` and `ShapesOut` (polygons: Napari shapes layer, Fiji ROIs, QuPath annotations);
-   - say "nothing found" with `ToolError("no_match", ...)`.
-   Napari, Fiji and QuPath do not support every feature in the same way: the table "What each host does with each feature" in `docs/HOST_FEATURES.md` of the Tools repository is the reference.
-Documentation and source: https://github.com/CellMigrationLab/LabConstrictor-Tools.
-The registered version is read from the `version:` line of `construct.yaml`. The Windows hook (`post_install.bat`) has not yet been run on a real Windows computer; if you can help, follow the
-[human test protocol](https://github.com/CellMigrationLab/LabConstrictor-Tools/blob/main/docs/HUMAN_TEST_PROTOCOL.md).
-Troubleshooting: `labconstrictor-tools doctor`, `labconstrictor-tools logs`, and `~/.labconstrictor/logs/labconstrictor.log`.
+2. Import `labconstrictor_tools` only in `<your_package>_lc_tools`, or inside functions, if you can. The rest of your package then also works
+   where LabConstrictor Tools is not installed: a notebook run on Google Colab, a copy of the package used elsewhere, or an installation where
+   Tools failed to install. An import at the top of your package does not stop the installation, because the installer installs Tools before
+   it checks that your package can be imported.
+3. Name the programs your tools work in under `hosts:` in `labconstrictor-app.yaml`: see [Describe your app for the App Centre](app_manifest.md).
+4. Test your tools before you publish a release, as [Writing tools](https://github.com/CellMigrationLab/LabConstrictor-Tools/blob/main/docs/AUTHORING.md)
+   shows (`labconstrictor-tools check` and `labconstrictor-tools test`).
+
+## What the installer does
+
+The installer's `post_install` step:
+
+1. installs your package;
+2. if your package has a `<your_package>_lc_tools` module, installs LabConstrictor Tools;
+3. checks that your package can be imported;
+4. registers the app (`labconstrictor-tools register ...`) with the version from the `version:` line of `construct.yaml` and the hosts of
+   `labconstrictor-app.yaml`.
+
+When the app is uninstalled, `pre_uninstall` unregisters it.
+
+A failure in step 2 or 4 is written as a `WARNING` to `menuinst_debug.log` in the install folder, the registration is skipped, and the
+installation goes on. The one exception is a package that needs Tools to be imported: then the import check of step 3 fails, as it should.
+
+The Windows step (`post_install.bat`) runs in the template's automated tests on a Windows machine, and people have installed apps on Windows
+and macOS from a clean system.
+
+### Which LabConstrictor Tools the installer installs
+
+LabConstrictor Tools is not on PyPI yet. The installer downloads the GitHub archive of one release tag of LabConstrictor-Tools, a plain zip
+file, so the user's computer does not need git. The tag is pinned: two installers built from the same app release install the same Tools,
+and a change to Tools does not reach new installations until the pin is moved on purpose. Template updates move the pin in your app.
+
+The tag is the value of `LC_TOOLS_PIN` in both scripts:
+[app/bash_bat_scripts/post_install.sh](../../app/bash_bat_scripts/post_install.sh) (`LC_TOOLS_PIN="..."`) and
+[app/bash_bat_scripts/post_install.bat](../../app/bash_bat_scripts/post_install.bat) (`SET "LC_TOOLS_PIN=..."`).
+
+To install Tools from somewhere else, set the environment variable `LC_TOOLS_SPEC` when the installer runs: a wheel, a git URL, a mirror, or
+the name `labconstrictor-tools` once it is on PyPI. It replaces the pin completely.
+
+**Move the pin (template maintainers).** Create and test the tag in LabConstrictor-Tools (the procedure is in its `docs/OPERATIONS.md`).
+Change `LC_TOOLS_PIN` in both scripts of the template, and in the copies under `.template_sync/resources/` of the latest migration if it has
+them (the test `test_resources_are_identical_to_the_template_files` fails when they differ). Then write a migration that changes the string in
+the apps' scripts, and bump `template_version`.
+
+## If something does not work
+
+- `menuinst_debug.log` in the app's install folder says what the installer did with your tools.
+- `labconstrictor-tools doctor` checks the Tools installation, and `labconstrictor-tools logs` shows its log.

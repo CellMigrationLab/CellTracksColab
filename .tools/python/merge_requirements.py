@@ -2,9 +2,9 @@
 """Merge requirements files under a directory (e.g. notebooks/*) into a single
 root requirements file.
 
-The script now supports both classic requirements.txt files and the new
+The script supports both classic requirements.txt files and the
 requirements.yaml format used by notebooks. For YAML files, it merges the
-`python_version` (picking the newest) and the `dependencies` list while
+`python_version` (every notebook must agree) and the `dependencies` list while
 discarding per-notebook descriptions.
 
 It also recognizes optional per-OS fields (`windows_dependencies`,
@@ -17,23 +17,40 @@ GPU file rewrites `tensorflow` to `tensorflow[and-cuda]` on Linux only (TensorFl
 wheels exist only for Linux; other systems keep plain `tensorflow`) and adds the
 PyTorch CUDA wheel index when `torch`, `torchvision`, or `torchaudio` are present.
 
-It resolves simple version conflicts by choosing the newest version seen for a
-given package (and emits a pinned `pkg==<newest>`). It still preserves
-non-package lines (pip options, VCS/URLs) and supports simple `-r` includes.
+Version requirements are never changed silently (template 0.1.31, CellMigrationLab/LabConstrictor#48):
+  * the requirements of a package are kept as written: `numpy>=1.24` stays `numpy>=1.24`, and the
+    requirements of several notebooks are combined (`numpy<2,>=1.24`); the lock step then finds the versions;
+  * when notebooks pin a package to different versions (`numpy==1.26.4` and `numpy==2.0.0`), or a pin does not
+    meet another notebook's requirement, nothing is written and the script fails, naming every notebook and its
+    requirement. The developer makes the notebooks agree, or decides explicitly in requirements_overrides.yaml
+    (next to the output), with the reason; the decision is written at the top of every generated file;
+  * requirements with different environment markers (`; sys_platform == "win32"`) are kept as separate lines;
+  * package names are compared as pip compares them (`NumPy`, `numpy` and `num_py` are one package).
+`python merge_requirements.py --check` only looks for conflicts: it writes nothing (the release runs it).
+
+It preserves non-package lines (pip options, VCS/URLs) and supports simple `-r` includes.
 
 It also automatically adds ipywidgets if missing, with a version determined by
 Python, JupyterLab, and matplotlib versions from environment.yaml.
 """
-from pathlib import Path
 import argparse
+import re
 import sys
 from collections import OrderedDict
-from datetime import datetime
-import re
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+
 import yaml
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
+from packaging.utils import canonicalize_name
+from packaging.version import InvalidVersion, Version
 
+DOCS_URL = "https://github.com/CellMigrationLab/LabConstrictor/blob/main/.tools/docs/migration_0_1_31.md"
+OVERRIDES_FILE = "requirements_overrides.yaml"
 
-# Regex to capture name, optional extras, operator and version, and optional markers
+# Regex to capture name, optional extras, operator and version, and optional markers (used for the GPU rewrite of final lines)
 pkg_re = re.compile(r"^(?P<name>[A-Za-z0-9_.+-]+)(?P<extras>\[[^\]]+\])?\s*(?P<op>==|>=|<=|~=|!=|>|<)\s*(?P<ver>[^;\s]+)(?P<marker>\s*;.*)?$")
 
 OS_FIELD_MAP = {
@@ -52,13 +69,70 @@ TORCH_GPU_PACKAGES = {"torch", "torchvision", "torchaudio"}
 PLAIN_PKG_RE = re.compile(
     r"^(?P<name>[A-Za-z0-9_.+-]+)(?P<extras>\[[^\]]+\])?(?P<marker>\s*;.*)?$"
 )
+ADDED_BY_SCRIPT = "added by merge_requirements.py"
 
 
+@dataclass
+class Entry:
+    """One requirement line of one file, as written."""
+
+    source: str
+    line: str
+    name: str
+    extras: tuple[str, ...]
+    spec: str
+    marker: str
+
+
+@dataclass
+class Override:
+    """A decision of requirements_overrides.yaml: every notebook gets `use` for this package."""
+
+    name: str
+    use: str
+    reason: str
+    used: bool = False
+
+
+@dataclass
+class Resolved:
+    """The line written for one package (and marker), and how it was decided."""
+
+    entries: list[Entry]
+    spec: str
+    extras: list[str]
+    override: Override | None = None
+
+    @property
+    def name(self) -> str:
+        return self.entries[0].name
+
+    @property
+    def marker(self) -> str:
+        return self.entries[0].marker
+
+    def line(self) -> str:
+        extras = f"[{','.join(self.extras)}]" if self.extras else ""
+        marker = f" ; {self.marker}" if self.marker else ""
+        return f"{self.name}{extras}{self.spec}{marker}"
+
+
+@dataclass
 class RequirementContext:
-    def __init__(self):
-        self.pkg_order: list[str] = []
-        self.pkgs: dict[str, dict] = {}
-        self.other_lines: OrderedDict[str, None] = OrderedDict()
+    groups: OrderedDict[tuple[str, str], list[Entry]] = field(default_factory=OrderedDict)
+    other_lines: OrderedDict[str, None] = field(default_factory=OrderedDict)
+    errors: list[str] = field(default_factory=list)
+
+
+class Conflict(Exception):
+    """Requirements of one package that no single version meets, or that the script will not choose between."""
+
+    def __init__(self, package: str, reason: str, entries: list[Entry], where: str = ""):
+        super().__init__(reason)
+        self.package = package
+        self.reason = reason
+        self.entries = entries
+        self.where = where
 
 
 def normalize_line(line: str) -> str:
@@ -68,45 +142,15 @@ def normalize_line(line: str) -> str:
     return line.strip()
 
 
-try:
-    # Prefer packaging.version for robust version comparison
-    from packaging.version import Version, InvalidVersion
-
-    def parse_version(v: str):
-        try:
-            return Version(v)
-        except InvalidVersion:
-            return v
-
-    def is_version_greater(a, b):
-        try:
-            return Version(a) > Version(b)
-        except Exception:
-            return str(a) > str(b)
-
-except Exception:
-    # Fallback: simple numeric-aware comparator
-    def _split_parts(v: str):
-        parts = re.split(r"[.\-+_]|(?=[a-zA-Z])", v)
-        key = []
-        for p in parts:
-            if not p:
-                continue
-            if p.isdigit():
-                key.append((0, int(p)))
-            else:
-                key.append((1, p))
-        return tuple(key)
-
-    def parse_version(v: str):
-        return _split_parts(v)
-
-    def is_version_greater(a, b):
-        return parse_version(a) > parse_version(b)
+def display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
-def merge_python_version(filepath: str | None, current: str | None, candidate: str | None):
-    """Pick the newest python_version string, if provided."""
+def merge_python_version(filepath: str | Path | None, current: str | None, candidate: str | None):
+    """Every notebook that names a python_version must name the same one."""
     if not candidate:
         return current
     if current is None:
@@ -117,7 +161,7 @@ def merge_python_version(filepath: str | None, current: str | None, candidate: s
         raise ValueError(f"Conflicting python_version found {current} vs {candidate} when processing {filepath}")
 
 
-def process_requirement_line(line: str, pkg_order: list, pkgs: dict, other_lines: OrderedDict, base_dir: Path | None = None):
+def process_requirement_line(line: str, ctx: RequirementContext, source: str, base_dir: Path | None = None):
     """Handle a single requirement line (shared between txt and yaml inputs)."""
     if not line:
         return
@@ -127,51 +171,34 @@ def process_requirement_line(line: str, pkg_order: list, pkgs: dict, other_lines
         include_path = Path(parts[1]) if base_dir is None else (base_dir / parts[1])
         include = include_path.resolve()
         if include.exists():
-            read_requirements_file(include, pkg_order, pkgs, other_lines)
+            read_requirements_file(include, ctx)
         return
 
     # Keep pip option lines (indexes, find-links, etc.) as-is
     if line.startswith("--") or line.startswith("-f ") or line.startswith("-i ") or line.startswith("-e "):
-        other_lines.setdefault(line, None)
+        ctx.other_lines.setdefault(line, None)
         return
 
     # VCS or URL lines (git+, http(s)://, file:) keep as-is
     if any(line.startswith(prefix) for prefix in ("git+", "http://", "https://", "file:", "ssh://")):
-        other_lines.setdefault(line, None)
+        ctx.other_lines.setdefault(line, None)
         return
 
-    m = pkg_re.match(line)
-    if not m:
-        # plain package (unpinned) or marker-only spec
-        key = line.split(";", 1)[0].strip().lower()
-        if key not in pkgs:
-            pkgs[key] = {"name": line, "pinned": False, "ver": None}
-            pkg_order.append(key)
+    try:
+        requirement = Requirement(line)
+    except InvalidRequirement as exc:
+        ctx.errors.append(f"{source}: '{line}' is not a valid requirement ({exc})")
         return
-
-    name = m.group("name")
-    extras = m.group("extras") or ""
-    ver = m.group("ver")
-    marker = m.group("marker") or ""
-
-    base = name.lower()
-    if base not in pkgs:
-        pkgs[base] = {"name": name + (extras or ""), "pinned": True, "ver": ver, "marker": marker}
-        pkg_order.append(base)
-    else:
-        existing = pkgs[base]
-        if not existing.get("pinned"):
-            pkgs[base] = {"name": name + (extras or ""), "pinned": True, "ver": ver, "marker": marker}
-        else:
-            try:
-                if is_version_greater(ver, existing.get("ver")):
-                    pkgs[base] = {"name": name + (extras or ""), "pinned": True, "ver": ver, "marker": marker}
-            except Exception:
-                if str(ver) > str(existing.get("ver")):
-                    pkgs[base] = {"name": name + (extras or ""), "pinned": True, "ver": ver, "marker": marker}
+    if requirement.url:
+        # name @ url: installed from that address, as written
+        ctx.other_lines.setdefault(line, None)
+        return
+    marker = str(requirement.marker) if requirement.marker else ""
+    entry = Entry(source, line, requirement.name, tuple(sorted(requirement.extras)), str(requirement.specifier), marker)
+    ctx.groups.setdefault((canonicalize_name(requirement.name), marker), []).append(entry)
 
 
-def read_requirements_file(path: Path, pkg_order: list, pkgs: dict, other_lines: OrderedDict):
+def read_requirements_file(path: Path, ctx: RequirementContext):
     try:
         text = path.read_text(encoding="utf-8")
     except Exception:
@@ -179,10 +206,10 @@ def read_requirements_file(path: Path, pkg_order: list, pkgs: dict, other_lines:
 
     for raw in text.splitlines():
         line = normalize_line(raw)
-        process_requirement_line(line, pkg_order, pkgs, other_lines, base_dir=path.parent)
+        process_requirement_line(line, ctx, display_path(path), base_dir=path.parent)
 
 
-def read_requirements_yaml(path: Path, pkg_order: list, pkgs: dict, other_lines: OrderedDict, os_contexts: dict[str, RequirementContext]) -> str | None:
+def read_requirements_yaml(path: Path, ctx: RequirementContext, os_contexts: dict[str, RequirementContext]) -> str | None:
     """Read requirements.yaml and return its python_version if present."""
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
@@ -191,21 +218,22 @@ def read_requirements_yaml(path: Path, pkg_order: list, pkgs: dict, other_lines:
 
     python_version = data.get("python_version")
     dependencies = data.get("dependencies", []) or []
+    source = display_path(path)
 
     for dep in dependencies:
         line = normalize_line(str(dep))
-        process_requirement_line(line, pkg_order, pkgs, other_lines, base_dir=path.parent)
+        process_requirement_line(line, ctx, source, base_dir=path.parent)
 
-    for os_name, field in OS_FIELD_MAP.items():
-        os_deps = data.get(field) or []
+    for os_name, field_name in OS_FIELD_MAP.items():
+        os_deps = data.get(field_name) or []
         if not os_deps:
             continue
-        ctx = os_contexts.get(os_name)
-        if ctx is None:
+        os_ctx = os_contexts.get(os_name)
+        if os_ctx is None:
             continue
         for dep in os_deps:
             line = normalize_line(str(dep))
-            process_requirement_line(line, ctx.pkg_order, ctx.pkgs, ctx.other_lines, base_dir=path.parent)
+            process_requirement_line(line, os_ctx, f"{source} ({field_name})", base_dir=path.parent)
 
     return python_version
 
@@ -222,17 +250,175 @@ def find_requirements_files(source_dir):
     return sorted({f.resolve() for f in files})
 
 
+# --------------------------------------------------------------------------------------------------------------------------------
+# Deciding the requirement of each package
+# --------------------------------------------------------------------------------------------------------------------------------
+def load_overrides(path: Path) -> dict[str, Override]:
+    """The decisions of requirements_overrides.yaml, by package name as pip compares them (none when the file is absent)."""
+    if not path.is_file():
+        return {}
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise ValueError(f"{display_path(path)} is not valid YAML: {exc}") from exc
+    entries = data.get("overrides") if isinstance(data, dict) else None
+    if entries is None:
+        return {}
+    if not isinstance(entries, dict):
+        raise ValueError(f"{display_path(path)}: `overrides` must map package names to {{use: ..., reason: ...}}")
+    overrides: dict[str, Override] = {}
+    for name, value in entries.items():
+        use = value.get("use") if isinstance(value, dict) else None
+        reason = value.get("reason") if isinstance(value, dict) else None
+        if not isinstance(use, str) or not use.strip():
+            raise ValueError(f"{display_path(path)}: {name} needs `use`, the requirement every notebook gets, for example \"==2.0.0\"")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError(f"{display_path(path)}: {name} needs `reason`, why this requirement is right for every notebook that uses {name}")
+        try:
+            SpecifierSet(use.strip())
+        except InvalidSpecifier as exc:
+            raise ValueError(f"{display_path(path)}: {name}: `use: {use}` is not a version requirement such as \"==2.0.0\" or \">=1.24,<2\" ({exc})") from exc
+        overrides[canonicalize_name(str(name))] = Override(str(name), use.strip(), " ".join(reason.split()))
+    return overrides
+
+
+def _exact_versions(entry: Entry) -> list[str]:
+    return [s.version for s in SpecifierSet(entry.spec) if s.operator in ("==", "===") and "*" not in s.version]
+
+
+def _same_version(a: str, b: str) -> bool:
+    try:
+        return Version(a) == Version(b)
+    except InvalidVersion:
+        return a == b
+
+
+def _union_extras(entries: list[Entry]) -> list[str]:
+    extras: list[str] = []
+    for entry in entries:
+        extras.extend(extra for extra in entry.extras if extra not in extras)
+    return extras
+
+
+def resolve_group(package: str, entries: list[Entry], checked_with: list[Entry], override: Override | None, where: str = "") -> Resolved:
+    """The requirement written for `entries` (one package, one marker); `checked_with` are other requirements that apply too.
+
+    An override decides. Otherwise the requirements are combined: several different exact pins, or a pin that does not meet another
+    requirement, raise Conflict (whatever the order of the files). Without a pin, the combined ranges are written as they are.
+    """
+    extras = _union_extras(entries)
+    if override is not None:
+        override.used = True
+        return Resolved(entries, override.use, extras, override)
+    everything = entries + checked_with
+    pins: list[tuple[str, Entry]] = [(version, entry) for entry in everything for version in _exact_versions(entry)]
+    distinct: list[str] = []
+    for version, _ in pins:
+        if not any(_same_version(version, seen) for seen in distinct):
+            distinct.append(version)
+    if len(distinct) > 1:
+        raise Conflict(package, f"pinned to different versions ({', '.join(sorted(distinct))})", everything, where)
+    if distinct:
+        pin = distinct[0]
+        for entry in everything:
+            if entry.spec and not SpecifierSet(entry.spec).contains(pin, prereleases=True):
+                raise Conflict(package, f"the pin =={pin} does not meet {entry.name}{entry.spec} of {entry.source}", everything, where)
+    elif not satisfiable(SpecifierSet(",".join(entry.spec for entry in everything if entry.spec))):
+        raise Conflict(package, "no version meets all of these requirements", everything, where)
+    # The line keeps the requirements of its own entries; `checked_with` (the common requirements of an OS file) only had to agree.
+    own_pins = [version for entry in entries for version in _exact_versions(entry)]
+    if own_pins:
+        return Resolved(entries, f"=={own_pins[0]}", extras)
+    return Resolved(entries, str(SpecifierSet(",".join(entry.spec for entry in entries if entry.spec))), extras)
+
+
+def satisfiable(specifiers: SpecifierSet) -> bool:
+    """Whether some version meets every specifier (`<2,>=2.1` does not).
+
+    Every version a specifier names is tried, and versions just above it (2.1, 2.1.1, 2.1.0.1, 2.1.0.0.1): a range that only versions
+    closer than that could meet is reported as unsatisfiable, which stops the merge (an override then decides) instead of guessing.
+    """
+    if not len(specifiers):
+        return True
+    candidates: list[str] = []
+    for specifier in specifiers:
+        version = specifier.version.removesuffix(".*")
+        candidates += [version, f"{version}.1", f"{version}.0.1", f"{version}.0.0.1"]
+    for candidate in candidates:
+        try:
+            if specifiers.contains(candidate, prereleases=True):
+                return True
+        except InvalidVersion:
+            continue
+    return False
+
+
+def resolve_context(ctx: RequirementContext, overrides: dict[str, Override], conflicts: list[Conflict],
+                    base: RequirementContext | None = None, where: str = "") -> list[Resolved]:
+    """Resolve every package of a context; an OS context is also checked against the common requirements that apply on that OS."""
+    resolved: list[Resolved] = []
+    for (package, marker), entries in ctx.groups.items():
+        checked_with: list[Entry] = []
+        if base is not None:
+            for (base_package, base_marker), base_entries in base.groups.items():
+                if base_package == package and base_marker in ("", marker):
+                    checked_with.extend(base_entries)
+        try:
+            resolved.append(resolve_group(package, entries, checked_with, overrides.get(package), where))
+        except Conflict as conflict:
+            conflicts.append(conflict)
+    return resolved
+
+
+def conflict_report(conflicts: list[Conflict], errors: list[str], overrides_path: Path) -> str:
+    lines = ["The notebooks ask for incompatible package versions, so no requirements file was written.", ""]
+    for error in errors:
+        lines.append(f"  {error}")
+    for conflict in sorted(conflicts, key=lambda c: (c.package, c.where)):
+        where = f" ({conflict.where})" if conflict.where else ""
+        lines.append(f"  {conflict.package}{where}: {conflict.reason}")
+        for entry in sorted(conflict.entries, key=lambda e: (e.source, e.line)):
+            lines.append(f"    {entry.source}: {entry.line}")
+    if conflicts:
+        example = sorted(conflicts, key=lambda c: c.package)[0].package
+        lines += [
+            "",
+            f"Make the notebooks agree (edit their requirements.yaml), or decide in {display_path(overrides_path)} which requirement every",
+            "notebook gets, and why. It is written at the top of the generated requirements files. For example:",
+            "",
+            "overrides:",
+            f"  {example}:",
+            '    use: "==<the version every notebook was checked with>"',
+            f'    reason: "<why this version is right for every notebook that uses {example}>"',
+        ]
+    lines += ["", f"See {DOCS_URL}"]
+    return "\n".join(lines)
+
+
+def override_header(resolved: list[Resolved]) -> list[str]:
+    lines = []
+    for item in resolved:
+        if item.override is None:
+            continue
+        asked = "; ".join(f"{entry.source}: {entry.line}" for entry in item.entries if entry.source != ADDED_BY_SCRIPT)
+        lines.append(f"# Decided in {OVERRIDES_FILE}: {item.line()} (the notebooks ask for: {asked}). Reason: {item.override.reason}")
+    return lines
+
+
+# --------------------------------------------------------------------------------------------------------------------------------
+# Packages the app always needs
+# --------------------------------------------------------------------------------------------------------------------------------
 def resolve_ipywidgets_version(py_version, jl_version):
     """Resolve ipywidgets version based on Python, JupyterLab versions.
-    
+
     Returns a version spec string like ">=7.0.0,<8.0.0" or a pinned version.
     """
-    
+
     # Simple heuristic: ipywidgets 8.x for modern stacks, 7.x for older
     try:
         py_major, py_minor = map(int, py_version.split(".")[:2])
         jl_major = int(jl_version.split(".")[0])
-        
+
         if jl_major >= 4 and py_major >= 3 and py_minor >= 9:
             return "8.1.7"  # Latest stable for modern Python + JupyterLab 4
         elif py_major >= 3 and py_minor >= 7:
@@ -243,58 +429,48 @@ def resolve_ipywidgets_version(py_version, jl_version):
         return ">=7.0.0"  # Safe fallback
 
 
-def determine_jupyterlab_version(pkgs: dict, default: str = "4.4.0") -> str:
-    jl_info = pkgs.get("jupyterlab")
-    if jl_info and jl_info.get("pinned") and jl_info.get("ver"):
-        return jl_info["ver"]
+def _has_package(ctx: RequirementContext, package: str) -> bool:
+    return any(name == package for name, _ in ctx.groups)
+
+
+def _add_package(ctx: RequirementContext, name: str, spec: str) -> None:
+    ctx.groups[(canonicalize_name(name), "")] = [Entry(ADDED_BY_SCRIPT, f"{name}{spec}", name, (), spec, "")]
+
+
+def determine_jupyterlab_version(resolved: list[Resolved], default: str = "4.4.0") -> str:
+    for item in resolved:
+        if canonicalize_name(item.name) == "jupyterlab" and not item.marker and item.spec.startswith("==") and "," not in item.spec:
+            return item.spec[2:]
     return default
 
 
 def ensure_jl_hidecode(ctx: RequirementContext):
-    if "jl-hidecode" in ctx.pkgs:
+    if _has_package(ctx, "jl-hidecode"):
         return
-    ctx.pkgs["jl-hidecode"] = {
-        "name": "jl-hidecode",
-        "pinned": True,
-        "ver": "0.0.1",
-        "marker": "",
-    }
-    ctx.pkg_order.append("jl-hidecode")
+    _add_package(ctx, "jl-hidecode", "==0.0.1")
     print("Added jl-hidecode==0.0.1 (enforced)")
 
 
-def ensure_ipywidgets(ctx: RequirementContext, python_version: str | None, jl_ver: str):
-    if "ipywidgets" in ctx.pkgs:
-        return
+def ensure_ipywidgets(ctx: RequirementContext, python_version: str | None, jl_ver: str) -> bool:
+    if _has_package(ctx, "ipywidgets"):
+        return False
     iw_version = resolve_ipywidgets_version(python_version, jl_ver)
-    ctx.pkgs["ipywidgets"] = {
-        "name": "ipywidgets",
-        "pinned": True,
-        "ver": iw_version,
-        "marker": "",
-    }
-    ctx.pkg_order.append("ipywidgets")
-    print(f"Added ipywidgets=={iw_version} (resolved)")
+    spec = iw_version if iw_version[:1] in "<>=!~" else f"=={iw_version}"
+    _add_package(ctx, "ipywidgets", spec)
+    print(f"Added ipywidgets{spec} (resolved)")
+    return True
 
 
-def build_final_lines(ctx: RequirementContext, sort: bool) -> list[str]:
-    final_lines: list[str] = []
-    for ol in ctx.other_lines.keys():
-        final_lines.append(ol)
-
-    pkg_keys = sorted(ctx.pkg_order, key=str.casefold) if sort else ctx.pkg_order
-
-    for key in pkg_keys:
-        info = ctx.pkgs.get(key)
-        if not info:
-            continue
-        if info.get("pinned") and info.get("ver"):
-            final_lines.append(f"{info['name']}=={info['ver']}{info.get('marker','')}")
-        else:
-            final_lines.append(info["name"])
+def build_final_lines(ctx: RequirementContext, resolved: list[Resolved], sort: bool) -> list[str]:
+    final_lines: list[str] = list(ctx.other_lines.keys())
+    items = sorted(resolved, key=lambda item: item.name.casefold()) if sort else resolved
+    final_lines.extend(item.line() for item in items)
     return final_lines
 
 
+# --------------------------------------------------------------------------------------------------------------------------------
+# Output files
+# --------------------------------------------------------------------------------------------------------------------------------
 def get_os_output_path(output: Path, os_name: str) -> Path:
     suffix = output.suffix
     stem = output.stem
@@ -410,15 +586,18 @@ def write_requirements_output(
     final_lines: list[str],
     target_os: str | None = None,
     target_accelerator: str | None = None,
+    decisions: list[str] | None = None,
 ):
+    generated = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     header_lines = [
-        f"# Generated by .tools/python/merge_requirements.py on {datetime.utcnow().isoformat()}Z",
+        f"# Generated by .tools/python/merge_requirements.py on {generated}Z",
         f"# Source files: {', '.join(str(p) for p in files)}",
     ]
     if target_os:
         header_lines.append(f"# Target OS: {OS_DISPLAY_NAMES.get(target_os, target_os.capitalize())}")
     if target_accelerator:
         header_lines.append(f"# Target accelerator: {target_accelerator}")
+    header_lines.extend(decisions or [])
     header_lines.append("# ---")
 
     content = "\n".join(header_lines) + "\n"
@@ -430,15 +609,18 @@ def write_requirements_output(
     path.write_text(content, encoding="utf-8")
 
 
-def main():
+def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description="Merge multiple requirements files (txt or yaml) into one.")
     parser.add_argument("--source-dir", default="notebooks", help="Directory to scan for requirements files")
     parser.add_argument("--output", default="requirements.txt", help="Output requirements file to write")
     parser.add_argument("--sort", action="store_true", help="Sort final requirements alphabetically")
-    args = parser.parse_args()
+    parser.add_argument("--overrides", help=f"Decisions for conflicting requirements (default: {OVERRIDES_FILE} next to the output)")
+    parser.add_argument("--check", action="store_true", help="Only check that the notebooks' requirements do not conflict; write nothing")
+    args = parser.parse_args(argv)
 
     source = Path(args.source_dir)
     output = Path(args.output)
+    overrides_path = Path(args.overrides) if args.overrides else output.with_name(OVERRIDES_FILE)
 
     discovered_files = find_requirements_files(source)
 
@@ -449,6 +631,9 @@ def main():
 
     files = [f for f in discovered_files if f.resolve() not in skip_outputs]
     if not files:
+        if args.check:
+            print(f"No requirements files found under {source}: nothing to check.")
+            return 0
         print(f"No requirements files found under {source}, writing empty {output}")
         output.write_text("# Generated requirements (none found)\n", encoding="utf-8")
         gpu_output = get_gpu_output_path(output)
@@ -461,17 +646,43 @@ def main():
 
     for f in files:
         if f.suffix.lower() in {".yaml", ".yml"}:
-            candidate_py = read_requirements_yaml(f, base_ctx.pkg_order, base_ctx.pkgs, base_ctx.other_lines, os_contexts)
+            candidate_py = read_requirements_yaml(f, base_ctx, os_contexts)
             python_version = merge_python_version(f, python_version, candidate_py)
         else:
-            read_requirements_file(f, base_ctx.pkg_order, base_ctx.pkgs, base_ctx.other_lines)
+            read_requirements_file(f, base_ctx)
+
+    try:
+        overrides = load_overrides(overrides_path)
+    except ValueError as exc:
+        print(f"{exc}\nSee {DOCS_URL}", file=sys.stderr)
+        return 1
 
     ensure_jl_hidecode(base_ctx)
-    jl_ver = determine_jupyterlab_version(base_ctx.pkgs)
-    ensure_ipywidgets(base_ctx, python_version, jl_ver)
+    conflicts: list[Conflict] = []
+    base_resolved = resolve_context(base_ctx, overrides, conflicts)
+    jl_ver = determine_jupyterlab_version(base_resolved)
+    if ensure_ipywidgets(base_ctx, python_version, jl_ver):
+        key = next(reversed(base_ctx.groups))
+        base_resolved.append(resolve_group(key[0], base_ctx.groups[key], [], overrides.get(key[0])))
+    os_resolved = {
+        os_name: resolve_context(ctx, overrides, conflicts, base=base_ctx, where=f"{OS_FIELD_MAP[os_name]}, with the common dependencies")
+        for os_name, ctx in os_contexts.items()
+    }
+    errors = base_ctx.errors + [error for ctx in os_contexts.values() for error in ctx.errors]
+    if conflicts or errors:
+        print(conflict_report(conflicts, errors, overrides_path), file=sys.stderr)
+        return 1
+    for override in overrides.values():
+        if not override.used:
+            print(f"Note: {display_path(overrides_path)} decides {override.name}, which no notebook requires any more; the entry can be removed.")
+    if args.check:
+        print(f"The requirements of {len(files)} file(s) do not conflict"
+              + (f" ({sum(o.used for o in overrides.values())} decision(s) from {display_path(overrides_path)})." if overrides else "."))
+        return 0
 
-    base_final_lines = build_final_lines(base_ctx, args.sort)
-    write_requirements_output(output, files, base_final_lines)
+    decisions = override_header(base_resolved)
+    base_final_lines = build_final_lines(base_ctx, base_resolved, args.sort)
+    write_requirements_output(output, files, base_final_lines, decisions=decisions)
     print(f"Wrote {output} with {len(base_final_lines)} entries (from {len(files)} files)")
 
     gpu_output = get_gpu_output_path(output)
@@ -481,15 +692,16 @@ def main():
         files,
         gpu_final_lines,
         target_accelerator=GPU_DISPLAY_NAME,
+        decisions=decisions,
     )
     print(f"Wrote {gpu_output} with {len(gpu_final_lines)} entries (from {len(files)} files, target {GPU_DISPLAY_NAME})")
 
     for os_name, ctx in os_contexts.items():
-        if not ctx.pkg_order and not ctx.other_lines:
+        if not ctx.groups and not ctx.other_lines:
             continue
-        os_final_lines = build_final_lines(ctx, args.sort)
+        os_final_lines = build_final_lines(ctx, os_resolved[os_name], args.sort)
         os_output = get_os_output_path(output, os_name)
-        write_requirements_output(os_output, files, os_final_lines, target_os=os_name)
+        write_requirements_output(os_output, files, os_final_lines, target_os=os_name, decisions=override_header(os_resolved[os_name]))
         print(f"Wrote {os_output} with {len(os_final_lines)} entries (from {len(files)} files, target {os_name})")
 
     # Create the environment.yaml if not present
