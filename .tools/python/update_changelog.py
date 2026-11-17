@@ -13,10 +13,11 @@ from typing import Dict, Tuple
 import yaml
 
 def get_git_commit_info():
-    """Get current commit hash and message"""
+    """Get current commit hash and message (the subject line only: the body and its trailers, such as
+    Co-authored-by, do not belong in the notebook's changelog)"""
     try:
         commit_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('utf-8').strip()
-        commit_message = subprocess.check_output(['git', 'log', '-1', '--pretty=%B']).decode('utf-8').strip()
+        commit_message = subprocess.check_output(['git', 'log', '-1', '--pretty=%s']).decode('utf-8').strip()
         commit_author = subprocess.check_output(['git', 'log', '-1', '--pretty=%an']).decode('utf-8').strip()
         commit_date = subprocess.check_output(['git', 'log', '-1', '--pretty=%ai']).decode('utf-8').strip()
         

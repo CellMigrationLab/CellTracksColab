@@ -21,6 +21,15 @@
       "items": {"enum": ["notebook", "napari", "fiji", "qupath"]},
       "description": "Where the app's tools can be used besides its own window (the LabConstrictor-Tools bridge)."
     },
+    "host_requirements": {
+      "type": "object", "additionalProperties": false,
+      "description": "The oldest LabConstrictor plugin of each host the app needs. labconstrictor-tools register copies it into the app's registry entry; a host whose plugin is older lists the app with a sentence saying which plugin to update (or refuses it with required: true). The notebook needs no plugin.",
+      "properties": {
+        "napari": {"$ref": "#/$defs/hostRequirement"},
+        "fiji": {"$ref": "#/$defs/hostRequirement"},
+        "qupath": {"$ref": "#/$defs/hostRequirement"}
+      }
+    },
     "distribution": {
       "type": "object", "additionalProperties": false,
       "anyOf": [{"required": ["installer"]}, {"required": ["colab"]}, {"required": ["pip"]}],
@@ -57,6 +66,16 @@
     }
   },
   "$defs": {
+    "hostRequirement": {
+      "type": "object", "additionalProperties": false,
+      "anyOf": [{"required": ["min_version"]}, {"required": ["features"]}],
+      "properties": {
+        "min_version": {"type": "string", "pattern": "^v?[0-9]+(\\.[0-9]+)*([-_.]?(a|alpha|b|beta|c|rc|pre|preview)[-_.]?[0-9]*)?([-_.]?(post|rev|r)[-_.]?[0-9]*)?([-_.]?dev[-_.]?[0-9]*)?$", "description": "A release tag of the plugin, with or without v (0.1.0-alpha.6, v0.1.0, 0.2.0rc1). Quote it if YAML could read it as a number (\"0.2\")."},
+        "features": {"type": "array", "uniqueItems": true, "minItems": 1, "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}, "description": "Host feature ids the app needs (LabConstrictor-Tools docs/HOST_FEATURES.md), for example shapes_owner_v1."},
+        "why": {"type": "string", "minLength": 3, "maxLength": 160, "pattern": "^[^\\n]+$", "description": "One line shown to the person, saying what the newer plugin brings."},
+        "required": {"type": "boolean", "description": "true: an older plugin refuses the app's tools instead of warning. Use it only when the tools really fail."}
+      }
+    },
     "facts": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"type": "string", "minLength": 5, "maxLength": 200}},
     "https": {"type": "string", "pattern": "^https://[^\\s/@]+(/[^\\s]*)?$(?!\\n)"},
     "repoPath": {"type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9_./ -]+\\.(png|jpg|jpeg|gif)$(?!\\n)", "description": "Path inside the repository, no leading slash."},

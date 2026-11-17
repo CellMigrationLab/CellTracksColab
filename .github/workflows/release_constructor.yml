@@ -68,6 +68,11 @@ jobs:
             "check_placeholders.py" \
             .tools/python/check_placeholders.py \
             python .tools/python/check_placeholders.py
+          bash .tools/bash/run_with_context.sh \
+            artifacts/error_log_document.log \
+            "merge_requirements.py --check" \
+            .tools/python/merge_requirements.py \
+            python .tools/python/merge_requirements.py --source-dir notebooks --output requirements.txt --check
 
 
       - name: Commit updated versioned files
