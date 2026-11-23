@@ -76,7 +76,7 @@ if [ -f "$PROJECT_ROOT/setup.py" ]; then
     # (it never fails the installation by itself). LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
     # Default source: the GitHub archive of the labconstrictor-tools release TAG below (a plain zip: no git needed on the user's computer),
     # because the package is not on PyPI yet. Once it is, use "labconstrictor-tools" here. To move the pin, change only this tag.
-    LC_TOOLS_PIN="v0.3.0-alpha.2"
+    LC_TOOLS_PIN="v0.3.0-alpha.4"
     LC_TOOLS_MODULE="celltracks_lc_tools"
     LC_TOOLS_READY=0
     if "$PYTHON_EXE" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('$LC_TOOLS_MODULE') else 1)" >> "$LOG_FILE" 2>&1; then

@@ -184,15 +184,19 @@ IF ERRORLEVEL 1 (
 
 SET "ARP_KEY=HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\CellTracksColab"
 SET "UNINSTALL_EXE=%PREFIX%\Uninstall-CellTracksColab.exe"
-SET "DISPLAY_ICON=%PROJECT_ROOT%\logo.ico"
+REM Windows Apps list: the version of this installer (the version: line of the bundled construct.yaml, written by each release),
+REM and the app icon the installer copied (the first .ico in the app folder); no icon entry when there is none.
 SET "DISPLAY_VERSION=1.0.5"
+IF EXIST "%PROJECT_ROOT%\construct.yaml" FOR /F "usebackq tokens=1,* delims=: " %%A IN (`findstr /B /C:"version:" "%PROJECT_ROOT%\construct.yaml"`) DO SET "DISPLAY_VERSION=%%~B"
+SET "DISPLAY_ICON="
+FOR %%I IN ("%PROJECT_ROOT%\*.ico") DO IF NOT DEFINED DISPLAY_ICON SET "DISPLAY_ICON=%%~fI"
 SET "PUBLISHER=CellMigrationLab"
 echo Registering CellTracksColab in Windows Apps list >> "%LOG_FILE%"
 reg add "%ARP_KEY%" /v DisplayName /d "CellTracksColab" /f >> "%LOG_FILE%" 2>&1
 reg add "%ARP_KEY%" /v DisplayVersion /d "%DISPLAY_VERSION%" /f >> "%LOG_FILE%" 2>&1
 reg add "%ARP_KEY%" /v Publisher /d "%PUBLISHER%" /f >> "%LOG_FILE%" 2>&1
 reg add "%ARP_KEY%" /v InstallLocation /d "%PREFIX%" /f >> "%LOG_FILE%" 2>&1
-reg add "%ARP_KEY%" /v DisplayIcon /d "%DISPLAY_ICON%" /f >> "%LOG_FILE%" 2>&1
+IF DEFINED DISPLAY_ICON reg add "%ARP_KEY%" /v DisplayIcon /d "%DISPLAY_ICON%" /f >> "%LOG_FILE%" 2>&1
 reg add "%ARP_KEY%" /v UninstallString /d "\"%UNINSTALL_EXE%\"" /f >> "%LOG_FILE%" 2>&1
 reg add "%ARP_KEY%" /v QuietUninstallString /d "\"%UNINSTALL_EXE%\" /S" /f >> "%LOG_FILE%" 2>&1
 reg add "%ARP_KEY%" /v NoModify /t REG_DWORD /d 1 /f >> "%LOG_FILE%" 2>&1
@@ -235,7 +239,7 @@ REM This step must never fail the installation: a failure is logged as a WARNING
 REM LC_TOOLS_SPEC can point to another source (wheel, git URL, mirror).
 REM Default source: the GitHub archive of the labconstrictor-tools release TAG below (a plain zip: no git needed on the user's computer),
 REM because the package is not on PyPI yet. Once it is, use "labconstrictor-tools" here. To move the pin, change only this tag.
-SET "LC_TOOLS_PIN=v0.3.0-alpha.2"
+SET "LC_TOOLS_PIN=v0.3.0-alpha.4"
 IF NOT DEFINED LC_TOOLS_SPEC SET "LC_TOOLS_SPEC=https://github.com/CellMigrationLab/LabConstrictor-Tools/archive/refs/tags/%LC_TOOLS_PIN%.zip"
 SET "LC_TOOLS_READY=0"
 "%PYTHON_EXE%" -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('celltracks_lc_tools') else 1)" >> "%LOG_FILE%" 2>&1

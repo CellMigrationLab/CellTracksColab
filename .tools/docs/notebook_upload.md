@@ -12,7 +12,7 @@ To ensure your notebook works with the versioning tracking provided by the LabCo
 
 > IMPORTANT NOTE: Each time you change the notebook's logic, update the version number on `current_version` variable so users can see there is a new version.
 
-```
+```python
 # @markdown Run this cell to check this notebook's version.
 
 current_version = "0.0.1"
