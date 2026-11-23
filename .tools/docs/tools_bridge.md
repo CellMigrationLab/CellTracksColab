@@ -1,18 +1,20 @@
-# Expose your app's tools to napari, Fiji and QuPath (optional, experimental)
+# Expose your app's tools to napari, Fiji and QuPath
 
-If your repository ships Python code (see [Upload external code](external_code_upload.md)), you can declare some of its functions
-as **tools**. After installation, people can run them in napari, Fiji and QuPath and from the command line, with forms made from the
-function signatures. Nothing changes for apps that do not declare tools.
+Turn functions of your app's Python package into **tools** that people run in napari, Fiji and QuPath, and from the command line. Each tool gets a form made from its function signature. You declare the tools in your repository; the installer registers them on the user's computer.
 
-This page covers what the template does: where you declare the tools and what the installer does with them. Two other guides cover the rest:
+To expose your app's tools:
 
-- [Writing tools](https://github.com/CellMigrationLab/LabConstrictor-Tools/blob/main/docs/AUTHORING.md), in LabConstrictor-Tools: the inputs
-  and outputs a tool can have, how to lay out its form, what each program supports, and how to test a tool.
-- [Use apps inside napari, Fiji and QuPath](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/image-software/): what the people
-  who install your app do to run its tools, with the install steps of the
-  [napari plugin](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/napari/), the
-  [Fiji plugin](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/fiji/) and the
-  [QuPath extension](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/qupath/).
+1. Put your Python code in `src/` (see [Upload external code](external_code_upload.md)).
+2. Declare the tools in a `<your_package>_lc_tools` module, as shown below.
+3. Name the programs your tools work in under `hosts:` in `labconstrictor-app.yaml`.
+4. Test the tools, then publish a release.
+
+How to write a tool, with its inputs, outputs, form layout and tests, is in [Writing tools](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/writing-tools/). What the people who install your app do to run the tools is in [Use apps inside napari, Fiji and QuPath](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/image-software/).
+
+## What you need
+
+- An app repository made from this template, with your Python package in `src/<your_package>/`.
+- Python functions with type annotations that you want to offer as tools.
 
 ## Declare your tools
 
@@ -31,17 +33,17 @@ This page covers what the template does: where you declare the tools and what th
    ```
 
    Keep the module light: it is imported to read the tool list, so heavy imports at the top slow every start.
-2. Import `labconstrictor_tools` only in `<your_package>_lc_tools`, or inside functions, if you can. The rest of your package then also works
-   where LabConstrictor Tools is not installed: a notebook run on Google Colab, a copy of the package used elsewhere, or an installation where
-   Tools failed to install. An import at the top of your package does not stop the installation, because the installer installs Tools before
-   it checks that your package can be imported.
+2. If you can, import `labconstrictor_tools` only in `<your_package>_lc_tools`, or inside functions. The rest of your package then also
+   works where LabConstrictor Tools is not installed: a notebook on Google Colab, a copy of the package used elsewhere, or an installation
+   where Tools failed to install.
 3. Name the programs your tools work in under `hosts:` in `labconstrictor-app.yaml`: see [Describe your app for the App Centre](app_manifest.md).
-4. Test your tools before you publish a release, as [Writing tools](https://github.com/CellMigrationLab/LabConstrictor-Tools/blob/main/docs/AUTHORING.md)
-   shows (`labconstrictor-tools check` and `labconstrictor-tools test`).
+   napari, Fiji and QuPath list your app only if `hosts:` names them.
+4. Test your tools with `labconstrictor-tools check` and `labconstrictor-tools test`, as
+   [Writing tools](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/writing-tools/) shows.
 
 ## What the installer does
 
-The installer's `post_install` step:
+When someone installs your app, the installer:
 
 1. installs your package;
 2. if your package has a `<your_package>_lc_tools` module, installs LabConstrictor Tools;
@@ -49,33 +51,28 @@ The installer's `post_install` step:
 4. registers the app (`labconstrictor-tools register ...`) with the version from the `version:` line of `construct.yaml` and the hosts of
    `labconstrictor-app.yaml`.
 
-When the app is uninstalled, `pre_uninstall` unregisters it.
+When the app is uninstalled, it is unregistered. An app that declares no tools is not affected by any of this.
 
-A failure in step 2 or 4 is written as a `WARNING` to `menuinst_debug.log` in the install folder, the registration is skipped, and the
-installation goes on. The one exception is a package that needs Tools to be imported: then the import check of step 3 fails, as it should.
+If step 2 or 4 fails, the installer writes a `WARNING` to `menuinst_debug.log` in the install folder, skips the registration and finishes
+the installation. The exception is a package that imports `labconstrictor_tools` at the top: then the import check of step 3 fails.
 
-The Windows step (`post_install.bat`) runs in the template's automated tests on a Windows machine, and people have installed apps on Windows
-and macOS from a clean system.
+The installer installs one fixed release of LabConstrictor Tools: the tag in `LC_TOOLS_PIN` of
+[app/bash_bat_scripts/post_install.sh](../../app/bash_bat_scripts/post_install.sh) and
+[app/bash_bat_scripts/post_install.bat](../../app/bash_bat_scripts/post_install.bat). Template updates move it. To install Tools from
+another source (a wheel, a git URL or a mirror), set the environment variable `LC_TOOLS_SPEC` when the installer runs; it replaces the pin.
+How Tools releases are made and pinned is in
+[Operations](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/tools-operations/#pinning-tools-in-app-installers).
 
-### Which LabConstrictor Tools the installer installs
+## Check that it worked
 
-LabConstrictor Tools is not on PyPI yet. The installer downloads the GitHub archive of one release tag of LabConstrictor-Tools, a plain zip
-file, so the user's computer does not need git. The tag is pinned: two installers built from the same app release install the same Tools,
-and a change to Tools does not reach new installations until the pin is moved on purpose. Template updates move the pin in your app.
+After you install a release of your app:
 
-The tag is the value of `LC_TOOLS_PIN` in both scripts:
-[app/bash_bat_scripts/post_install.sh](../../app/bash_bat_scripts/post_install.sh) (`LC_TOOLS_PIN="..."`) and
-[app/bash_bat_scripts/post_install.bat](../../app/bash_bat_scripts/post_install.bat) (`SET "LC_TOOLS_PIN=..."`).
-
-To install Tools from somewhere else, set the environment variable `LC_TOOLS_SPEC` when the installer runs: a wheel, a git URL, a mirror, or
-the name `labconstrictor-tools` once it is on PyPI. It replaces the pin completely.
-
-**Move the pin (template maintainers).** Create and test the tag in LabConstrictor-Tools (the procedure is in its `docs/OPERATIONS.md`).
-Change `LC_TOOLS_PIN` in both scripts of the template, and in the copies under `.template_sync/resources/` of the latest migration if it has
-them (the test `test_resources_are_identical_to_the_template_files` fails when they differ). Then write a migration that changes the string in
-the apps' scripts, and bump `template_version`.
+- `menuinst_debug.log` in the install folder says `Tools registered`.
+- `labconstrictor-tools list` shows your app and its tools.
+- Your app appears in the programs you named under `hosts:`, once their plugin is installed.
 
 ## If something does not work
 
 - `menuinst_debug.log` in the app's install folder says what the installer did with your tools.
 - `labconstrictor-tools doctor` checks the Tools installation, and `labconstrictor-tools logs` shows its log.
+- Other problems and their fixes: [Operations](https://cellmigrationlab.github.io/LabConstrictor-Site/guides/tools-operations/).

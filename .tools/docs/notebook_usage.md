@@ -4,7 +4,7 @@ After you install the desktop application, this guide will show you how to use t
 
 ## 1. Launching the Application
 
-To open the application, go to the Start Menu on Windows or Linux, or the Applications folder on macOS. Search for the application name and click its icon to start it.
+To open the application, go to the Start Menu (Windows), the Applications folder (macOS) or your applications menu (Linux). Search for the application name and click its icon to start it.
 
 ## 2. Welcome Notebook
 

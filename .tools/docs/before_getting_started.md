@@ -2,35 +2,35 @@
 
 Welcome to LabConstrictor! This guide will walk you through the basics and show you what you need to get started.
 
-## 🎯 LabConstrictor in a Nutshell
+## LabConstrictor in a nutshell
 
 LabConstrictor is a template repository that lets you turn Jupyter notebooks into desktop apps. It handles the setup for you via automated GitHub Actions. Here are its main features:
 
-### ⚙️ Easy Configuration
+### Easy configuration
 
 LabConstrictor has a web form that makes it easy to set up your repository, add your branding, and upload or update your notebooks and their dependencies.
 
-### 🖥️ Cross-Platform Installers
+### Cross-platform installers
 
 Automatic workflows create installers for Windows (.exe), macOS (.pkg), and Linux (.sh). This makes it simple for users on any platform to install and run your notebooks. The installers are created using [Conda Constructor](https://github.com/conda/constructor).
 
-### 📦 Environment Management
+### Environment management
 
 LabConstrictor uses `requirements.yaml` files to manage dependencies. Automatic workflows ensure your notebooks run consistently across different systems. LabConstrictor also includes helper notebooks for generating and validating requirement files.
 
-### 📈 Version Control
+### Version control
 
 LabConstrictor includes helper cells that track notebook versions and notify users when updates are available. This way, everyone can use the latest features and fixes.
 
-### ✨ User-Friendly Experience
+### User-friendly experience
 
 Installers handle the setup process, allowing users to launch your notebooks with a desktop app. The installers take care of the setup, so users can open your notebooks with a desktop app. The app shows a Welcome Dashboard where users can check versions and pick notebooks. Notebooks have hidden code and a play button to run cells, giving a clean, app-like feel. private or public, giving you full control over who can access and use your notebooks.
 
-### 📱 Offline Usage
+### Offline usage
 
 If your notebooks don’t need internet access, users can run the desktop apps offline after they install them.
 
-## ✅ LabConstrictor Requirements
+## LabConstrictor requirements
 
 To get started with LabConstrictor, you only need the following:
 

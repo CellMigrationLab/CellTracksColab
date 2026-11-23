@@ -5,7 +5,7 @@ The template synchronization workflow requires the one-time [`LABCONSTRICTOR_SYN
 
 When you upload a notebook or make a release, GitHub Actions starts a workflow to check your code and build the installers.
 
-## 1. Monitor the Progress
+## 1. Monitor the progress
 
 1.  Go to the **Actions** tab in your GitHub repository.
 2. You’ll see a list of recent workflows. Find the one that matches your latest commit or release.
@@ -13,7 +13,7 @@ When you upload a notebook or make a release, GitHub Actions starts a workflow t
 
 ![GitHub Actions Status Icons](https://github.com/CellMigrationLab/LabConstrictor/blob/doc_source/actions_status_icons.png)
 
-## 2. How to Debug a Failure
+## 2. How to debug a failure
 
 If the workflow fails, don’t worry. The system creates an error log that’s ready for you to use.
 
@@ -29,7 +29,7 @@ If the workflow fails, don’t worry. The system creates an error log that’s r
 
 ---
 
-### 💡 Best Practice for Large Updates
+### Best practice for large updates
 
 If you’re planning a big update, like changing several notebooks or adding complex dependencies, don’t push straight to the main branch.
 

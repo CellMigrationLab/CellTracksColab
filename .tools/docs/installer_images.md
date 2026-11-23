@@ -21,13 +21,13 @@ When preparing your images, please ensure they meet the recommended size and for
 #### Header:
 ![LabConstrictor Header](https://github.com/CellMigrationLab/LabConstrictor/blob/doc_source/LabConstrictor_Header.png)
 
-## Default Installer
+## Default installer
 
 In case you do not provide any images during the initialisation of your repository, default placeholder images will be used:
 
 ![Default Installer Images](https://github.com/CellMigrationLab/LabConstrictor/blob/doc_source/Customisation_Default.png)
 
-## Customised Installer
+## Customised installer
 
 When you provide your own images, the installer will reflect your custom branding:
 
